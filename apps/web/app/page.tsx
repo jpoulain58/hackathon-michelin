@@ -7,9 +7,11 @@ export default function Home() {
       {/* Header */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Brand />
-        <Link href="/trouve-ton-pneu" className="btn-primary">
-          Trouve ton pneu
-        </Link>
+        <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
+          <Link href="/communaute" className="hidden hover:underline sm:inline">Communaute</Link>
+          <Link href="/balades" className="hidden hover:underline sm:inline">Balades</Link>
+          <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
+        </nav>
       </header>
 
       {/* Hero */}
