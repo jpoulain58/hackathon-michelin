@@ -5,6 +5,8 @@
 **Hackathon ESGI 2026 — Réseau Skolae × Michelin LB 2 Wheels** · 15–20 juin 2026
 Product Owner : Abdellatif Ghachi (Global Account Manager E-retail 2W)
 
+> Ce dépôt contient **le code** de l'application. Les livrables documentaires (compréhension du brief, concept, architecture, maquettes) sont déposés sur la plateforme HackPilot.
+
 ---
 
 ## Le problème (recadré par le PO)
@@ -15,28 +17,70 @@ Cible = le **client final** (le cycliste), pas le retailer. Dans le vélo, **le 
 
 ## La solution
 
-Une **app mobile** (B2C) en 2 parties + un club :
+Une **app** (B2C) en 2 parties + un club :
 
 1. **Trouve ton pneu + Comparateur** — connexion **Strava/Garmin** → sélection perso, et un **comparateur transparent incluant les concurrents**. Bouton « Voir où acheter » = **renvoi revendeur** (pas de checkout).
 2. **Communauté & émulation** — compteurs collectifs, **pneus des pros**, **avis vérifiés** (adossés aux vrais km), **balades de la semaine**, statut/parrainage.
-3. **Club PROOF** — abonnement : pneus, chambres à air, goodies (fidélité).
+3. **Club Trust Wheels** — abonnement : pneus, chambres à air, goodies (fidélité).
 
-Go-to-market : newsletter, mini-série YouTube, influenceurs TikTok/Insta, caravane Tour de France. PROOF crée **le moteur d'achat** (utilité + preuve + renvoi traçable), pas la transaction.
+Michelin Trust Wheels crée **le moteur d'achat** (utilité + preuve + renvoi traçable), pas la transaction.
 
-## Maquettes (Figma — source de vérité)
+## Stack
 
-**Fichier Figma : [Michelin Trust Wheels — Maquettes app](https://www.figma.com/design/daN2uwneqR5ci6PG7YA6AZ)** (calques 100 % éditables).
-Écrans : Onboarding · **Trouve ton pneu** · **Comparateur** (concurrents inclus) · Communauté & pneus des pros · Balades de la semaine · Club.
-_Anciennes maquettes SVG du 1ᵉʳ concept conservées dans [`exports/figma/`](exports/figma/) à titre d'archive._
+Next.js 15 (App Router) · TypeScript · Tailwind (charte Michelin) · NestJS · Strava OAuth *(à venir)* · PostgreSQL + Prisma *(à venir)* · Docker · GitHub Actions (CI/CD). **Pas de paiement in-app.**
 
-## Stack cible (voir [architecture](docs/03-architecture.md))
+## Structure du monorepo
 
-Next.js 15 (App Router) · TypeScript · Tailwind + shadcn/ui · PostgreSQL + Prisma · NestJS (API) · Strava OAuth · Docker · GitHub Actions (CI/CD) · Vitest + Playwright. **Pas de paiement.**
+```
+.
+├── apps/
+│   ├── web/                 # Next.js 15 — landing + wizard « Trouve ton pneu » (charte Michelin)
+│   └── api/                 # NestJS — /health, /tyres, /tyres/recommend
+├── packages/
+│   └── recommender/         # moteur de recommandation (cœur métier, zéro dépendance, testé)
+├── docker-compose.yml       # web + api + postgres
+└── .github/workflows/ci.yml # lint + tests + build
+```
+
+## Démarrer (développement)
+
+Prérequis : **Node ≥ 20**.
+
+```bash
+npm install        # installe tous les workspaces
+npm test           # tests unitaires (recommender + api)
+npm run build      # build api (tsc) + web (next build)
+
+# en dev, dans 2 terminaux :
+npm run dev:api    # API NestJS  ->  http://localhost:3001/api
+npm run dev:web    # Front Next  ->  http://localhost:3000
+```
+
+Au besoin : `cp .env.example .env`.
+
+### Endpoints API
+
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/api/health` | Statut du service |
+| GET | `/api/tyres/options` | Disciplines & priorités (alimente le wizard) |
+| GET | `/api/tyres?discipline=road&limit=12` | Catalogue filtré |
+| GET | `/api/tyres/recommend?discipline=gravel&priority=puncture&ebike=true&limit=5` | Recommandation scorée + justifications |
+
+## Docker
+
+```bash
+docker compose up --build   # db (postgres) + api + web
+```
+
+## Données & confidentialité
+
+Le moteur tourne sur `packages/recommender/data/products.sample.json` (échantillon **anonymisé**, versionné). Le **catalogue réel** Michelin est confidentiel : il n'est **jamais commité** (`.gitignore`) et peut être branché en local via la variable `CATALOG_PATH`.
+
+## Maquettes (Figma)
+
+**[Michelin Trust Wheels — Maquettes app](https://www.figma.com/design/daN2uwneqR5ci6PG7YA6AZ)**
 
 ## Équipe
 
-> _Jérémy POULAIN / Axel ROUQUETTE / Hugo RIVAUX / Léo LIMOUSIN_
-
----
-
-**Confidentialité** : catalogue, charte et dealer book Michelin sont confidentiels → non versionnés en clair. Voir [`.gitignore`](.gitignore).
+Jérémy POULAIN · Axel ROUQUETTE · Hugo RIVAUX · Léo LIMOUSIN

@@ -1,0 +1,17 @@
+{
+  "name": "@mtw/recommender",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Moteur de recommandation de pneus Michelin Trust Wheels (coeur metier, zero dependance).",
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src",
+    "data"
+  ],
+  "scripts": {
+    "test": "node --test"
+  }
+}
