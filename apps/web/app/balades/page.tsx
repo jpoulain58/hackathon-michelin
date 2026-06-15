@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
+import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { RIDES, CENTER } from "@/lib/balades";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -128,16 +129,21 @@ export default function Balades() {
                     : "border-michelin-gray-line bg-white hover:border-michelin-blue"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-michelin-navy">
-                    {i + 1}. {r.name}
-                  </span>
-                  <span className="chip">{r.terrain}</span>
+                <div className="flex gap-3">
+                  <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-michelin-navy">
+                        {i + 1}. {r.name}
+                      </span>
+                      <span className="chip">{r.terrain}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-michelin-ink">
+                      {r.km} km · {r.dplus} m D+
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
+                  </div>
                 </div>
-                <div className="mt-1 text-sm text-michelin-ink">
-                  {r.km} km · {r.dplus} m D+
-                </div>
-                <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
               </button>
             ))}
           </div>
