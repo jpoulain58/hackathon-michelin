@@ -23,19 +23,6 @@ Une **app mobile** (B2C) en 2 parties + un club :
 
 Go-to-market : newsletter, mini-série YouTube, influenceurs TikTok/Insta, caravane Tour de France. PROOF crée **le moteur d'achat** (utilité + preuve + renvoi traçable), pas la transaction.
 
-## Ce dépôt
-
-| Chemin | Contenu |
-|---|---|
-| [`docs/01-comprehension-brief.md`](docs/01-comprehension-brief.md) | Compréhension du brief + précisions du PO (livrable J1) |
-| [`docs/02-concept.md`](docs/02-concept.md) | **Le concept Michelin PROOF** |
-| [`docs/03-architecture.md`](docs/03-architecture.md) | Architecture technique, stack, modèle de données, CI/CD |
-| [`docs/04-mvp-backlog.md`](docs/04-mvp-backlog.md) | Priorisation MVP (MoSCoW) + planning |
-| [`exports/`](exports/) | **PDF stylisés** des docs |
-| [`exports/figma/`](exports/figma/) | **Maquettes SVG** (importables Figma) + aperçus PNG |
-| [`data/products.json`](data/products.json) | 396 pneus Michelin réels (gitignoré, confidentiel) |
-| [`tools/recommend.mjs`](tools/recommend.mjs) | Prototype moteur de reco (réutilisable) |
-
 ## Maquettes (Figma — source de vérité)
 
 **Fichier Figma : [Michelin PROOF — Maquettes app](https://www.figma.com/design/daN2uwneqR5ci6PG7YA6AZ)** (calques 100 % éditables).
