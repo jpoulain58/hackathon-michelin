@@ -48,7 +48,7 @@ Next.js 15 (App Router) · TypeScript · Tailwind + shadcn/ui · PostgreSQL + Pr
 
 ## Équipe
 
-> _À compléter — 5IW ESGI._
+> _Jérémy POULAIN / Axel ROUQUETTE / Hugo RIVAUX / Léo LIMOUSIN_
 
 ---
 
