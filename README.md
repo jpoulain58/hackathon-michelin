@@ -25,7 +25,7 @@ Go-to-market : newsletter, mini-série YouTube, influenceurs TikTok/Insta, carav
 
 ## Maquettes (Figma — source de vérité)
 
-**Fichier Figma : [Michelin PROOF — Maquettes app](https://www.figma.com/design/daN2uwneqR5ci6PG7YA6AZ)** (calques 100 % éditables).
+**Fichier Figma : [Michelin Trust Wheels — Maquettes app](https://www.figma.com/design/daN2uwneqR5ci6PG7YA6AZ)** (calques 100 % éditables).
 Écrans : Onboarding · **Trouve ton pneu** · **Comparateur** (concurrents inclus) · Communauté & pneus des pros · Balades de la semaine · Club.
 _Anciennes maquettes SVG du 1ᵉʳ concept conservées dans [`exports/figma/`](exports/figma/) à titre d'archive._
 
