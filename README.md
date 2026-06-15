@@ -34,10 +34,11 @@ Next.js 15 (App Router) · TypeScript · Tailwind (charte Michelin) · NestJS ·
 ```
 .
 ├── apps/
-│   ├── web/                 # Next.js 15 — landing + wizard « Trouve ton pneu » (charte Michelin)
-│   └── api/                 # NestJS — /health, /tyres, /tyres/recommend
+│   ├── web/                 # Next.js 15 — landing, Trouve ton pneu, Communauté, Balades (charte Michelin)
+│   └── api/                 # NestJS — health, tyres/recommend, community
 ├── packages/
 │   └── recommender/         # moteur de recommandation (cœur métier, zéro dépendance, testé)
+├── prisma/schema.prisma     # modèle de données cible (Postgres) — câblage à l'itération suivante
 ├── docker-compose.yml       # web + api + postgres
 └── .github/workflows/ci.yml # lint + tests + build
 ```
@@ -66,6 +67,9 @@ Au besoin : `cp .env.example .env`.
 | GET | `/api/tyres/options` | Disciplines & priorités (alimente le wizard) |
 | GET | `/api/tyres?discipline=road&limit=12` | Catalogue filtré |
 | GET | `/api/tyres/recommend?discipline=gravel&priority=puncture&ebike=true&limit=5` | Recommandation scorée + justifications |
+| GET | `/api/community/stats` | Compteurs collectifs (preuve sociale) |
+| GET | `/api/community/reviews?tyre=power%20cup` | Avis vérifiés (adossés aux km Strava) |
+| GET | `/api/community/pros` | Pneus des pros |
 
 ## Docker
 
