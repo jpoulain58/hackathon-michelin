@@ -1,9 +1,11 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Inject, Query } from "@nestjs/common";
 import { TyresService } from "./tyres.service";
 
 @Controller("tyres")
 export class TyresController {
-  constructor(private readonly tyres: TyresService) {}
+  // @Inject explicite : l'injection fonctionne meme sans metadata de type
+  // (necessaire en dev avec tsx/esbuild, qui n'emet pas design:paramtypes).
+  constructor(@Inject(TyresService) private readonly tyres: TyresService) {}
 
   /** GET /api/tyres?discipline=road&limit=12 */
   @Get()

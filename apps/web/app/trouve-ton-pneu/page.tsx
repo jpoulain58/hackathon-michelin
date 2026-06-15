@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
 import { TyreCard } from "@/components/TyreCard";
+import { Button } from "@/components/ui/button";
 import {
   fetchOptions,
   fetchRecommendations,
@@ -34,9 +35,7 @@ export default function TrouveTonPneu() {
       const items = await fetchRecommendations({ discipline, priority, ebike, limit: 5 });
       setResults(items);
     } catch (err) {
-      setError(
-        "Impossible de joindre l'API de recommandation. Demarre-la (npm run dev:api) puis reessaie.",
-      );
+      setError("Impossible de récupérer les recommandations pour le moment. Réessaie dans un instant.");
       setResults(null);
     } finally {
       setLoading(false);
@@ -46,10 +45,10 @@ export default function TrouveTonPneu() {
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-        <Link href="/">
+        <Link href="/accueil">
           <Brand />
         </Link>
-        <Link href="/" className="text-sm font-semibold text-michelin-blue hover:underline">
+        <Link href="/accueil" className="text-sm font-semibold text-michelin-blue hover:underline">
           Accueil
         </Link>
       </header>
@@ -58,7 +57,7 @@ export default function TrouveTonPneu() {
         <div className="h-1 w-12 bg-michelin-yellow" />
         <h1 className="mt-4 text-3xl font-bold text-michelin-navy">Trouve ton pneu</h1>
         <p className="mt-2 text-michelin-ink">
-          D&apos;après tes ~1 240 km analysés sur Strava (démo) — affine avec tes préférences.
+          D&apos;après tes ~1 240 km analysés sur Strava.
         </p>
 
         {/* Discipline */}
@@ -102,9 +101,9 @@ export default function TrouveTonPneu() {
           Velo a assistance electrique (E-Bike)
         </label>
 
-        <button onClick={onSubmit} disabled={loading} className="btn-primary mt-8 disabled:opacity-50">
+        <Button onClick={onSubmit} disabled={loading} size="lg" className="mt-8">
           {loading ? "Recherche..." : "Voir mes pneus"}
-        </button>
+        </Button>
 
         {error && (
           <p className="mt-6 rounded-xl border border-michelin-gray-line bg-michelin-gray-light p-4 text-sm text-michelin-ink">
@@ -131,16 +130,14 @@ export default function TrouveTonPneu() {
 
 function Choice({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={`rounded-pill border px-4 py-2 text-sm font-medium capitalize transition ${
-        active
-          ? "border-michelin-blue bg-michelin-blue text-white"
-          : "border-michelin-gray-line bg-white text-michelin-navy hover:border-michelin-blue"
-      }`}
+      variant={active ? "default" : "outline"}
+      size="sm"
+      className="capitalize"
     >
       {label}
-    </button>
+    </Button>
   );
 }

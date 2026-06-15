@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
+import { Button } from "@/components/ui/button";
 import { RIDES, CENTER } from "@/lib/balades";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -99,13 +100,15 @@ export default function Balades() {
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link href="/">
+        <Link href="/accueil">
           <Brand />
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/communaute" className="hover:underline">Communaute</Link>
           <Link href="/club" className="hover:underline">Club</Link>
-          <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
+          <Button asChild size="sm">
+            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
+          </Button>
         </nav>
       </header>
 
@@ -153,17 +156,11 @@ export default function Balades() {
           <div className="overflow-hidden rounded-2xl border border-michelin-gray-line">
             <div ref={mapEl} className="h-[460px] w-full bg-michelin-gray-light" />
             {!ready && (
-              <p className="p-3 text-center text-sm text-michelin-ink">
-                Chargement de la carte… (necessite une connexion pour les tuiles OpenStreetMap)
-              </p>
+              <p className="p-3 text-center text-sm text-michelin-ink">Chargement de la carte…</p>
             )}
           </div>
         </div>
 
-        <p className="mt-4 text-xs text-michelin-ink">
-          Prototype : traces issus de <code>map.summary_polyline</code> (API Strava), decodes cote
-          client et rendus avec Leaflet + OpenStreetMap.
-        </p>
       </section>
     </main>
   );

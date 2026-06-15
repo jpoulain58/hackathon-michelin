@@ -12,6 +12,6 @@
     "data"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "vitest run"
   }
 }

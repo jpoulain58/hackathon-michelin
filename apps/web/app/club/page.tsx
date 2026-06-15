@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
+import { Button } from "@/components/ui/button";
 
 const AVANTAGES = [
   "2 pneus Michelin offerts / an",
@@ -12,12 +13,14 @@ export default function Club() {
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-2xl items-center justify-between px-6 py-5">
-        <Link href="/">
+        <Link href="/accueil">
           <Brand />
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/communaute" className="hidden hover:underline sm:inline">Communaute</Link>
-          <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
+          <Button asChild size="sm">
+            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
+          </Button>
         </nav>
       </header>
 
@@ -45,10 +48,7 @@ export default function Club() {
           ))}
         </ul>
 
-        <button className="btn-primary mt-8 w-full">Rejoindre le Club</button>
-        <p className="mt-3 text-center text-xs text-michelin-ink">
-          Demo — l&apos;abonnement se finalise hors application (pas de paiement in-app).
-        </p>
+        <Button size="lg" className="mt-8 w-full">Rejoindre le Club</Button>
       </section>
     </main>
   );

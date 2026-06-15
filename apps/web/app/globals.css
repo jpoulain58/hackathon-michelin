@@ -2,19 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens shadcn/ui mappes sur la charte Michelin (HSL).
+   primary = bleu Michelin #27509B, foreground/navy = #000C34,
+   border = gris ligne #E5E5E5, muted = gris clair #F2F2F2. */
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 226 100% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 226 100% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 100% 10%;
+    --primary: 219 60% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 226 100% 10%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 210 4% 34%;
+    --accent: 0 0% 95%;
+    --accent-foreground: 226 100% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 219 60% 38%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-white text-michelin-navy font-sans antialiased;
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-pill bg-michelin-blue px-6 py-3 text-sm font-semibold text-white transition hover:bg-michelin-navy;
-  }
-  .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-pill border border-michelin-gray-line px-6 py-3 text-sm font-semibold text-michelin-navy transition hover:border-michelin-blue hover:text-michelin-blue;
-  }
   .chip {
     @apply inline-flex items-center rounded-pill border border-michelin-gray-line bg-michelin-gray-light px-3 py-1 text-xs font-medium text-michelin-ink;
   }

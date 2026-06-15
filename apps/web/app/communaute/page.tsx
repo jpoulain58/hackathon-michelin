@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
+import { Button } from "@/components/ui/button";
 import {
   fetchStats,
   fetchReviews,
@@ -31,13 +32,15 @@ export default function Communaute() {
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <Link href="/">
+        <Link href="/accueil">
           <Brand />
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/balades" className="hover:underline">Balades</Link>
           <Link href="/club" className="hover:underline">Club</Link>
-          <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
+          <Button asChild size="sm">
+            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
+          </Button>
         </nav>
       </header>
 

@@ -1,9 +1,9 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Inject, Query } from "@nestjs/common";
 import { CommunityService } from "./community.service";
 
 @Controller("community")
 export class CommunityController {
-  constructor(private readonly community: CommunityService) {}
+  constructor(@Inject(CommunityService) private readonly community: CommunityService) {}
 
   /** GET /api/community/stats — compteurs collectifs. */
   @Get("stats")
