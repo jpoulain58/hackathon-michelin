@@ -104,6 +104,7 @@ export default function Balades() {
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/communaute" className="hover:underline">Communaute</Link>
+          <Link href="/club" className="hover:underline">Club</Link>
           <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
         </nav>
       </header>

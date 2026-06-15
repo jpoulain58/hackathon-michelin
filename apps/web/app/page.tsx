@@ -11,6 +11,7 @@ export default function Home() {
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/communaute" className="hidden hover:underline sm:inline">Communaute</Link>
           <Link href="/balades" className="hidden hover:underline sm:inline">Balades</Link>
+          <Link href="/club" className="hidden hover:underline sm:inline">Club</Link>
           <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
         </nav>
       </header>

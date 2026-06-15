@@ -58,7 +58,7 @@ export default function TrouveTonPneu() {
         <div className="h-1 w-12 bg-michelin-yellow" />
         <h1 className="mt-4 text-3xl font-bold text-michelin-navy">Trouve ton pneu</h1>
         <p className="mt-2 text-michelin-ink">
-          Dis-nous comment tu roules — en vrai, on lirait ça dans tes sorties Strava.
+          D&apos;après tes ~1 240 km analysés sur Strava (démo) — affine avec tes préférences.
         </p>
 
         {/* Discipline */}
@@ -119,7 +119,7 @@ export default function TrouveTonPneu() {
             </h2>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               {results.map((t, i) => (
-                <TyreCard key={t.range + i} tyre={t} rank={i + 1} />
+                <TyreCard key={t.range + i} tyre={t} rank={i + 1} best={i === 0} />
               ))}
             </div>
           </div>

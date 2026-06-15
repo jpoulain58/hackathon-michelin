@@ -36,6 +36,7 @@ export default function Communaute() {
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
           <Link href="/balades" className="hover:underline">Balades</Link>
+          <Link href="/club" className="hover:underline">Club</Link>
           <Link href="/trouve-ton-pneu" className="btn-primary">Trouve ton pneu</Link>
         </nav>
       </header>
@@ -76,9 +77,16 @@ export default function Communaute() {
                 <TyreImage kind={kindFromText(r.tyre)} className="h-8 w-8 shrink-0" />
                 <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
               </div>
-              <div className="mt-1 text-michelin-yellow" aria-label={`${r.rating} sur 5`}>
-                {"★".repeat(r.rating)}
-                <span className="text-michelin-gray-line">{"★".repeat(5 - r.rating)}</span>
+              <div className="mt-2 flex items-center gap-2" aria-label={`Avis vérifié, ${r.rating} sur 5`}>
+                <span className="text-xs font-semibold text-michelin-green">Avis vérifié</span>
+                <span className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span
+                      key={n}
+                      className={`h-2 w-2 rounded-full ${n <= r.rating ? "bg-michelin-blue" : "bg-michelin-gray-line"}`}
+                    />
+                  ))}
+                </span>
               </div>
               <p className="mt-2 text-sm text-michelin-navy">&laquo; {r.text} &raquo;</p>
               <p className="mt-3 text-xs text-michelin-ink">

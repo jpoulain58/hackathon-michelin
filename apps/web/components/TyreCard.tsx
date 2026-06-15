@@ -6,7 +6,7 @@ import { TyreImage, tyreKind } from "./TyreImage";
  * Le bouton "Voir ou acheter" est un RENVOI traçable vers un revendeur
  * (deep-link + UTM) : pas de checkout in-app (cadrage PO "pas d'e-commerce").
  */
-export function TyreCard({ tyre, rank }: { tyre: RecoView; rank: number }) {
+export function TyreCard({ tyre, rank, best = false }: { tyre: RecoView; rank: number; best?: boolean }) {
   const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=reco&q=${encodeURIComponent(
     tyre.range,
   )}`;
@@ -16,6 +16,11 @@ export function TyreCard({ tyre, rank }: { tyre: RecoView; rank: number }) {
       <div className="flex items-start gap-3">
         <TyreImage kind={tyreKind(tyre)} className="h-14 w-14 shrink-0" />
         <div className="min-w-0 flex-1">
+          {best && (
+            <span className="mb-1 inline-flex items-center rounded-pill bg-michelin-green/10 px-2 py-0.5 text-xs font-bold text-michelin-green">
+              Meilleur choix
+            </span>
+          )}
           <div className="text-xs font-semibold uppercase tracking-wide text-michelin-ink">
             #{rank} · {tyre.segment}
           </div>
