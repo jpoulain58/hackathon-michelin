@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
+import { TyreImage, kindFromText } from "@/components/TyreImage";
 import {
   fetchStats,
   fetchReviews,
@@ -71,7 +72,10 @@ export default function Communaute() {
                   Verifie · {r.verifiedKm.toLocaleString("fr-FR")} km
                 </span>
               </div>
-              <div className="mt-1 text-sm font-semibold text-michelin-blue">{r.tyre}</div>
+              <div className="mt-1 flex items-center gap-2">
+                <TyreImage kind={kindFromText(r.tyre)} className="h-8 w-8 shrink-0" />
+                <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
+              </div>
               <div className="mt-1 text-michelin-yellow" aria-label={`${r.rating} sur 5`}>
                 {"★".repeat(r.rating)}
                 <span className="text-michelin-gray-line">{"★".repeat(5 - r.rating)}</span>
@@ -93,9 +97,10 @@ export default function Communaute() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {pros.map((p) => (
               <div key={p.name} className="rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-sm">
-                <div className="text-xs font-semibold uppercase tracking-wide text-michelin-ink">{p.discipline}</div>
+                <TyreImage kind={kindFromText(p.tyre)} className="h-12 w-12" />
+                <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-michelin-ink">{p.discipline}</div>
                 <div className="mt-1 font-bold text-michelin-navy">{p.name}</div>
-                <div className="mt-3 text-sm font-semibold text-michelin-blue">{p.tyre}</div>
+                <div className="mt-2 text-sm font-semibold text-michelin-blue">{p.tyre}</div>
               </div>
             ))}
           </div>

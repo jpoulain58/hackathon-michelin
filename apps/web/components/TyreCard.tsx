@@ -1,4 +1,5 @@
 import type { RecoView } from "@/lib/api";
+import { TyreImage, tyreKind } from "./TyreImage";
 
 /**
  * Carte pneu recommande.
@@ -12,8 +13,9 @@ export function TyreCard({ tyre, rank }: { tyre: RecoView; rank: number }) {
 
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex items-start gap-3">
+        <TyreImage kind={tyreKind(tyre)} className="h-14 w-14 shrink-0" />
+        <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold uppercase tracking-wide text-michelin-ink">
             #{rank} · {tyre.segment}
           </div>

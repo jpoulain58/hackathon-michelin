@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
+import { TyreImage, KIND_LABEL, type TyreKind } from "@/components/TyreImage";
 
 export default function Home() {
   return (
@@ -49,6 +50,21 @@ export default function Home() {
             <div key={s.k}>
               <div className="text-3xl font-bold text-michelin-blue">{s.k}</div>
               <div className="mt-1 text-sm text-michelin-ink">{s.v}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Disciplines */}
+      <section className="mx-auto max-w-6xl px-6 pt-14">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-michelin-ink">
+          Un pneu pour chaque terrain
+        </h2>
+        <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {(["road", "gravel", "mtb", "city"] as TyreKind[]).map((k) => (
+            <div key={k} className="flex flex-col items-center gap-2 rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-sm">
+              <TyreImage kind={k} className="h-20 w-20" />
+              <span className="text-sm font-semibold text-michelin-navy">{KIND_LABEL[k]}</span>
             </div>
           ))}
         </div>
