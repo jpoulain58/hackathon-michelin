@@ -40,4 +40,3 @@ Next.js 15 (App Router) · TypeScript · Tailwind + shadcn/ui · PostgreSQL + Pr
 ---
 
 **Confidentialité** : catalogue, charte et dealer book Michelin sont confidentiels → non versionnés en clair. Voir [`.gitignore`](.gitignore).
-_Nom de dépôt historique `michelin-grip` ; produit renommé **Michelin PROOF** (le dossier peut être renommé `michelin-proof`)._
