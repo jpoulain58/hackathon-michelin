@@ -69,3 +69,73 @@ export async function fetchRecommendations(params: {
   const data = (await res.json()) as { items: RecoView[] };
   return data.items;
 }
+
+// --- Communaute -------------------------------------------------------------
+
+export interface CommunityStats {
+  ridersCount: number;
+  monthKm: number;
+  totalKm: number;
+  verifiedReviews: number;
+}
+
+export interface VerifiedReview {
+  id: string;
+  rider: string;
+  tyre: string;
+  rating: number;
+  text: string;
+  verifiedKm: number;
+  verifiedRides: number;
+  terrains: string;
+  avgSpeedKmh: number;
+}
+
+export interface ProRider {
+  name: string;
+  discipline: string;
+  team: string;
+  tyre: string;
+}
+
+export const FALLBACK_STATS: CommunityStats = {
+  ridersCount: 12300,
+  monthKm: 2_400_000,
+  totalKm: 48_200_000,
+  verifiedReviews: 1840,
+};
+
+export const FALLBACK_REVIEWS: VerifiedReview[] = [
+  { id: "rev-001", rider: "Camille D.", tyre: "MICHELIN Power Cup", rating: 5, text: "Rendement bluffant sur les bosses, je gagne clairement en vitesse moyenne.", verifiedKm: 2847, verifiedRides: 84, terrains: "route + gravel", avgSpeedKmh: 31 },
+  { id: "rev-002", rider: "Sofiane B.", tyre: "MICHELIN Power Gravel", rating: 5, text: "Accroche parfaite en gravel sec comme humide, zero crevaison en 1500 km.", verifiedKm: 1523, verifiedRides: 41, terrains: "gravel", avgSpeedKmh: 24 },
+  { id: "rev-003", rider: "Lea M.", tyre: "MICHELIN Power Road TLR", rating: 4, text: "Confort top sur les longues sorties, un poil lourd a mon gout.", verifiedKm: 3960, verifiedRides: 102, terrains: "route", avgSpeedKmh: 28 },
+];
+
+export const FALLBACK_PROS: ProRider[] = [
+  { name: "Pauline Ferrand-Prevot", discipline: "VTT / Gravel", team: "Team demo", tyre: "MICHELIN Power Gravel" },
+  { name: "Coureur WorldTour (demo)", discipline: "Route", team: "Team demo", tyre: "MICHELIN Power Cup" },
+];
+
+export async function fetchStats(): Promise<CommunityStats> {
+  const res = await fetch(`${API_BASE}/api/community/stats`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as CommunityStats;
+}
+
+export async function fetchReviews(): Promise<VerifiedReview[]> {
+  const res = await fetch(`${API_BASE}/api/community/reviews`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: VerifiedReview[] }).items;
+}
+
+export async function fetchPros(): Promise<ProRider[]> {
+  const res = await fetch(`${API_BASE}/api/community/pros`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ProRider[] }).items;
+}
+
+export function formatKm(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} M km`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)} k km`;
+  return `${n} km`;
+}

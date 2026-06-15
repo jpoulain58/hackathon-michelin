@@ -1,0 +1,144 @@
+// Schema de donnees cible — Michelin Trust Wheels.
+//
+// Definit la persistance Postgres visee par l'architecture. L'API tourne
+// actuellement sur des donnees seed en memoire ; l'iteration suivante (J3/J4)
+// branche ce schema via Prisma + une migration, puis un seed des riders fictifs.
+//
+//   npx prisma migrate dev    (necessite DATABASE_URL et un Postgres)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Tier {
+  ROOKIE
+  RIDER
+  AMBASSADOR
+  LEGEND
+}
+
+enum ReferralStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model Rider {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  stravaId     String?  @unique
+  displayName  String
+  tier         Tier     @default(ROOKIE)
+  totalKm      Int      @default(0)
+  reviewsCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  // Parrainage (auto-relation)
+  referredById String?
+  referredBy   Rider?   @relation("Referrals", fields: [referredById], references: [id])
+  referees     Rider[]  @relation("Referrals")
+
+  rides         Ride[]
+  reviews       Review[]
+  participations Participation[]
+  invitesSent   Referral[] @relation("Inviter")
+  invitesGot    Referral[] @relation("Invitee")
+}
+
+model Ride {
+  id          String   @id @default(cuid())
+  rider       Rider    @relation(fields: [riderId], references: [id])
+  riderId     String
+  source      String // strava | garmin | manual
+  distanceKm  Float
+  elevation   Int
+  surface     String // road | gravel | mtb | city
+  avgSpeed    Float
+  date        DateTime
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  range        String
+  designation  String
+  cycleType    String
+  segment      String
+  use          String[]
+  terrainTypes String[]
+  weightG      Float?
+  reviews      Review[]
+  clicks       ReferralClick[]
+}
+
+model Review {
+  id               String   @id @default(cuid())
+  rider            Rider    @relation(fields: [riderId], references: [id])
+  riderId          String
+  product          Product  @relation(fields: [productId], references: [id])
+  productId        String
+  rating           Int
+  text             String
+  // Champs CALCULES a partir des Ride du rider sur la periode d'usage : la preuve.
+  verified         Boolean  @default(false)
+  verifiedKm       Int      @default(0)
+  verifiedRides    Int      @default(0)
+  verifiedAvgSpeed Float    @default(0)
+  helpfulCount     Int      @default(0)
+  createdAt        DateTime @default(now())
+}
+
+model Badge {
+  id         String  @id @default(cuid())
+  label      String
+  icon       String
+  challenges Challenge[]
+}
+
+model Challenge {
+  id            String   @id @default(cuid())
+  title         String
+  metric        String // km | dplus | rides
+  goal          Int
+  startsAt      DateTime
+  endsAt        DateTime
+  badge         Badge?   @relation(fields: [badgeId], references: [id])
+  badgeId       String?
+  participations Participation[]
+}
+
+model Participation {
+  id          String    @id @default(cuid())
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  challengeId String
+  rider       Rider     @relation(fields: [riderId], references: [id])
+  riderId     String
+  progress    Int       @default(0)
+
+  @@unique([challengeId, riderId])
+}
+
+model Referral {
+  id        String         @id @default(cuid())
+  inviter   Rider          @relation("Inviter", fields: [inviterId], references: [id])
+  inviterId String
+  invitee   Rider?         @relation("Invitee", fields: [inviteeId], references: [id])
+  inviteeId String?
+  status    ReferralStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+}
+
+// Tracking de la conversion e-retail : chaque clic "Voir ou acheter".
+model ReferralClick {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  retailer  String
+  riderId   String?
+  reviewId  String?
+  createdAt DateTime @default(now())
+}
