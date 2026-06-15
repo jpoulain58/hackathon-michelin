@@ -1,0 +1,914 @@
+[
+  {
+    "brand": "MICHELIN",
+    "productType": "TUBULAR",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER CYCLOCROSS MUD TUBULAR RACING LINE",
+    "designation": "33-622 (700X33) POWER CYCLOCROSS MUD TUBULAR",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "33",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "33",
+    "use": [
+      "CYCLOCROSS"
+    ],
+    "terrainTypes": [
+      "OFFROAD MIXED",
+      "OFFROAD SOFT",
+      "OFFROAD MUD"
+    ],
+    "tpi": "2X160",
+    "weightG": 470.0,
+    "pressure": {
+      "minBar": 3.0,
+      "maxBar": 5.0,
+      "minPsi": 43.0,
+      "maxPsi": 72.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X GREEN"
+      ],
+      "casing": [],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BROWN"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TUBULAR",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER CYCLOCROSS JET TUBULAR RACING LINE",
+    "designation": "33-622 (700X33) POWER CYCLOCROSS JET TUBULAR",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "33",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "33",
+    "use": [
+      "CYCLOCROSS"
+    ],
+    "terrainTypes": [
+      "ASPHALT",
+      "OFFROAD HARD PACKED",
+      "OFFROAD MIXED"
+    ],
+    "tpi": "2X160",
+    "weightG": 460.0,
+    "pressure": {
+      "minBar": 3.0,
+      "maxBar": 5.0,
+      "minPsi": 43.0,
+      "maxPsi": 72.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X GREEN"
+      ],
+      "casing": [],
+      "tread": [],
+      "reinforcement": [
+        "BEAD TO BEAD SHIELD"
+      ],
+      "ebike": []
+    },
+    "sidewallColor": "BROWN"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TUBULAR",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER CUP TUBULAR RACING LINE",
+    "designation": "28\"-23mm POWER CUP TUBULAR BLACK",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "",
+    "diameterEtrto": "",
+    "webDiameterInch": "28",
+    "webWidthMm": "23",
+    "use": [
+      "RACING"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "2X160",
+    "weightG": 265.0,
+    "pressure": {
+      "minBar": 6.0,
+      "maxBar": 12.0,
+      "minPsi": 87.0,
+      "maxPsi": 174.0
+    },
+    "technologies": {
+      "rubber": [
+        "GUM-X"
+      ],
+      "casing": [],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [
+        "HIGH DENSITY SHIELD"
+      ],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER TIME TRIAL RACING LINE",
+    "designation": "23-622 (700X23C) POWER TIME TRIAL BLACK",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "23",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "23",
+    "use": [
+      "RACING"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X150",
+    "weightG": 180.0,
+    "pressure": {
+      "minBar": 5.0,
+      "maxBar": 8.0,
+      "minPsi": 72.0,
+      "maxPsi": 116.0
+    },
+    "technologies": {
+      "rubber": [
+        "GUM-X"
+      ],
+      "casing": [],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER CUP S RACING LINE",
+    "designation": "28-622 (700X28C) POWER CUP S RACING LINE FOLDABLE BEAD TLR",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "28",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "28",
+    "use": [
+      "RACING"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X120",
+    "weightG": 290.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 7.0,
+      "minPsi": null,
+      "maxPsi": 101.0
+    },
+    "technologies": {
+      "rubber": [
+        "GUM-X"
+      ],
+      "casing": [
+        "TUBELESS SHIELD V2"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN POWER GRAVEL RS RACING LINE",
+    "designation": "42-622 (700x42C) POWER GRAVEL RS RACING LINE FOLDABLE BEAD TLR",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "42",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "42",
+    "use": [
+      "RACING",
+      "E-GRAVEL"
+    ],
+    "terrainTypes": [
+      "ASPHALT",
+      "OFFROAD HARD PACKED"
+    ],
+    "tpi": "3X120",
+    "weightG": 445.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 4.5,
+      "minPsi": null,
+      "maxPsi": 65.0
+    },
+    "technologies": {
+      "rubber": [
+        "GUM-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "ROAD",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN POWER PROTECTION TLR COMPETITION LINE",
+    "designation": "28-622 (700x28C) POWER PROTECTION BLACK",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "28",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "28",
+    "use": [
+      "ENDURANCE",
+      "ALL ROAD",
+      "E-ROAD"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X120",
+    "weightG": 315.0,
+    "pressure": {
+      "minBar": 4.0,
+      "maxBar": 6.0,
+      "minPsi": 58.0,
+      "maxPsi": 87.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "HI-DENSITY SHIELD"
+      ],
+      "tread": [
+        "HI-GRIP DESIGN"
+      ],
+      "reinforcement": [],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN STARGRIP COMPETITION LINE",
+    "designation": "37-622 (700X35C) STARGRIP",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "37",
+    "diameterEtrto": "622",
+    "webDiameterInch": "",
+    "webWidthMm": "35",
+    "use": [
+      "URBAN"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X30",
+    "weightG": 680.0,
+    "pressure": {
+      "minBar": 3.0,
+      "maxBar": 6.0,
+      "minPsi": 43.0,
+      "maxPsi": 87.0
+    },
+    "technologies": {
+      "rubber": [],
+      "casing": [],
+      "tread": [
+        "STAR TREAD DESIGN"
+      ],
+      "reinforcement": [
+        "HD PROTECTION"
+      ],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN CITY CARGO COMPETITION LINE",
+    "designation": "55-406 (20x2.20) 33B CITY CARGO COMPETITION LINE WIRE BEAD TT",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "55",
+    "diameterEtrto": "406",
+    "webDiameterInch": "20",
+    "webWidthMm": "",
+    "use": [
+      "CARGO",
+      "URBAN",
+      "E-CARGO",
+      "E-CITY"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "6X62",
+    "weightG": 900.0,
+    "pressure": {
+      "minBar": 1.8,
+      "maxBar": 5.0,
+      "minPsi": 26.0,
+      "maxPsi": 72.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CARGO SHIELD"
+      ],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [],
+      "ebike": [
+        "E-50"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN CITY STREET COMPETITION LINE (FOLDABLE BEAD)",
+    "designation": "55/100-584 (27.5x2.20) 40B CITY STREET",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "55",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "URBAN",
+      "E-CITY",
+      "SPEEDELEC"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X62",
+    "weightG": 795.0,
+    "pressure": {
+      "minBar": 2.0,
+      "maxBar": 4.5,
+      "minPsi": 29.0,
+      "maxPsi": 65.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CITY SHIELD"
+      ],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [
+        "BEAD TO BEAD PROTECTION",
+        "HD PROTECTION"
+      ],
+      "ebike": [
+        "E-50"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN CITY TOURING COMPETITION LINE (FB)",
+    "designation": "55-584 (27.5x2.20) 40B CITY TOURING COMPETITION LINE FOLDABLE BEAD TT",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "55",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "TOURING",
+      "E-TOURING",
+      "E-CITY",
+      "SPEEDELEC"
+    ],
+    "terrainTypes": [
+      "ASPHALT",
+      "OFFROAD HARD PACKED"
+    ],
+    "tpi": "3X62",
+    "weightG": 900.0,
+    "pressure": {
+      "minBar": 1.8,
+      "maxBar": 4.5,
+      "minPsi": 26.0,
+      "maxPsi": 65.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CITY SHIELD"
+      ],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [
+        "BEAD TO BEAD PROTECTION",
+        "HD PROTECTION"
+      ],
+      "ebike": [
+        "E-50"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM COMPETITION LINE",
+    "range": "MICHELIN CITY TREKKING COMPETITION LINE (FB)",
+    "designation": "60-584 (27.5X2.40) 35B CITY TREKKING COMPETITION LINE FOLDABLE BEAD TT",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "60",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "TREKKING",
+      "TOURING",
+      "URBAN",
+      "E-TREKKING",
+      "E-TOURING",
+      "E-CITY",
+      "SPEEDELEC"
+    ],
+    "terrainTypes": [
+      "ASPHALT",
+      "OFFROAD HARD PACKED",
+      "OFFROAD MIXED"
+    ],
+    "tpi": "3X62",
+    "weightG": 970.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 3.5,
+      "minPsi": null,
+      "maxPsi": 50.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CITY SHIELD"
+      ],
+      "tread": [],
+      "reinforcement": [
+        "BEAD TO BEAD PROTECTION",
+        "HD PROTECTION"
+      ],
+      "ebike": [
+        "E-50"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM PERFORMANCE LINE",
+    "range": "MICHELIN CITY STREET PERFORMANCE LINE",
+    "designation": "40-559 (26x1.60) CITY STREET",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "40",
+    "diameterEtrto": "559",
+    "webDiameterInch": "26",
+    "webWidthMm": "",
+    "use": [
+      "URBAN",
+      "E-CITY"
+    ],
+    "terrainTypes": [
+      "ASPHALT"
+    ],
+    "tpi": "3X62",
+    "weightG": 630.0,
+    "pressure": {
+      "minBar": 2.5,
+      "maxBar": 6.0,
+      "minPsi": 36.0,
+      "maxPsi": 87.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CITY SHIELD"
+      ],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [
+        "BEAD TO BEAD PROTECTION",
+        "HD PROTECTION"
+      ],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "CITY",
+    "segment": "PREMIUM PERFORMANCE LINE",
+    "range": "MICHELIN CITY TOURING PERFORMANCE LINE",
+    "designation": "35-349 (16x1.40) CITY TOURING COMPETITION LINE WIRE BEAD TT",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "35",
+    "diameterEtrto": "349",
+    "webDiameterInch": "16",
+    "webWidthMm": "",
+    "use": [
+      "TOURING",
+      "E-CITY",
+      "E-TOURING"
+    ],
+    "terrainTypes": [
+      "ASPHALT",
+      "OFFROAD HARD PACKED"
+    ],
+    "tpi": "3X62",
+    "weightG": 370.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 7.5,
+      "minPsi": 0.0,
+      "maxPsi": 108.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "CITY SHIELD"
+      ],
+      "tread": [
+        "GRIP DESIGN"
+      ],
+      "reinforcement": [
+        "BEAD TO BEAD PROTECTION",
+        "HD PROTECTION"
+      ],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN WILD ENDURO FRONT RACING LINE",
+    "designation": "61-622 (29X2.40) WILD ENDURO FRONT",
+    "fitting": "FRONT",
+    "widthEtrto": "61",
+    "diameterEtrto": "622",
+    "webDiameterInch": "29",
+    "webWidthMm": "",
+    "use": [
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD MIXED"
+    ],
+    "tpi": "2X55",
+    "weightG": 1400.0,
+    "pressure": {
+      "minBar": 1.5,
+      "maxBar": 4.0,
+      "minPsi": 21.0,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [],
+      "casing": [],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN WILD ENDURO REAR RACING LINE",
+    "designation": "61-622 (29X2.40) WILD ENDURO REAR",
+    "fitting": "REAR",
+    "widthEtrto": "61",
+    "diameterEtrto": "622",
+    "webDiameterInch": "29",
+    "webWidthMm": "",
+    "use": [
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD HARD PACKED",
+      "OFFROAD MIXED"
+    ],
+    "tpi": "2X55",
+    "weightG": 1350.0,
+    "pressure": {
+      "minBar": 1.8,
+      "maxBar": 4.0,
+      "minPsi": 26.0,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN WILD ENDURO MH RACING LINE",
+    "designation": "63-584 (27.5X2.50) WILD ENDURO MH RACING LINE",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "63",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD HARD PACKED",
+      "OFFROAD MIXED"
+    ],
+    "tpi": "2X55",
+    "weightG": 1295.0,
+    "pressure": {
+      "minBar": 1.5,
+      "maxBar": 4.0,
+      "minPsi": 21.0,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN WILD ENDURO MS RACING LINE",
+    "designation": "61-584 (27.5X2.40) WILD ENDURO MS RACING LINE",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "61",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD MIXED",
+      "OFFROAD SOFT"
+    ],
+    "tpi": "2X55",
+    "weightG": 1235.0,
+    "pressure": {
+      "minBar": 1.5,
+      "maxBar": 4.0,
+      "minPsi": 21.0,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": [
+        "E-BIKE READY"
+      ]
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN DH16 RACING LINE",
+    "designation": "61-584 (27.5X2.40) DH16",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "61",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "DOWNHILL",
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD HARD PACKED",
+      "OFFROAD MIXED"
+    ],
+    "tpi": "1X55/1X120",
+    "weightG": 1280.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 4.0,
+      "minPsi": null,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN DH22 RACING LINE",
+    "designation": "61-584 (27.5X2.40) DH22",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "61",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "DOWNHILL",
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD MIXED",
+      "OFFROAD SOFT"
+    ],
+    "tpi": "4X55",
+    "weightG": 1440.0,
+    "pressure": {
+      "minBar": 1.5,
+      "maxBar": 4.0,
+      "minPsi": 21.0,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  },
+  {
+    "brand": "MICHELIN",
+    "productType": "TYRE",
+    "cycleType": "MTB",
+    "segment": "PREMIUM RACING LINE",
+    "range": "MICHELIN DH22 RACING LINE (FOLDABLE BEAD)",
+    "designation": "61-584 (27.5X2.40) DH22",
+    "fitting": "FRONT/REAR",
+    "widthEtrto": "61",
+    "diameterEtrto": "584",
+    "webDiameterInch": "27.5",
+    "webWidthMm": "",
+    "use": [
+      "DOWNHILL",
+      "ENDURO",
+      "E-ENDURO"
+    ],
+    "terrainTypes": [
+      "OFFROAD MIXED",
+      "OFFROAD SOFT"
+    ],
+    "tpi": "1X55/1X120",
+    "weightG": 1260.0,
+    "pressure": {
+      "minBar": null,
+      "maxBar": 4.0,
+      "minPsi": null,
+      "maxPsi": 58.0
+    },
+    "technologies": {
+      "rubber": [
+        "MAGI-X"
+      ],
+      "casing": [
+        "BEAD TO BEAD SHIELD",
+        "PINCH PROTECTION"
+      ],
+      "tread": [],
+      "reinforcement": [],
+      "ebike": []
+    },
+    "sidewallColor": "BLACK"
+  }
+]
