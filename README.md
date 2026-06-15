@@ -1,4 +1,4 @@
-# Michelin PROOF — *La preuve par la route*
+# Michelin Trust Wheels — *La preuve par la route*
 
 > La communauté qui transforme les riders Michelin en **prescripteurs**, et leurs kilomètres en **preuve sociale** que personne ne peut égaler.
 
