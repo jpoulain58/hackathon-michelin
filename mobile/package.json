@@ -1,0 +1,27 @@
+{
+  "name": "@mtw/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Application mobile Michelin Trust Wheels (Expo Go).",
+  "license": "UNLICENSED",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "expo start",
+    "start": "expo start",
+    "start:docker": "expo start --go --host lan --port 8081",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "~56.0.12",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-native": "0.85.3"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
+  }
+}

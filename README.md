@@ -27,34 +27,35 @@ Michelin Trust Wheels crée **le moteur d'achat** (utilité + preuve + renvoi tr
 
 ## Stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind (charte Michelin) · NestJS · Strava OAuth *(à venir)* · PostgreSQL + Prisma *(à venir)* · Docker · GitHub Actions (CI/CD). **Pas de paiement in-app.**
+Next.js 15 (App Router) · TypeScript · Tailwind (charte Michelin) · NestJS · Expo Go · Strava OAuth *(à venir)* · PostgreSQL + Prisma *(à venir)* · Docker · GitHub Actions (CI/CD). **Pas de paiement in-app.**
 
 ## Structure du monorepo
 
 ```
 .
-├── apps/
-│   ├── web/                 # Next.js 15 — landing, Trouve ton pneu, Communauté, Balades (charte Michelin)
-│   └── api/                 # NestJS — health, tyres/recommend, community
+├── api/                     # NestJS — health, tyres/recommend, community
+├── web/                     # Next.js 15 — landing, Trouve ton pneu, Communauté, Balades (charte Michelin)
+├── mobile/                  # Expo Go — application mobile
 ├── packages/
 │   └── recommender/         # moteur de recommandation (cœur métier, zéro dépendance, testé)
 ├── prisma/schema.prisma     # modèle de données cible (Postgres) — câblage à l'itération suivante
-├── docker-compose.yml       # web + api + postgres
+├── docker-compose.yml       # web + api + mobile + postgres
 └── .github/workflows/ci.yml # lint + tests + build
 ```
 
 ## Démarrer (développement)
 
-Prérequis : **Node ≥ 20**.
+Prérequis : **Node ≥ 20.19.4**.
 
 ```bash
 npm install        # installe tous les workspaces
 npm test           # tests unitaires (recommender + api)
 npm run build      # build api (tsc) + web (next build)
 
-# en dev, dans 2 terminaux :
+# en dev, dans 3 terminaux :
 npm run dev:api    # API NestJS  ->  http://localhost:3001/api
 npm run dev:web    # Front Next  ->  http://localhost:3000
+npm run dev:mobile # Expo Go    ->  QR code dans le terminal
 ```
 
 Au besoin : `cp .env.example .env`.
@@ -74,8 +75,12 @@ Au besoin : `cp .env.example .env`.
 ## Docker
 
 ```bash
-docker compose up --build   # db (postgres) + api + web
+docker compose up --build   # db (postgres) + api + web + mobile Expo
 ```
+
+Pour scanner le QR Expo Go depuis un téléphone physique avec Docker, renseigner
+`REACT_NATIVE_PACKAGER_HOSTNAME` dans `.env` avec l'adresse IP locale de la machine
+avant de lancer Compose.
 
 ## Données & confidentialité
 
