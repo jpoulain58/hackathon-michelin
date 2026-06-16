@@ -1,183 +1,405 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { TyreCard } from "@/components/TyreCard";
-import { Reveal } from "@/components/Reveal";
+import { TyreImage, tyreKind } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
-import {
-  fetchOptions,
-  fetchRecommendations,
-  FALLBACK_OPTIONS,
-  type Options,
-  type RecoView,
-} from "@/lib/api";
+import { fetchRecommendations, type RecoView } from "@/lib/api";
+import { QUESTIONS, answersToApiParams, getOptions, type Answers } from "@/lib/questions";
+import { cn } from "@/lib/utils";
+
+type Phase = "quiz" | "loading" | "results";
 
 export default function TrouveTonPneu() {
-  const [options, setOptions] = useState<Options>(FALLBACK_OPTIONS);
-  const [discipline, setDiscipline] = useState("road");
-  const [priority, setPriority] = useState("speed");
-  const [ebike, setEbike] = useState(false);
-  const [results, setResults] = useState<RecoView[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [answers, setAnswers] = useState<Answers>({});
+  const [phase, setPhase] = useState<Phase>("quiz");
+  const [results, setResults] = useState<RecoView[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchOptions()
-      .then(setOptions)
-      .catch(() => setOptions(FALLBACK_OPTIONS));
-  }, []);
+  const currentQ = QUESTIONS[step - 1];
+  const options = getOptions(currentQ, answers);
+  const currentAnswer = answers[currentQ.id];
+  const isLast = step === QUESTIONS.length;
 
-  async function onSubmit() {
-    setLoading(true);
+  function handleSelect(questionId: number, optionId: string) {
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+  }
+
+  async function handleNext() {
+    if (!currentAnswer) return;
+    if (!isLast) {
+      setStep((s) => s + 1);
+      return;
+    }
+    setPhase("loading");
     setError(null);
     try {
-      const items = await fetchRecommendations({ discipline, priority, ebike, limit: 5 });
+      const items = await fetchRecommendations(answersToApiParams(answers));
       setResults(items);
-    } catch (err) {
-      setError("Impossible de récupérer les recommandations pour le moment. Réessaie dans un instant.");
-      setResults(null);
-    } finally {
-      setLoading(false);
+      if (items.length > 0) {
+        setSelectedIds(new Set([tyreId(items[0])]));
+      }
+      setPhase("results");
+    } catch {
+      setError("Impossible de récupérer les recommandations. Réessaie dans un instant.");
+      setPhase("quiz");
     }
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function restart() {
+    setStep(1);
+    setAnswers({});
+    setPhase("quiz");
+    setResults([]);
+    setSelectedIds(new Set());
+    setError(null);
   }
 
   return (
     <main className="min-h-screen">
       <SiteHeader />
 
-      <section className="mx-auto max-w-4xl px-6 py-12">
-        <Reveal as="span" className="inline-block">
-          <span className="kicker">Trouve ton pneu</span>
-        </Reveal>
-        <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight text-michelin-navy sm:text-5xl">
-          Trouve ton pneu
-        </Reveal>
-        <Reveal as="p" delay={120} className="mt-3 text-michelin-ink">
-          D&apos;après tes ~1 240 km analysés sur Strava.
-        </Reveal>
-
-        {/* Formulaire en panneau */}
-        <Reveal delay={120}>
-          <div className="mt-8 rounded-3xl border border-michelin-gray-line bg-white p-6 shadow-soft sm:p-8">
-            {/* Discipline */}
-            <fieldset>
-              <legend className="text-sm font-semibold text-michelin-navy">Ta discipline</legend>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {options.disciplines.map((d) => (
-                  <Choice
-                    key={d.key}
-                    label={d.label}
-                    active={discipline === d.key}
-                    onClick={() => setDiscipline(d.key)}
-                  />
-                ))}
-              </div>
-            </fieldset>
-
-            {/* Priorite */}
-            <fieldset className="mt-6">
-              <legend className="text-sm font-semibold text-michelin-navy">Ta priorite</legend>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {options.priorities.map((p) => (
-                  <Choice
-                    key={p.key}
-                    label={p.label}
-                    active={priority === p.key}
-                    onClick={() => setPriority(p.key)}
-                  />
-                ))}
-              </div>
-            </fieldset>
-
-            {/* E-bike */}
-            <label className="mt-6 flex w-fit cursor-pointer items-center gap-2 text-sm text-michelin-navy">
-              <input
-                type="checkbox"
-                checked={ebike}
-                onChange={(e) => setEbike(e.target.checked)}
-                className="h-4 w-4 accent-michelin-blue"
-              />
-              Velo a assistance electrique (E-Bike)
-            </label>
-
-            <Button onClick={onSubmit} disabled={loading} size="lg" className="mt-8">
-              {loading ? "Recherche..." : "Voir mes pneus"}
-            </Button>
-          </div>
-        </Reveal>
-
-        {error && (
-          <p className="mt-6 rounded-xl border border-michelin-gray-line bg-michelin-gray-light p-4 text-sm text-michelin-ink">
-            {error}
-          </p>
+      <div className="mx-auto max-w-xl px-4 pb-16 pt-8 sm:px-6">
+        {phase === "quiz" && (
+          <QuizPhaseView
+            step={step}
+            currentQ={currentQ}
+            options={options}
+            currentAnswer={currentAnswer}
+            isLast={isLast}
+            error={error}
+            onSelect={handleSelect}
+            onNext={handleNext}
+            onBack={() => setStep((s) => s - 1)}
+          />
         )}
 
-        {/* Skeletons pendant la recherche */}
-        {loading && !results && (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {[0, 1, 2, 3].map((n) => (
-              <SkeletonCard key={n} />
-            ))}
+        {phase === "loading" && (
+          <div className="flex flex-col items-center justify-center py-32 gap-5">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-michelin-gray-line border-t-michelin-blue" />
+            <p className="text-lg font-bold text-michelin-navy">Recherche en cours…</p>
           </div>
         )}
 
-        {results && (
-          <div className="mt-10">
-            <Reveal as="h2" className="text-xl font-bold text-michelin-navy">
-              {results.length} pneus pour toi
-            </Reveal>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {results.map((t, i) => (
-                <Reveal key={t.range + i} delay={(i % 2) * 80} className="h-full">
-                  <TyreCard tyre={t} rank={i + 1} best={i === 0} />
-                </Reveal>
-              ))}
-            </div>
-          </div>
+        {phase === "results" && (
+          <ResultsPhaseView
+            results={results}
+            selectedIds={selectedIds}
+            onToggle={toggleSelect}
+            onRestart={restart}
+          />
         )}
-      </section>
+      </div>
 
       <SiteFooter />
     </main>
   );
 }
 
-function Choice({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+// --- Sub-views ---------------------------------------------------------------
+
+function QuizPhaseView({
+  step,
+  currentQ,
+  options,
+  currentAnswer,
+  isLast,
+  error,
+  onSelect,
+  onNext,
+  onBack,
+}: {
+  step: number;
+  currentQ: (typeof QUESTIONS)[number];
+  options: ReturnType<typeof getOptions>;
+  currentAnswer: string | undefined;
+  isLast: boolean;
+  error: string | null;
+  onSelect: (qId: number, optId: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
   return (
-    <Button
-      type="button"
-      onClick={onClick}
-      variant={active ? "default" : "outline"}
-      size="sm"
-      aria-pressed={active}
-      className="capitalize"
-    >
-      {label}
-    </Button>
+    <>
+      {/* Progress */}
+      <div
+        className="flex gap-1.5"
+        role="progressbar"
+        aria-valuenow={step}
+        aria-valuemax={QUESTIONS.length}
+        aria-label={`Question ${step} sur ${QUESTIONS.length}`}
+      >
+        {QUESTIONS.map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "h-1.5 flex-1 rounded-full transition-colors duration-300",
+              i + 1 < step
+                ? "bg-michelin-navy/40"
+                : i + 1 === step
+                  ? "bg-michelin-blue"
+                  : "bg-michelin-gray-line",
+            )}
+          />
+        ))}
+      </div>
+
+      <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-michelin-ink">
+        Question {step}/{QUESTIONS.length}
+      </p>
+      <h1 className="mt-1.5 text-2xl font-black leading-tight text-michelin-navy sm:text-3xl">
+        {currentQ.question}
+      </h1>
+      <p className="mt-2 text-sm leading-relaxed text-michelin-ink">{currentQ.description}</p>
+
+      {/* Options */}
+      <div className="mt-6 flex flex-col gap-2.5">
+        {options.map((opt) => {
+          const active = currentAnswer === opt.id;
+          return opt.photo ? (
+            <ImageOptionCard
+              key={opt.id}
+              opt={opt}
+              active={active}
+              onPress={() => onSelect(currentQ.id, opt.id)}
+            />
+          ) : (
+            <TextOptionCard
+              key={opt.id}
+              opt={opt}
+              active={active}
+              onPress={() => onSelect(currentQ.id, opt.id)}
+            />
+          );
+        })}
+      </div>
+
+      {error && (
+        <p className="mt-5 rounded-xl border border-michelin-gray-line bg-michelin-gray-light p-4 text-sm text-michelin-ink">
+          {error}
+        </p>
+      )}
+
+      {/* Navigation */}
+      <div className="mt-8 flex flex-col gap-2.5">
+        <Button size="lg" className="w-full" onClick={onNext} disabled={!currentAnswer}>
+          {isLast ? "Voir mes pneus" : "Question suivante"}
+        </Button>
+        {step > 1 && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full py-2 text-sm font-semibold text-michelin-ink transition-colors hover:text-michelin-blue"
+          >
+            ← Retour
+          </button>
+        )}
+      </div>
+    </>
   );
 }
 
-/** Carte fantome (shimmer) affichee pendant le chargement des recommandations. */
-function SkeletonCard() {
+function ImageOptionCard({
+  opt,
+  active,
+  onPress,
+}: {
+  opt: { id: string; label: string; photo?: string };
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft">
-      <div className="flex items-start gap-3">
-        <div className="h-14 w-14 shrink-0 rounded-xl bg-michelin-gray-light" />
-        <div className="flex-1 space-y-2">
-          <div className="h-3 w-1/3 rounded bg-michelin-gray-light" />
-          <div className="h-4 w-2/3 rounded bg-michelin-gray-light" />
-          <div className="h-3 w-1/2 rounded bg-michelin-gray-light" />
-        </div>
-      </div>
-      <div className="mt-4 flex gap-2">
-        <div className="h-6 w-16 rounded-pill bg-michelin-gray-light" />
-        <div className="h-6 w-14 rounded-pill bg-michelin-gray-light" />
-      </div>
-      <div className="mt-4 h-10 w-full rounded-pill bg-michelin-gray-light" />
-      {/* Reflet shimmer */}
-      <div className="pointer-events-none absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-    </div>
+    <button
+      type="button"
+      onClick={onPress}
+      className={cn(
+        "relative h-[88px] w-full overflow-hidden rounded-2xl text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
+        active ? "ring-[3px] ring-michelin-blue" : "ring-0",
+      )}
+    >
+      <img src={opt.photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div
+        className={cn(
+          "absolute inset-0 transition-colors",
+          active ? "bg-michelin-navy/40" : "bg-michelin-navy/60",
+        )}
+      />
+      {active && (
+        <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-michelin-blue text-xs font-bold text-white">
+          ✓
+        </span>
+      )}
+      <span className="absolute bottom-0 left-0 right-0 p-4 text-sm font-bold text-white">
+        {opt.label}
+      </span>
+    </button>
   );
+}
+
+function TextOptionCard({
+  opt,
+  active,
+  onPress,
+}: {
+  opt: { id: string; label: string };
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      className={cn(
+        "flex w-full items-center justify-between rounded-xl border px-4 py-3.5 text-left text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
+        active
+          ? "border-michelin-blue bg-michelin-blue text-white"
+          : "border-michelin-gray-line bg-white text-michelin-navy hover:border-michelin-blue",
+      )}
+    >
+      {opt.label}
+      {active && (
+        <span className="ml-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25 text-[10px] font-bold">
+          ✓
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ResultsPhaseView({
+  results,
+  selectedIds,
+  onToggle,
+  onRestart,
+}: {
+  results: RecoView[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onRestart: () => void;
+}) {
+  if (results.length === 0) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-michelin-ink">
+          Aucun résultat.{" "}
+          <button onClick={onRestart} className="font-semibold text-michelin-blue hover:underline">
+            Recommencer
+          </button>
+        </p>
+      </div>
+    );
+  }
+
+  const [featured, ...rest] = results;
+  const featuredId = tyreId(featured);
+  const featuredScore = Math.min(99, Math.max(1, featured.score));
+
+  return (
+    <>
+      <h1 className="text-3xl font-black text-michelin-navy">Trouve ton pneu</h1>
+      <p className="mt-1 text-sm text-michelin-ink">D&apos;après tes réponses</p>
+
+      {/* Featured */}
+      <button
+        type="button"
+        onClick={() => onToggle(featuredId)}
+        className={cn(
+          "mt-6 w-full rounded-2xl border-2 p-5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+          selectedIds.has(featuredId)
+            ? "border-michelin-blue ring-2 ring-michelin-blue/20"
+            : "border-michelin-blue",
+        )}
+      >
+        <div className="flex gap-2">
+          <span className="inline-flex items-center rounded-pill bg-michelin-green/10 px-3 py-1 text-xs font-bold text-michelin-green">
+            {featuredScore}%
+          </span>
+          <span className="inline-flex items-center rounded-pill bg-michelin-navy px-3 py-1 text-xs font-bold text-michelin-yellow">
+            Meilleur choix
+          </span>
+        </div>
+        <div className="my-5 flex justify-center">
+          <TyreImage kind={tyreKind(featured)} className="h-32 w-32" />
+        </div>
+        <p className="text-center text-base font-bold text-michelin-navy">
+          {featured.range} {featured.designation}
+        </p>
+        {featured.weightG && (
+          <p className="mt-1 text-center text-sm text-michelin-ink">{featured.weightG} g</p>
+        )}
+      </button>
+
+      {/* List */}
+      {rest.length > 0 && (
+        <div className="mt-3 flex flex-col gap-2">
+          {rest.map((t) => {
+            const id = tyreId(t);
+            const active = selectedIds.has(id);
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onToggle(id)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
+                  active
+                    ? "border-michelin-blue bg-[#EAF0F9]"
+                    : "border-michelin-gray-line bg-white hover:border-michelin-blue",
+                )}
+              >
+                <TyreImage kind={tyreKind(t)} className="h-11 w-11 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-michelin-navy">
+                    {t.range} {t.designation}
+                  </p>
+                  {t.weightG && (
+                    <p className="text-xs text-michelin-ink">{t.weightG} g</p>
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                    active ? "border-michelin-blue bg-michelin-blue" : "border-michelin-gray-line",
+                  )}
+                >
+                  {active && <span className="text-[10px] font-bold text-white">✓</span>}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="mt-6 flex flex-col gap-2.5">
+        <Button size="lg" className="w-full" disabled={selectedIds.size < 2}>
+          Comparer la sélection ({selectedIds.size})
+        </Button>
+        <button
+          type="button"
+          onClick={onRestart}
+          className="w-full py-2 text-sm font-semibold text-michelin-ink transition-colors hover:text-michelin-blue"
+        >
+          Recommencer le questionnaire
+        </button>
+      </div>
+    </>
+  );
+}
+
+function tyreId(t: RecoView) {
+  return `${t.range}-${t.designation}`;
 }
