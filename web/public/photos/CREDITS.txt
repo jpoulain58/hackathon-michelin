@@ -1,0 +1,3 @@
+Photos : Unsplash (licence libre, usage commercial autorise, sans attribution requise).
+Source : https://unsplash.com — images de cyclisme (route, gravel, ville, peloton, sentiers).
+Telechargees pour la demo Michelin Trust Wheels (hackathon ESGI 2026).

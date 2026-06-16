@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Brand } from "@/components/Brand";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { TyreCard } from "@/components/TyreCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,18 +44,11 @@ export default function TrouveTonPneu() {
 
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-        <Link href="/accueil">
-          <Brand />
-        </Link>
-        <Link href="/accueil" className="text-sm font-semibold text-michelin-blue hover:underline">
-          Accueil
-        </Link>
-      </header>
+      <SiteHeader />
 
-      <section className="mx-auto max-w-4xl px-6 py-8">
-        <div className="h-1 w-12 bg-michelin-yellow" />
-        <h1 className="mt-4 text-3xl font-bold text-michelin-navy">Trouve ton pneu</h1>
+      <section className="mx-auto max-w-4xl px-6 py-10">
+        <span className="kicker">Trouve ton pneu</span>
+        <h1 className="mt-4 text-4xl font-black text-michelin-navy">Trouve ton pneu</h1>
         <p className="mt-2 text-michelin-ink">
           D&apos;après tes ~1 240 km analysés sur Strava.
         </p>
@@ -124,6 +117,8 @@ export default function TrouveTonPneu() {
           </div>
         )}
       </section>
+
+      <SiteFooter />
     </main>
   );
 }
