@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 
 // Base shadcn/ui, radius en "pill" pour rester fidele a la charte Michelin.
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill text-sm font-semibold transition-[transform,background-color,border-color,color,box-shadow] duration-200 ease-out-strong will-change-transform active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-michelin-blue text-white hover:bg-michelin-navy",
+        default: "bg-michelin-blue text-white shadow-soft hover:bg-michelin-navy hover:shadow-lift",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
           "border border-michelin-gray-line bg-white text-michelin-navy hover:border-michelin-blue hover:text-michelin-blue",

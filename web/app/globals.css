@@ -31,11 +31,24 @@
 }
 
 @layer base {
+  :root {
+    /* Courbes d'easing (Emil Kowalski) reutilisables en CSS pur. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  }
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     @apply bg-white text-michelin-navy font-sans antialiased;
+  }
+  /* Anti-FOUC : sections revealees masquees avant hydratation. */
+  [data-reveal] {
+    opacity: 0;
   }
 }
 
@@ -45,7 +58,129 @@
   }
   /* Badge "kicker" repris de l'app mobile : pastille jaune, texte navy gras. */
   .kicker {
-    @apply inline-flex items-center rounded-md bg-michelin-yellow px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-michelin-navy;
+    @apply inline-flex items-center rounded-md bg-michelin-yellow px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-michelin-navy shadow-[0_4px_14px_-6px_rgba(252,229,0,0.7)];
+  }
+
+  /* Carte interactive : hover-lift doux. On n'anime que transform/box-shadow
+     (GPU) et seulement sur pointeur fin pour eviter les faux hovers tactiles. */
+  .card-interactive {
+    @apply transition-[transform,box-shadow] duration-300 ease-out-strong will-change-transform;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .card-interactive:hover {
+      transform: translateY(-4px);
+      @apply shadow-lift;
+    }
+  }
+
+  /* Zoom doux d'une image au survol de son conteneur (group). */
+  .img-zoom {
+    @apply transition-transform duration-700 ease-out-strong will-change-transform;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .img-zoom {
+      transform: scale(1.06);
+    }
+  }
+
+  /* Lien souligne anime de gauche a droite. */
+  .link-underline {
+    @apply relative;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-0 h-[2px] w-full origin-left scale-x-0 bg-current transition-transform duration-300 ease-out-strong;
+  }
+  .link-underline:hover::after {
+    @apply scale-x-100;
+  }
+}
+
+@layer utilities {
+  /* Texte en degrade (accent bleu->navy ou jaune). */
+  .text-gradient-blue {
+    @apply bg-gradient-to-br from-michelin-blue to-michelin-navy bg-clip-text text-transparent;
+  }
+
+  /* Voile en degrade pour overlays photo (lisibilite du texte blanc). */
+  .hero-veil {
+    background: linear-gradient(
+      105deg,
+      rgba(0, 12, 52, 0.92) 0%,
+      rgba(0, 12, 52, 0.78) 45%,
+      rgba(0, 12, 52, 0.35) 100%
+    );
+  }
+
+  /* Fond "mesh" navy : halos bleu/jaune diffus facon charte Michelin. */
+  .mesh-navy {
+    background-color: #000c34;
+    background-image:
+      radial-gradient(60% 80% at 12% 8%, rgba(39, 80, 155, 0.55) 0%, transparent 60%),
+      radial-gradient(45% 60% at 92% 18%, rgba(252, 229, 0, 0.16) 0%, transparent 60%),
+      radial-gradient(70% 90% at 80% 100%, rgba(39, 80, 155, 0.4) 0%, transparent 55%);
+  }
+
+  /* Motif "tread" (rainures de pneu) tres discret en fond clair. */
+  .tread-pattern {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(39, 80, 155, 0.05) 0px,
+      rgba(39, 80, 155, 0.05) 2px,
+      transparent 2px,
+      transparent 11px
+    );
+  }
+
+  /* Effet "shine" : reflet qui traverse (ex. carte premium du Club). */
+  .shine::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 70%
+    );
+  }
+  .shine:hover::before {
+    @apply animate-shimmer;
+  }
+}
+
+/* Press feedback global : tout element pressable scale legerement (Emil).
+   On ne touche pas la couleur (geree par les variants). */
+@layer base {
+  button:not(:disabled),
+  a[href],
+  [role="button"]:not([aria-disabled="true"]) {
+    transition-property: transform;
+    transition-duration: 140ms;
+    transition-timing-function: var(--ease-out);
+  }
+  button:not(:disabled):active,
+  a[href]:active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+  }
+}
+
+/* Accessibilite : mouvement reduit -> on garde l'opacite, on retire les
+   deplacements/zoom. (Emil : reduced motion = moins, pas zero.) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

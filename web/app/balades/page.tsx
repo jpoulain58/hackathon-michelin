@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { Reveal } from "@/components/Reveal";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { RIDES, CENTER, type Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
@@ -120,15 +121,20 @@ export default function Balades() {
       <section className="relative overflow-hidden text-white">
         <div className="absolute inset-0 -z-10">
           <img src="/photos/road-forest.jpg" alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-michelin-navy via-michelin-navy/80 to-michelin-navy/40" />
+          <div className="absolute inset-0 hero-veil" />
         </div>
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <span className="kicker">Balades de la semaine</span>
-          <h1 className="mt-4 text-4xl font-black">5 itinéraires, 1 pneu par terrain</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-3 text-white/85">
+        <div className="pointer-events-none absolute right-0 top-0 -z-10 h-64 w-64 rounded-full bg-michelin-blue/40 blur-3xl" />
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <Reveal as="span" className="inline-block">
+            <span className="kicker">Balades de la semaine</span>
+          </Reveal>
+          <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+            5 itinéraires, 1 pneu par terrain
+          </Reveal>
+          <Reveal as="p" delay={120} className="mt-3 flex flex-wrap items-center gap-3 text-lg text-white/85">
             Le pneu Michelin qu&apos;il te faut, pour chaque sortie.
             <span className="rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">Powered by Strava</span>
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -237,14 +243,20 @@ export default function Balades() {
                   <button
                     onClick={() => setSelectedId(r.id)}
                     className={cn(
-                      "w-full rounded-2xl border p-4 text-left transition",
+                      "group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-[transform,box-shadow,background-color,border-color] duration-300 ease-out-strong",
                       r.id === selectedId
-                        ? "border-michelin-blue bg-[#EAF0F9]"
-                        : "border-michelin-gray-line bg-white hover:border-michelin-blue",
+                        ? "border-michelin-blue bg-[#EAF0F9] shadow-soft"
+                        : "border-michelin-gray-line bg-white hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft",
                     )}
                   >
+                    <span
+                      className={cn(
+                        "absolute inset-y-3 left-0 w-1 rounded-pill bg-michelin-yellow transition-opacity duration-300",
+                        r.id === selectedId ? "opacity-100" : "opacity-0",
+                      )}
+                    />
                     <div className="flex gap-3">
-                      <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0" />
+                      <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <span className="font-bold text-michelin-navy">{r.name}</span>
@@ -283,7 +295,7 @@ export default function Balades() {
           </div>
 
           {/* Carte */}
-          <div className="order-1 -mx-6 lg:order-2 lg:mx-0 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-michelin-gray-line">
+          <div className="order-1 -mx-6 lg:order-2 lg:mx-0 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-michelin-gray-line lg:shadow-soft">
             <div ref={mapEl} className="h-52 w-full bg-michelin-gray-light lg:h-[460px]" />
             {!ready && (
               <p className="p-3 text-center text-sm text-michelin-ink">Chargement de la carte…</p>
