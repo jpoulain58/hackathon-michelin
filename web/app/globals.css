@@ -48,3 +48,13 @@
     @apply inline-flex items-center rounded-md bg-michelin-yellow px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-michelin-navy;
   }
 }
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
