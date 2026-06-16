@@ -23,6 +23,7 @@ export interface Ride {
   landscape: string;
   difficulty: "Débutant" | "Intermédiaire" | "Expert";
   best?: boolean;
+  tags: string[];
   tyre: string;
   tyreDetail: TyreDetail;
   description: string;
@@ -86,6 +87,7 @@ export const RIDES: Ride[] = [
     landscape: "Montagne",
     difficulty: "Intermédiaire",
     best: true,
+    tags: ["Panorama", "Chrono", "Grimpée"],
     tyre: "MICHELIN Power Cup",
     tyreDetail: {
       name: "MICHELIN Power Cup TLR",
@@ -113,6 +115,7 @@ export const RIDES: Ride[] = [
     terrain: "Gravel",
     landscape: "Plateau",
     difficulty: "Intermédiaire",
+    tags: ["Aventure", "Nature", "Panorama"],
     tyre: "MICHELIN Power Gravel",
     tyreDetail: {
       name: "MICHELIN Power Gravel",
@@ -140,6 +143,7 @@ export const RIDES: Ride[] = [
     terrain: "Route",
     landscape: "Montagne",
     difficulty: "Expert",
+    tags: ["Endurance", "Grimpée", "Chrono"],
     tyre: "MICHELIN Power Road TLR",
     tyreDetail: {
       name: "MICHELIN Power Road TLR",
@@ -167,6 +171,7 @@ export const RIDES: Ride[] = [
     terrain: "Route",
     landscape: "Montagne",
     difficulty: "Expert",
+    tags: ["Icône", "Grimpée", "Chrono"],
     tyre: "MICHELIN Power Cup",
     tyreDetail: {
       name: "MICHELIN Power Cup TLR",
@@ -194,6 +199,7 @@ export const RIDES: Ride[] = [
     terrain: "VTT",
     landscape: "Forêt",
     difficulty: "Intermédiaire",
+    tags: ["Technique", "Nature", "Trail"],
     tyre: "MICHELIN Force AM",
     tyreDetail: {
       name: "MICHELIN Force AM",

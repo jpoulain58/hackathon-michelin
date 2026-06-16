@@ -44,3 +44,13 @@
     @apply inline-flex items-center rounded-pill border border-michelin-gray-line bg-michelin-gray-light px-3 py-1 text-xs font-medium text-michelin-ink;
   }
 }
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

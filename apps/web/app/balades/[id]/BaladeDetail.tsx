@@ -200,6 +200,17 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
         {/* Titre */}
         <h1 className="mt-3 text-2xl font-bold text-michelin-navy">{ride.name}</h1>
 
+        {/* Tags libres */}
+        {ride.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {ride.tags.map((tag) => (
+              <span key={tag} className="chip">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-michelin-ink">
           <span className="flex items-center gap-1.5 text-michelin-blue">
