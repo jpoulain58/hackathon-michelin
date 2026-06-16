@@ -73,6 +73,7 @@ export default function Balades() {
           attribution: "© OpenStreetMap",
         }).addTo(map);
         mapRef.current = map;
+        requestAnimationFrame(() => { if (!cancelled) map.invalidateSize(); });
         setReady(true);
       })
       .catch(() => setReady(false));
@@ -295,7 +296,7 @@ export default function Balades() {
           </div>
 
           {/* Carte */}
-          <div className="order-1 -mx-6 lg:order-2 lg:mx-0 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-michelin-gray-line lg:shadow-soft">
+          <div className="isolate order-1 -mx-6 lg:order-2 lg:mx-0 lg:self-start lg:sticky lg:top-20 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-michelin-gray-line lg:shadow-soft">
             <div ref={mapEl} className="h-52 w-full bg-michelin-gray-light lg:h-[460px]" />
             {!ready && (
               <p className="p-3 text-center text-sm text-michelin-ink">Chargement de la carte…</p>
