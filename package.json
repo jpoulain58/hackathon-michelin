@@ -2,21 +2,25 @@
   "name": "michelin-trust-wheels",
   "version": "0.1.0",
   "private": true,
-  "description": "Michelin Trust Wheels — la communaute qui transforme les kilometres en preuve. Monorepo : web (Next.js) + api (NestJS) + recommender.",
+  "description": "Michelin Trust Wheels — la communaute qui transforme les kilometres en preuve. Monorepo : api (NestJS) + web (Next.js) + mobile + recommender.",
   "license": "UNLICENSED",
   "workspaces": [
-    "packages/*",
-    "apps/*"
+    "api",
+    "web",
+    "mobile",
+    "packages/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "dev:api": "npm run start:dev --workspace apps/api",
-    "dev:web": "npm run dev --workspace apps/web"
+    "dev:api": "npm run start:dev --workspace @mtw/api",
+    "dev:web": "npm run dev --workspace @mtw/web",
+    "dev:mobile": "npm run dev --workspace @mtw/mobile",
+    "typecheck:mobile": "npm run typecheck --workspace @mtw/mobile"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.4"
   },
   "devDependencies": {
     "vitest": "^4.1.9"
