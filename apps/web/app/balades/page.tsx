@@ -124,7 +124,7 @@ export default function Balades() {
 
   return (
     <main className="min-h-screen pb-20 lg:pb-0">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+      <header className="mx-auto hidden max-w-6xl items-center justify-between px-6 py-5 lg:flex">
         <Link href="/accueil">
           <Brand />
         </Link>
@@ -251,8 +251,8 @@ export default function Balades() {
         </div>
 
         <div className="mt-4 grid gap-5 lg:grid-cols-[340px_1fr]">
-          {/* Liste */}
-          <div className="space-y-3">
+          {/* Liste — en bas sur mobile (order-2), colonne gauche sur desktop */}
+          <div className="order-2 space-y-3 lg:order-1">
             {filteredRides.length === 0 ? (
               <div className="rounded-2xl border border-michelin-gray-line bg-white p-8 text-center">
                 <p className="text-michelin-ink">Aucune balade ne correspond à ces filtres.</p>
@@ -323,9 +323,9 @@ export default function Balades() {
             )}
           </div>
 
-          {/* Carte */}
-          <div className="overflow-hidden rounded-2xl border border-michelin-gray-line">
-            <div ref={mapEl} className="h-[460px] w-full bg-michelin-gray-light" />
+          {/* Carte — en haut sur mobile (order-1), colonne droite sur desktop */}
+          <div className="order-1 -mx-6 lg:order-2 lg:mx-0 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-michelin-gray-line">
+            <div ref={mapEl} className="h-52 w-full bg-michelin-gray-light lg:h-[460px]" />
             {!ready && (
               <p className="p-3 text-center text-sm text-michelin-ink">Chargement de la carte…</p>
             )}
