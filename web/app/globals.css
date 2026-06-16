@@ -43,4 +43,8 @@
   .chip {
     @apply inline-flex items-center rounded-pill border border-michelin-gray-line bg-michelin-gray-light px-3 py-1 text-xs font-medium text-michelin-ink;
   }
+  /* Badge "kicker" repris de l'app mobile : pastille jaune, texte navy gras. */
+  .kicker {
+    @apply inline-flex items-center rounded-md bg-michelin-yellow px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-michelin-navy;
+  }
 }

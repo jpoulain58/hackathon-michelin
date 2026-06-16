@@ -1,10 +1,10 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Brand } from "@/components/Brand";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
-import { Button } from "@/components/ui/button";
 import {
   fetchStats,
   fetchReviews,
@@ -31,25 +31,18 @@ export default function Communaute() {
 
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <Link href="/accueil">
-          <Brand />
-        </Link>
-        <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
-          <Link href="/balades" className="hover:underline">Balades</Link>
-          <Link href="/club" className="hover:underline">Club</Link>
-          <Button asChild size="sm">
-            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
-          </Button>
-        </nav>
-      </header>
+      <SiteHeader />
 
       {/* Compteurs collectifs */}
-      <section className="bg-michelin-navy text-white">
-        <div className="mx-auto max-w-5xl px-6 py-14">
-          <div className="h-1 w-12 bg-michelin-yellow" />
-          <h1 className="mt-4 text-3xl font-bold">La communaute Michelin</h1>
-          <p className="mt-2 max-w-2xl text-white/80">
+      <section className="relative overflow-hidden text-white">
+        <div className="absolute inset-0 -z-10">
+          <img src="/photos/peloton.jpg" alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-michelin-navy/85" />
+        </div>
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <span className="kicker">La communaute</span>
+          <h1 className="mt-4 text-4xl font-black">La communaute Michelin</h1>
+          <p className="mt-2 max-w-2xl text-white/85">
             La preuve sociale qui manquait : des avis <strong className="text-white">adosses aux vrais kilometres</strong>, impossibles a falsifier.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -117,6 +110,8 @@ export default function Communaute() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </main>
   );
 }
