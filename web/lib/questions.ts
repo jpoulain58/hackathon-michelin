@@ -36,25 +36,25 @@ export const QUESTIONS: Question[] = [
       "Enchaîner les kilomètres entre amis, viser le chrono, ou juste aller au boulot sans crevaison ? Ton objectif change tout au pneu dont tu as besoin.",
     optionsByBikeType: {
       route: [
-        { id: "competition", label: "La compétition" },
-        { id: "endurance", label: "Les longues sorties" },
-        { id: "loisir", label: "La balade et le plaisir" },
-        { id: "cyclocross", label: "Le cyclocross" },
+        { id: "competition", label: "La compétition", photo: "/photos/peloton.jpg" },
+        { id: "endurance", label: "Les longues sorties", photo: "/photos/hero-road.jpg" },
+        { id: "loisir", label: "La balade et le plaisir", photo: "/photos/community-duo.jpg" },
+        { id: "cyclocross", label: "Le cyclocross", photo: "/photos/trail.jpg" },
       ],
       gravel: [
-        { id: "gravel_versatile", label: "L'aventure et l'exploration" },
-        { id: "gravel_speed", label: "La performance sur pistes" },
-        { id: "bikepacking", label: "Le bikepacking / longue distance" },
+        { id: "gravel_versatile", label: "L'aventure et l'exploration", photo: "/photos/road-forest.jpg" },
+        { id: "gravel_speed", label: "La performance sur pistes", photo: "/photos/bike-gravel.jpg" },
+        { id: "bikepacking", label: "Le bikepacking / longue distance", photo: "/photos/community-duo.jpg" },
       ],
       vtt: [
-        { id: "xc", label: "Le cross-country (XC)" },
-        { id: "trail", label: "Le trail / all-mountain" },
-        { id: "enduro", label: "L'enduro" },
-        { id: "dh", label: "La descente (DH)" },
+        { id: "xc", label: "Le cross-country (XC)", photo: "/photos/trail.jpg" },
+        { id: "trail", label: "Le trail / all-mountain", photo: "/photos/trail.jpg" },
+        { id: "enduro", label: "L'enduro", photo: "/photos/trail.jpg" },
+        { id: "dh", label: "La descente (DH)", photo: "/photos/trail.jpg" },
       ],
       urbain: [
-        { id: "quotidien", label: "Le quotidien" },
-        { id: "loisir", label: "La balade et le plaisir" },
+        { id: "quotidien", label: "Le quotidien", photo: "/photos/city-rider.jpg" },
+        { id: "loisir", label: "La balade et le plaisir", photo: "/photos/city-bike.jpg" },
       ],
     },
   },
@@ -64,11 +64,11 @@ export const QUESTIONS: Question[] = [
     description:
       "La route lisse du dimanche, les chemins de terre du week-end, ou les deux ? Le terrain, c'est ce qui détermine la forme du pneu et son accroche.",
     options: [
-      { id: "asphalte", label: "Asphalte" },
-      { id: "gravier", label: "Gravier / pistes" },
-      { id: "foret", label: "Chemins forestiers" },
-      { id: "singletrack", label: "Sentiers techniques" },
-      { id: "descente", label: "Descentes engagées" },
+      { id: "asphalte", label: "Asphalte", photo: "/photos/road-sunny.jpg" },
+      { id: "gravier", label: "Gravier / pistes", photo: "/photos/bike-gravel.jpg" },
+      { id: "foret", label: "Chemins forestiers", photo: "/photos/road-forest.jpg" },
+      { id: "singletrack", label: "Sentiers techniques", photo: "/photos/trail.jpg" },
+      { id: "descente", label: "Descentes engagées", photo: "/photos/trail.jpg" },
     ],
   },
   {
@@ -77,9 +77,9 @@ export const QUESTIONS: Question[] = [
     description:
       "Certains pneus sont taillés pour le beau temps, d'autres pour tenir en toute saison. Dis-nous dans quelles conditions tu roules le plus souvent.",
     options: [
-      { id: "sec", label: "Surtout par temps sec" },
-      { id: "toutes_saisons", label: "Par tous les temps" },
-      { id: "pluie", label: "Souvent sous la pluie" },
+      { id: "sec", label: "Surtout par temps sec", photo: "/photos/road-sunny.jpg" },
+      { id: "toutes_saisons", label: "Par tous les temps", photo: "/photos/community-duo.jpg" },
+      { id: "pluie", label: "Souvent sous la pluie", photo: "/photos/rain-cycling.jpg" },
     ],
   },
   {
@@ -88,10 +88,10 @@ export const QUESTIONS: Question[] = [
     description:
       "On ne peut pas tout avoir dans un seul pneu. Qu'est-ce que tu ne veux surtout pas sacrifier ?",
     options: [
-      { id: "vitesse", label: "Aller vite" },
-      { id: "anti_crevaison", label: "Ne pas crever" },
-      { id: "grip", label: "Accrocher dans les virages" },
-      { id: "longevite", label: "Rouler longtemps" },
+      { id: "vitesse", label: "Aller vite", photo: "/photos/peloton.jpg" },
+      { id: "anti_crevaison", label: "Ne pas crever", photo: "/photos/city-rider.jpg" },
+      { id: "grip", label: "Accrocher dans les virages", photo: "/photos/trail.jpg" },
+      { id: "longevite", label: "Rouler longtemps", photo: "/photos/road-forest.jpg" },
     ],
   },
   {

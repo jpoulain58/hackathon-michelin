@@ -1,11 +1,27 @@
 import { useState } from "react";
 import {
+  ImageBackground,
+  ImageSourcePropType,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
+const PHOTO_MAP: Record<string, ImageSourcePropType> = {
+  "bike-road": require("../../assets/photos/bike-road.jpg"),
+  "bike-gravel": require("../../assets/photos/bike-gravel.jpg"),
+  "city-bike": require("../../assets/photos/city-bike.jpg"),
+  "city-rider": require("../../assets/photos/city-rider.jpg"),
+  "community-duo": require("../../assets/photos/community-duo.jpg"),
+  "hero-road": require("../../assets/photos/hero-road.jpg"),
+  "peloton": require("../../assets/photos/peloton.jpg"),
+  "rain-cycling": require("../../assets/photos/rain-cycling.jpg"),
+  "road-forest": require("../../assets/photos/road-forest.jpg"),
+  "road-sunny": require("../../assets/photos/road-sunny.jpg"),
+  "trail": require("../../assets/photos/trail.jpg"),
+};
 import { FeaturedTyreCard, TyreRow } from "../components/cards";
 import { PrimaryButton, ScreenTitle, Spinner } from "../components/ui";
 import { fetchRecommendations, type ApiTyre } from "../lib/api";
@@ -168,6 +184,31 @@ export function TrouveTonPneuScreen({
       <View style={styles.options}>
         {options.map((opt) => {
           const active = currentAnswer === opt.id;
+          const source = opt.photo ? PHOTO_MAP[opt.photo] : null;
+          if (source) {
+            return (
+              <TouchableOpacity
+                key={opt.id}
+                onPress={() => handleSelect(currentQ.id, opt.id)}
+                activeOpacity={0.85}
+                style={[styles.imgOption, active && styles.imgOptionActive]}
+              >
+                <ImageBackground
+                  source={source}
+                  style={styles.imgBg}
+                  imageStyle={styles.imgBgImage}
+                >
+                  <View style={[styles.imgOverlay, active && styles.imgOverlayActive]} />
+                  {active && (
+                    <View style={styles.imgCheck}>
+                      <Text style={styles.imgCheckmark}>✓</Text>
+                    </View>
+                  )}
+                  <Text style={styles.imgLabel}>{opt.label}</Text>
+                </ImageBackground>
+              </TouchableOpacity>
+            );
+          }
           return (
             <TouchableOpacity
               key={opt.id}
@@ -175,9 +216,7 @@ export function TrouveTonPneuScreen({
               style={[styles.option, active && styles.optionActive]}
               activeOpacity={0.7}
             >
-              <Text
-                style={[styles.optionLabel, active && styles.optionLabelActive]}
-              >
+              <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>
                 {opt.label}
               </Text>
               <View style={[styles.check, active && styles.checkActive]}>
@@ -299,6 +338,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 14,
+  },
+
+  // Image option cards
+  imgOption: {
+    borderRadius: radius.md,
+    overflow: "hidden",
+    borderWidth: 0,
+  },
+  imgOptionActive: {
+    borderWidth: 3,
+    borderColor: colors.navy,
+  },
+  imgBg: { height: 80, justifyContent: "flex-end" },
+  imgBgImage: { borderRadius: radius.md },
+  imgOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(10,20,50,0.55)",
+  },
+  imgOverlayActive: { backgroundColor: "rgba(10,20,50,0.35)" },
+  imgCheck: {
+    position: "absolute",
+    top: 8,
+    right: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.navy,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  imgCheckmark: { color: colors.white, fontSize: 11, fontWeight: "700" },
+  imgLabel: {
+    color: colors.white,
+    fontSize: font.body,
+    fontWeight: "700",
+    padding: spacing.md,
   },
 
   // Results
