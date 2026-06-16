@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { Reveal } from "@/components/Reveal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -69,53 +70,62 @@ export default function Actualites() {
     <main className="min-h-screen">
       <SiteHeader />
 
-      <section className="mx-auto max-w-6xl px-6 py-10">
-        <span className="kicker">Actualites</span>
-        <h1 className="mt-4 text-4xl font-black text-michelin-navy">Le fil de la communaute</h1>
-        <p className="mt-2 max-w-2xl text-michelin-ink">
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <Reveal as="span" className="inline-block">
+          <span className="kicker">Actualites</span>
+        </Reveal>
+        <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight text-michelin-navy sm:text-5xl">
+          Le fil de la communaute
+        </Reveal>
+        <Reveal as="p" delay={120} className="mt-3 max-w-2xl text-michelin-ink">
           Evenements, produits, balades et coulisses : tout ce qui fait rouler Michelin Trust Wheels.
-        </p>
+        </Reveal>
 
         {/* A la une */}
-        <Card className="mt-8 overflow-hidden">
-          <div className="grid md:grid-cols-2">
-            <div className="relative min-h-[240px]">
-              <img src={FEATURED.photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <Reveal delay={120}>
+          <Card className="group mt-8 overflow-hidden card-interactive">
+            <div className="grid md:grid-cols-2">
+              <div className="relative min-h-[260px] overflow-hidden">
+                <img src={FEATURED.photo} alt="" className="img-zoom absolute inset-0 h-full w-full object-cover" />
+                <span className="kicker absolute left-4 top-4">A la une</span>
+              </div>
+              <CardContent className="flex flex-col justify-center gap-3 p-8">
+                <div className="flex items-center gap-3">
+                  <span className="kicker">{FEATURED.category}</span>
+                  <span className="text-xs font-semibold text-michelin-ink">{FEATURED.date}</span>
+                </div>
+                <h2 className="text-2xl font-black leading-tight tracking-tight text-michelin-navy">{FEATURED.title}</h2>
+                <p className="text-michelin-ink">{FEATURED.excerpt}</p>
+                <div>
+                  <Button className="mt-2">Lire l&apos;article</Button>
+                </div>
+              </CardContent>
             </div>
-            <CardContent className="flex flex-col justify-center gap-3 p-8">
-              <div className="flex items-center gap-3">
-                <span className="kicker">{FEATURED.category}</span>
-                <span className="text-xs font-semibold text-michelin-ink">{FEATURED.date}</span>
-              </div>
-              <h2 className="text-2xl font-black leading-tight text-michelin-navy">{FEATURED.title}</h2>
-              <p className="text-michelin-ink">{FEATURED.excerpt}</p>
-              <div>
-                <Button className="mt-2">Lire l&apos;article</Button>
-              </div>
-            </CardContent>
-          </div>
-        </Card>
+          </Card>
+        </Reveal>
 
         {/* Grille d'articles */}
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {ARTICLES.map((a) => (
-            <Card key={a.title} className="flex flex-col overflow-hidden">
-              <div className="relative h-44 w-full">
-                <img src={a.photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                <span className="kicker absolute left-3 top-3">{a.category}</span>
-              </div>
-              <CardContent className="flex flex-1 flex-col gap-2 p-5">
-                <span className="text-xs font-semibold text-michelin-ink">{a.date}</span>
-                <h3 className="text-lg font-bold leading-tight text-michelin-navy">{a.title}</h3>
-                <p className="text-sm text-michelin-ink">{a.excerpt}</p>
-                <a
-                  href="#"
-                  className="mt-auto pt-2 text-sm font-semibold text-michelin-blue hover:underline"
-                >
-                  Lire la suite →
-                </a>
-              </CardContent>
-            </Card>
+          {ARTICLES.map((a, i) => (
+            <Reveal key={a.title} delay={(i % 3) * 80} className="h-full">
+              <Card className="group flex h-full flex-col overflow-hidden card-interactive">
+                <div className="relative h-44 w-full overflow-hidden">
+                  <img src={a.photo} alt="" className="img-zoom absolute inset-0 h-full w-full object-cover" />
+                  <span className="kicker absolute left-3 top-3">{a.category}</span>
+                </div>
+                <CardContent className="flex flex-1 flex-col gap-2 p-5">
+                  <span className="text-xs font-semibold text-michelin-ink">{a.date}</span>
+                  <h3 className="text-lg font-bold leading-tight text-michelin-navy">{a.title}</h3>
+                  <p className="text-sm text-michelin-ink">{a.excerpt}</p>
+                  <a
+                    href="#"
+                    className="link-underline mt-auto w-fit pt-2 text-sm font-semibold text-michelin-blue"
+                  >
+                    Lire la suite →
+                  </a>
+                </CardContent>
+              </Card>
+            </Reveal>
           ))}
         </div>
       </section>

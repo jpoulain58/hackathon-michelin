@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { Reveal } from "@/components/Reveal";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { RIDES, CENTER } from "@/lib/balades";
 
@@ -104,15 +105,20 @@ export default function Balades() {
       <section className="relative overflow-hidden text-white">
         <div className="absolute inset-0 -z-10">
           <img src="/photos/road-forest.jpg" alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-michelin-navy via-michelin-navy/80 to-michelin-navy/40" />
+          <div className="absolute inset-0 hero-veil" />
         </div>
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <span className="kicker">Balades de la semaine</span>
-          <h1 className="mt-4 text-4xl font-black">5 itineraires, 1 pneu par terrain</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-3 text-white/85">
+        <div className="pointer-events-none absolute right-0 top-0 -z-10 h-64 w-64 rounded-full bg-michelin-blue/40 blur-3xl" />
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <Reveal as="span" className="inline-block">
+            <span className="kicker">Balades de la semaine</span>
+          </Reveal>
+          <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+            5 itineraires, 1 pneu par terrain
+          </Reveal>
+          <Reveal as="p" delay={120} className="mt-3 flex flex-wrap items-center gap-3 text-lg text-white/85">
             Le pneu Michelin qu&apos;il te faut, pour chaque sortie.
             <span className="rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">Powered by Strava</span>
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -122,36 +128,44 @@ export default function Balades() {
           {/* Liste */}
           <div className="space-y-3">
             {RIDES.map((r, i) => (
-              <button
-                key={r.name}
-                onClick={() => setSelected(i)}
-                className={`w-full rounded-2xl border p-4 text-left transition ${
-                  i === selected
-                    ? "border-michelin-blue bg-[#EAF0F9]"
-                    : "border-michelin-gray-line bg-white hover:border-michelin-blue"
-                }`}
-              >
-                <div className="flex gap-3">
-                  <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-michelin-navy">
-                        {i + 1}. {r.name}
-                      </span>
-                      <span className="chip">{r.terrain}</span>
+              <Reveal key={r.name} delay={i * 60}>
+                <button
+                  onClick={() => setSelected(i)}
+                  aria-pressed={i === selected}
+                  className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-[transform,box-shadow,background-color,border-color] duration-300 ease-out-strong ${
+                    i === selected
+                      ? "border-michelin-blue bg-[#EAF0F9] shadow-soft"
+                      : "border-michelin-gray-line bg-white hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft"
+                  }`}
+                >
+                  {/* Accent lateral de l'item actif */}
+                  <span
+                    className={`absolute inset-y-3 left-0 w-1 rounded-pill bg-michelin-yellow transition-opacity duration-300 ${
+                      i === selected ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                  <div className="flex gap-3">
+                    <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-michelin-navy">
+                          {i + 1}. {r.name}
+                        </span>
+                        <span className="chip">{r.terrain}</span>
+                      </div>
+                      <div className="mt-1 text-sm text-michelin-ink">
+                        {r.km} km · {r.dplus} m D+
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
                     </div>
-                    <div className="mt-1 text-sm text-michelin-ink">
-                      {r.km} km · {r.dplus} m D+
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
                   </div>
-                </div>
-              </button>
+                </button>
+              </Reveal>
             ))}
           </div>
 
           {/* Carte */}
-          <div className="overflow-hidden rounded-2xl border border-michelin-gray-line">
+          <div className="overflow-hidden rounded-2xl border border-michelin-gray-line shadow-soft">
             <div ref={mapEl} className="h-[460px] w-full bg-michelin-gray-light" />
             {!ready && (
               <p className="p-3 text-center text-sm text-michelin-ink">Chargement de la carte…</p>

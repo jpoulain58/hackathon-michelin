@@ -10,7 +10,7 @@ export function TyreCard({ tyre, rank, best = false }: { tyre: RecoView; rank: n
   )}`;
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex h-full flex-col card-interactive">
       <CardHeader className="flex-row items-start gap-3 space-y-0">
         <TyreImage kind={tyreKind(tyre)} className="h-14 w-14 shrink-0" />
         <div className="min-w-0 flex-1">

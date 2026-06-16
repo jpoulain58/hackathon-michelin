@@ -11,8 +11,12 @@ const FOOTER_LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-michelin-gray-line bg-michelin-navy text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
+    <footer className="relative mt-16 overflow-hidden bg-michelin-navy text-white">
+      {/* Liseré dégradé charte (bleu -> jaune) */}
+      <div className="h-1 w-full bg-gradient-to-r from-michelin-blue via-michelin-blue to-michelin-yellow" />
+      {/* Halo discret en fond */}
+      <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-michelin-blue/30 blur-3xl" />
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
           <span className="inline-flex rounded-pill bg-white px-2 py-1">
             <Brand />
