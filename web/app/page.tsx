@@ -12,9 +12,8 @@ export default function Welcome() {
 
       {/* Logo */}
       <header className="px-6 pt-10">
-        <span className="inline-flex items-center gap-2.5 rounded-pill bg-white/95 px-3 py-2 shadow-sm">
-          <img src="/michelin-logo.jpg" alt="Michelin" className="h-8 w-auto" />
-          <span className="text-sm font-semibold text-michelin-navy">Trust Wheels</span>
+        <span className="inline-flex items-center rounded-pill bg-white/95 px-4 py-2.5 shadow-sm">
+          <img src="/trust-wheels-logo.png" alt="Michelin Trust Wheels" className="h-9 w-auto" />
         </span>
       </header>
 
