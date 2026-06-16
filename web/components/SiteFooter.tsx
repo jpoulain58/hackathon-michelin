@@ -1,0 +1,47 @@
+import Link from "next/link";
+import { Brand } from "./Brand";
+
+const FOOTER_LINKS = [
+  { href: "/trouve-ton-pneu", label: "Trouve ton pneu" },
+  { href: "/communaute", label: "Communaute" },
+  { href: "/balades", label: "Balades" },
+  { href: "/actualites", label: "Actualites" },
+  { href: "/club", label: "Club" },
+];
+
+export function SiteFooter() {
+  return (
+    <footer className="mt-16 border-t border-michelin-gray-line bg-michelin-navy text-white">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <span className="inline-flex rounded-pill bg-white px-2 py-1">
+            <Brand />
+          </span>
+          <p className="max-w-xs text-sm text-white/70">
+            La preuve par la route. La communaute qui transforme ses kilometres en preuve.
+          </p>
+          <span className="inline-flex rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">
+            Powered by Strava
+          </span>
+        </div>
+
+        <nav className="flex flex-col gap-2 text-sm">
+          <span className="text-xs font-semibold uppercase tracking-wide text-white/50">Navigation</span>
+          {FOOTER_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="text-white/80 transition-colors hover:text-michelin-yellow">
+              {l.label}
+            </Link>
+          ))}
+          <Link href="/" className="mt-1 text-white/60 transition-colors hover:text-michelin-yellow">
+            Se deconnecter
+          </Link>
+        </nav>
+      </div>
+      <div className="border-t border-white/10">
+        <p className="mx-auto max-w-6xl px-6 py-4 text-xs text-white/50">
+          © 2026 Michelin Trust Wheels · Hackathon ESGI × Michelin LB 2 Wheels
+        </p>
+      </div>
+    </footer>
+  );
+}

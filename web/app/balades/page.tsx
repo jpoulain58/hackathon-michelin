@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Brand } from "@/components/Brand";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
-import { Button } from "@/components/ui/button";
 import { RIDES, CENTER } from "@/lib/balades";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element */
 declare global {
   interface Window {
     L?: any;
@@ -99,26 +98,25 @@ export default function Balades() {
 
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link href="/accueil">
-          <Brand />
-        </Link>
-        <nav className="flex items-center gap-4 text-sm font-semibold text-michelin-blue">
-          <Link href="/communaute" className="hover:underline">Communaute</Link>
-          <Link href="/club" className="hover:underline">Club</Link>
-          <Button asChild size="sm">
-            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
-          </Button>
-        </nav>
-      </header>
+      <SiteHeader />
 
-      <section className="mx-auto max-w-6xl px-6 pb-10">
-        <div className="h-1 w-12 bg-michelin-yellow" />
-        <h1 className="mt-4 text-3xl font-bold text-michelin-navy">Balades de la semaine</h1>
-        <p className="mt-2 flex flex-wrap items-center gap-3 text-michelin-ink">
-          5 itineraires, et le pneu Michelin qu&apos;il te faut.
-          <span className="rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">Powered by Strava</span>
-        </p>
+      {/* Banniere */}
+      <section className="relative overflow-hidden text-white">
+        <div className="absolute inset-0 -z-10">
+          <img src="/photos/road-forest.jpg" alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-michelin-navy via-michelin-navy/80 to-michelin-navy/40" />
+        </div>
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <span className="kicker">Balades de la semaine</span>
+          <h1 className="mt-4 text-4xl font-black">5 itineraires, 1 pneu par terrain</h1>
+          <p className="mt-2 flex flex-wrap items-center gap-3 text-white/85">
+            Le pneu Michelin qu&apos;il te faut, pour chaque sortie.
+            <span className="rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">Powered by Strava</span>
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-10">
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[340px_1fr]">
           {/* Liste */}
@@ -162,6 +160,8 @@ export default function Balades() {
         </div>
 
       </section>
+
+      <SiteFooter />
     </main>
   );
 }
