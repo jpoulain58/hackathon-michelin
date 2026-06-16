@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
+import { AuthPanel } from "@/components/AuthPanel";
 
 export default function Welcome() {
   return (
@@ -31,36 +31,10 @@ export default function Welcome() {
 
       {/* Connexion */}
       <section className="px-6 pb-12">
-        <div className="mx-auto max-w-md space-y-3">
-          <Link
-            href="/accueil"
-            className="flex w-full items-center justify-center gap-2 rounded-pill bg-[#FC5200] px-6 py-3.5 font-semibold text-white shadow-sm transition hover:brightness-95"
-          >
-            <StravaGlyph />
-            Continuer avec Strava
-          </Link>
-          <Link
-            href="/accueil"
-            className="flex w-full items-center justify-center gap-2 rounded-pill bg-white px-6 py-3.5 font-semibold text-michelin-navy shadow-sm transition hover:bg-michelin-gray-light"
-          >
-            Continuer avec Garmin
-          </Link>
-          <Link
-            href="/accueil"
-            className="flex w-full items-center justify-center gap-2 rounded-pill border border-white/50 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
-          >
-            Continuer avec un e-mail
-          </Link>
+        <div className="mx-auto max-w-md">
+          <AuthPanel />
         </div>
       </section>
     </main>
-  );
-}
-
-function StravaGlyph() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2 6 14h3.6L12 9.2 14.4 14H18L12 2zm2.4 12-1.8 3.6L10.8 14H8.4L12.6 22l4.2-8h-2.4z" />
-    </svg>
   );
 }

@@ -23,6 +23,13 @@ services:
       PORT: 3001
       WEB_ORIGIN: http://localhost:3000
       DATABASE_URL: postgresql://mtw:mtw@db:5432/mtw
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID:-}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET:-}
+      STRAVA_REDIRECT_URI: ${STRAVA_REDIRECT_URI:-http://localhost:3001/api/auth/strava/callback}
+      STRAVA_SCOPES: ${STRAVA_SCOPES:-}
     ports:
       - "3001:3001"
     depends_on:
@@ -35,6 +42,8 @@ services:
       dockerfile: web/Dockerfile
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-}
     ports:
       - "3000:3000"
     depends_on:
@@ -47,6 +56,8 @@ services:
     environment:
       EXPO_DEVTOOLS_LISTEN_ADDRESS: 0.0.0.0
       EXPO_NO_TELEMETRY: 1
+      EXPO_PUBLIC_SUPABASE_URL: ${EXPO_PUBLIC_SUPABASE_URL:-}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-}
       REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-localhost}
     ports:
       - "8081:8081"

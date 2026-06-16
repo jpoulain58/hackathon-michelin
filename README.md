@@ -60,6 +60,36 @@ npm run dev:mobile # Expo Go    ->  QR code dans le terminal
 
 Au besoin : `cp .env.example .env`.
 
+### Authentification Supabase
+
+Le web et le mobile utilisent Supabase Auth avec :
+
+- Strava en connexion mise en avant (`custom:strava`)
+- Google (`google`)
+- Garmin (`custom:garmin`)
+- Email via magic link
+
+Google et email sont supportes nativement par Supabase. Strava et Garmin doivent etre
+crees dans Supabase Dashboard comme Custom OAuth/OIDC Providers avec les identifiants
+`custom:strava` et `custom:garmin`.
+
+Pour que Strava fonctionne sur mobile Expo Go, Supabase redirige vers le callback
+web, qui renvoie ensuite vers l'app mobile (`mtw://` ou `exp://`) :
+
+- `SUPABASE_SERVICE_ROLE_KEY` est obligatoire cote API pour synchroniser `public.riders`.
+- Executer `supabase/riders.sql` dans Supabase SQL Editor.
+- Dans le provider Supabase `custom:strava`, configurer l'attribute mapping :
+  `sub -> id`, `name -> username`, `given_name -> firstname`,
+  `family_name -> lastname`, `picture -> profile`.
+- Dans Supabase Auth > URL Configuration > Redirect URLs, ajouter
+  `http://localhost:3000/auth/callback`. Sur Android Emulator, ajouter aussi
+  `http://10.0.2.2:3000/auth/callback`. Sur telephone physique, ajouter
+  `http://<IP_LAN>:3000/auth/callback`. Utiliser `.../auth/callback**` si votre
+  projet Supabase exige une wildcard pour les query params.
+- Sur Android Emulator, remplacer `localhost` par `10.0.2.2` dans
+  `EXPO_PUBLIC_API_URL` et `EXPO_PUBLIC_WEB_AUTH_CALLBACK_URL`. Sur iOS Simulator,
+  `localhost` fonctionne generalement.
+
 ### Endpoints API
 
 | Méthode | Route | Description |
@@ -71,6 +101,8 @@ Au besoin : `cp .env.example .env`.
 | GET | `/api/community/stats` | Compteurs collectifs (preuve sociale) |
 | GET | `/api/community/reviews?tyre=power%20cup` | Avis vérifiés (adossés aux km Strava) |
 | GET | `/api/community/pros` | Pneus des pros |
+| GET | `/api/auth/me` | Vérifie le JWT Supabase envoyé en `Authorization: Bearer ...` |
+| POST | `/api/auth/sync` | Cree/met a jour le profil `public.riders` depuis la session Supabase |
 
 ## Docker
 
