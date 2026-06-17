@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignOutButton } from "@/components/SignOutButton";
+import { AddBaladeFromStravaButton } from "./AddBaladeFromStravaButton";
 import { API_BASE } from "@/lib/api";
 import {
   fetchAuthProfile,
@@ -296,6 +297,7 @@ export function ProfileClient() {
             loading={profileLoading}
             onLink={() => linkProvider("strava")}
             linking={linkingProvider === "strava"}
+            accessToken={session?.access_token ?? null}
           />
 
           <Card>
@@ -400,11 +402,13 @@ function StravaActivityCard({
   loading,
   onLink,
   linking,
+  accessToken,
 }: {
   strava: StravaProfile | null;
   loading: boolean;
   onLink: () => void;
   linking: boolean;
+  accessToken: string | null;
 }) {
   if (!strava) {
     return (
@@ -462,7 +466,7 @@ function StravaActivityCard({
             strava.recentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="grid gap-2 rounded-xl border border-michelin-gray-line px-4 py-3 sm:grid-cols-[1fr_auto]"
+                className="grid gap-3 rounded-xl border border-michelin-gray-line px-4 py-3 sm:grid-cols-[1fr_auto_auto] sm:items-center"
               >
                 <div className="min-w-0">
                   <p className="truncate font-bold text-michelin-navy">{activity.name}</p>
@@ -474,6 +478,13 @@ function StravaActivityCard({
                   <span>{formatKm(activity.distanceKm)}</span>
                   <span className="text-michelin-ink/55">{formatDuration(activity.movingTimeSeconds)}</span>
                 </div>
+                {accessToken && activity.polyline && (
+                  <AddBaladeFromStravaButton
+                    accessToken={accessToken}
+                    activityId={activity.id}
+                    activityName={activity.name}
+                  />
+                )}
               </div>
             ))
           ) : (

@@ -6,7 +6,7 @@ import { AppModule } from "./app.module";
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   // Le front Next.js consomme cette API : on autorise le CORS.
-  app.enableCors({ origin: process.env.WEB_ORIGIN ?? true });
+  app.enableCors({ origin: process.env.WEB_ORIGIN?.replace(/\/+$/, "") ?? true });
   app.setGlobalPrefix("api");
   const port = process.env.PORT ? Number(process.env.PORT) : 3001;
   await app.listen(port);

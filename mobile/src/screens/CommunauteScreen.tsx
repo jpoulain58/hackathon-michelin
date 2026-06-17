@@ -1,5 +1,8 @@
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import {
   Dimensions,
   type NativeScrollEvent,
@@ -9,26 +12,64 @@ import {
   Text,
   View,
 } from "react-native";
+import { BaladeFormModal } from "../components/BaladeFormModal";
 import { ReviewCard, RideCard } from "../components/cards";
-import { Pips, RemoteImage, ScreenTitle, SectionTitle } from "../components/ui";
-import { news, reviews, rides } from "../data";
+import { PrimaryButton, Pips, RemoteImage, ScreenTitle, SectionTitle } from "../components/ui";
+import { news, reviews } from "../data";
+import { createRideFromGpx, fetchRides, type CreateRideForm } from "../lib/api";
+import { apiRideToMobileRide } from "../lib/rides";
 import { colors, font, radius, spacing } from "../theme";
+import type { Ride } from "../types";
 
 const GAP = spacing.md;
 const CARD_W = Dimensions.get("window").width - spacing.lg * 2;
 
 export function CommunauteScreen({
+  session,
   onOpenRide,
 }: {
-  onOpenRide: (id: string) => void;
+  session: Session | null;
+  onOpenRide: (ride: Ride) => void;
 }) {
   const [newsIndex, setNewsIndex] = useState(0);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [rides, setRides] = useState<Ride[]>([]);
+  const [loadingRides, setLoadingRides] = useState(true);
+  const [gpxModalOpen, setGpxModalOpen] = useState(false);
+  const [pickedGpx, setPickedGpx] = useState<{ name: string; xml: string } | null>(null);
+
+  const loadRides = useCallback(() => {
+    setLoadingRides(true);
+    fetchRides()
+      .then((items) => setRides(items.map(apiRideToMobileRide)))
+      .catch(() => setRides([]))
+      .finally(() => setLoadingRides(false));
+  }, []);
+
+  useEffect(() => {
+    loadRides();
+  }, [loadRides]);
 
   const onScroll =
     (setter: (i: number) => void) =>
     (e: NativeSyntheticEvent<NativeScrollEvent>) =>
       setter(Math.round(e.nativeEvent.contentOffset.x / (CARD_W + GAP)));
+
+  async function pickGpxFile() {
+    const result = await DocumentPicker.getDocumentAsync({ type: "*/*", copyToCacheDirectory: true });
+    if (result.canceled || result.assets.length === 0) return;
+    const asset = result.assets[0];
+    const xml = await FileSystem.readAsStringAsync(asset.uri);
+    setPickedGpx({ name: asset.name, xml });
+    setGpxModalOpen(true);
+  }
+
+  async function submitGpx(form: CreateRideForm) {
+    if (!pickedGpx) return;
+    await createRideFromGpx(session, pickedGpx.xml, form);
+    setPickedGpx(null);
+    loadRides();
+  }
 
   return (
     <ScrollView
@@ -86,26 +127,41 @@ export function CommunauteScreen({
       </ScrollView>
       <Pips count={reviews.length} active={reviewIndex} />
 
-      {/* Balades de la semaine */}
+      {/* Balades */}
       <View style={styles.sectionSpacer}>
         <SectionTitle>Les balades de la semaine</SectionTitle>
       </View>
-      <View style={styles.rides}>
-        {rides.map((ride) => (
-          <RideCard
-            key={ride.id}
-            ride={ride}
-            onPress={() => onOpenRide(ride.id)}
-          />
-        ))}
-      </View>
+      {loadingRides ? (
+        <Text style={styles.emptyText}>Chargement des balades…</Text>
+      ) : rides.length === 0 ? (
+        <Text style={styles.emptyText}>Aucune balade publiée pour le moment.</Text>
+      ) : (
+        <View style={styles.rides}>
+          {rides.map((ride) => (
+            <RideCard key={ride.id} ride={ride} onPress={() => onOpenRide(ride)} />
+          ))}
+        </View>
+      )}
+
+      <PrimaryButton title="Ajouter une balade (GPX)" onPress={pickGpxFile} />
+
+      <BaladeFormModal
+        visible={gpxModalOpen}
+        onClose={() => {
+          setGpxModalOpen(false);
+          setPickedGpx(null);
+        }}
+        title="Ajouter une balade depuis un GPX"
+        initialName={pickedGpx?.name.replace(/\.gpx$/i, "") ?? ""}
+        onSubmit={submitGpx}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.sm },
   carousel: { gap: GAP },
   newsCard: {
     height: 190,
@@ -121,4 +177,5 @@ const styles = StyleSheet.create({
   },
   sectionSpacer: { marginTop: spacing.xl },
   rides: { gap: spacing.md },
+  emptyText: { color: colors.textMuted, fontSize: font.body },
 });

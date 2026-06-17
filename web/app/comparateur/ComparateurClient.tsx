@@ -154,7 +154,7 @@ export function ComparateurClient() {
                   tyre={tyre}
                   highlighted={index === 0}
                   canRemove={selected.length > 2}
-                  onRemove={() => removeTyre(tyre.id)}
+                  onRemove={() => removeTyre(String(tyre.id))}
                 />
               ))}
             </div>

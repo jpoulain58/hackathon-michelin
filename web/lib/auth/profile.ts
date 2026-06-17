@@ -41,6 +41,10 @@ export type StravaProfile = {
     movingTimeSeconds: number;
     sportType: string;
     startDate: string | null;
+    polyline: string | null;
+    averageSpeedKmh: number | null;
+    bikeBucket: "road" | "gravel" | "mtb";
+    ebike: boolean;
   }>;
   scopes: string[];
   lastSyncAt: string | null;

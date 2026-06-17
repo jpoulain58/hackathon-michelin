@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import { TabBar } from "./src/components/TabBar";
-import { rides } from "./src/data";
 import { BaladeDetailScreen } from "./src/screens/BaladeDetailScreen";
 import { ClubScreen } from "./src/screens/ClubScreen";
 import { ComparateurScreen } from "./src/screens/ComparateurScreen";
@@ -18,7 +17,7 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { TrouveTonPneuScreen } from "./src/screens/TrouveTonPneuScreen";
 import { WelcomeScreen } from "./src/screens/WelcomeScreen";
 import { colors } from "./src/theme";
-import type { TabKey, Tyre } from "./src/types";
+import type { Ride, TabKey, Tyre } from "./src/types";
 import {
   sendPasswordResetEmail,
   signInWithEmailPassword,
@@ -37,8 +36,8 @@ export default function App() {
   );
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("trouver");
-  const [rideId, setRideId] = useState<string | null>(null);
   const [compareTyres, setCompareTyres] = useState<Tyre[]>([]);
+  const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -117,7 +116,7 @@ export default function App() {
       await supabase?.auth.signOut();
       setSession(null);
       setTab("trouver");
-      setRideId(null);
+      setSelectedRide(null);
     } catch (error) {
       setProfileMessage(error instanceof Error ? error.message : "Deconnexion impossible.");
     } finally {
@@ -137,16 +136,15 @@ export default function App() {
     );
   }
 
-  const ride = rideId ? rides.find((r) => r.id === rideId) : undefined;
-
   return (
     <SafeAreaView style={styles.shell}>
       <StatusBar style="dark" />
       <View style={styles.body}>
-        {ride ? (
-          <BaladeDetailScreen ride={ride} onBack={() => setRideId(null)} />
+        {selectedRide ? (
+          <BaladeDetailScreen ride={selectedRide} onBack={() => setSelectedRide(null)} />
         ) : tab === "trouver" ? (
           <TrouveTonPneuScreen
+            session={session}
             onCompare={(tyres) => {
               setCompareTyres(tyres);
               setTab("comparer");
@@ -155,7 +153,7 @@ export default function App() {
         ) : tab === "comparer" ? (
           <ComparateurScreen selectedTyres={compareTyres} />
         ) : tab === "communaute" ? (
-          <CommunauteScreen onOpenRide={(id) => setRideId(id)} />
+          <CommunauteScreen session={session} onOpenRide={(ride) => setSelectedRide(ride)} />
         ) : tab === "profil" ? (
           <ProfileScreen
             session={session}
@@ -167,7 +165,7 @@ export default function App() {
           <ClubScreen />
         )}
       </View>
-      {ride ? null : <TabBar active={tab} onChange={setTab} />}
+      {selectedRide ? null : <TabBar active={tab} onChange={setTab} />}
     </SafeAreaView>
   );
 }

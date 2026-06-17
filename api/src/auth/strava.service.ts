@@ -63,6 +63,8 @@ type StravaActivity = {
   type?: string;
   sport_type?: string;
   start_date?: string;
+  average_speed?: number;
+  map?: { summary_polyline?: string };
 };
 
 type StravaActivityTotals = {
@@ -120,6 +122,10 @@ export type StravaProfileSummary = {
     movingTimeSeconds: number;
     sportType: string;
     startDate: string | null;
+    polyline: string | null;
+    averageSpeedKmh: number | null;
+    bikeBucket: BikeBucket;
+    ebike: boolean;
   }>;
   scopes: string[];
   lastSyncAt: string | null;
@@ -747,15 +753,22 @@ export class StravaService {
       },
       recentActivities: recentActivities
         .map((activity) => objectValue(activity))
-        .map((activity) => ({
-          id: stringValue(activity.id) ?? "",
-          name: stringValue(activity.name) ?? "Sortie Strava",
-          distanceKm: numberValue(activity.distanceKm) ?? 0,
-          elevationM: numberValue(activity.elevationM) ?? 0,
-          movingTimeSeconds: numberValue(activity.movingTimeSeconds) ?? 0,
-          sportType: stringValue(activity.sportType) ?? "Ride",
-          startDate: stringValue(activity.startDate) ?? null,
-        }))
+        .map((activity) => {
+          const sportType = stringValue(activity.sportType) ?? "Ride";
+          return {
+            id: stringValue(activity.id) ?? "",
+            name: stringValue(activity.name) ?? "Sortie Strava",
+            distanceKm: numberValue(activity.distanceKm) ?? 0,
+            elevationM: numberValue(activity.elevationM) ?? 0,
+            movingTimeSeconds: numberValue(activity.movingTimeSeconds) ?? 0,
+            sportType,
+            startDate: stringValue(activity.startDate) ?? null,
+            polyline: stringValue(activity.polyline) ?? null,
+            averageSpeedKmh: numberValue(activity.averageSpeedKmh) ?? null,
+            bikeBucket: isBikeBucket(activity.bikeBucket) ? activity.bikeBucket : classifyBikeBucket(sportType),
+            ebike: typeof activity.ebike === "boolean" ? activity.ebike : isEbike(sportType),
+          };
+        })
         .filter((activity) => activity.id),
       scopes: connection.scopes ?? [],
       lastSyncAt: connection.last_sync_at ?? stringValue(stats.fetchedAt) ?? null,
@@ -846,15 +859,23 @@ function buildProfileSummary(params: {
       recentAverageSpeedKmh:
         recentMovingTime > 0 ? roundOne((recentDistanceM / recentMovingTime) * 3.6) : null,
     },
-    recentActivities: rideActivities.slice(0, 8).map((activity) => ({
-      id: stringifyId(activity.id) ?? randomActivityId(activity),
-      name: activity.name?.trim() || "Sortie Strava",
-      distanceKm: kmFromMeters(activity.distance ?? 0),
-      elevationM: Math.round(activity.total_elevation_gain ?? 0),
-      movingTimeSeconds: Math.round(activity.moving_time ?? 0),
-      sportType: activity.sport_type ?? activity.type ?? "Ride",
-      startDate: activity.start_date ?? null,
-    })),
+    recentActivities: rideActivities.slice(0, 20).map((activity) => {
+      const sportType = activity.sport_type ?? activity.type ?? "Ride";
+      return {
+        id: stringifyId(activity.id) ?? randomActivityId(activity),
+        name: activity.name?.trim() || "Sortie Strava",
+        distanceKm: kmFromMeters(activity.distance ?? 0),
+        elevationM: Math.round(activity.total_elevation_gain ?? 0),
+        movingTimeSeconds: Math.round(activity.moving_time ?? 0),
+        sportType,
+        startDate: activity.start_date ?? null,
+        polyline: activity.map?.summary_polyline ?? null,
+        averageSpeedKmh:
+          typeof activity.average_speed === "number" ? roundOne(activity.average_speed * 3.6) : null,
+        bikeBucket: classifyBikeBucket(sportType),
+        ebike: isEbike(sportType),
+      };
+    }),
     scopes: params.scopes,
     lastSyncAt: params.lastSyncAt,
   };
@@ -890,6 +911,26 @@ function getTokenExpiresAt(tokens: StravaTokens): string | null {
 function isRideActivity(activity: StravaActivity): boolean {
   const sport = `${activity.sport_type ?? ""} ${activity.type ?? ""}`.toLowerCase();
   return /ride|bike|cycling|handcycle|velomobile/.test(sport);
+}
+
+export type BikeBucket = "road" | "gravel" | "mtb";
+
+const BIKE_BUCKETS: BikeBucket[] = ["road", "gravel", "mtb"];
+
+function isBikeBucket(value: unknown): value is BikeBucket {
+  return typeof value === "string" && (BIKE_BUCKETS as string[]).includes(value);
+}
+
+/** Deduit la pratique (route/gravel/VTT) du sport_type Strava (cf. enum SportType de l'API v3). */
+function classifyBikeBucket(sportType: string): BikeBucket {
+  const sport = sportType.toLowerCase();
+  if (sport.includes("mountainbike")) return "mtb";
+  if (sport.includes("gravel")) return "gravel";
+  return "road";
+}
+
+function isEbike(sportType: string): boolean {
+  return sportType.toLowerCase().includes("ebike");
 }
 
 function kmFromMeters(value: number): number {
