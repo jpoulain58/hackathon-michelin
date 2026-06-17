@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
@@ -93,9 +94,17 @@ export default function Communaute() {
                 </span>
               </div>
               <p className="mt-2 text-sm text-michelin-navy">&laquo; {r.text} &raquo;</p>
-              <p className="mt-3 text-xs text-michelin-ink">
-                {r.verifiedRides} sorties · {r.terrains} · {r.avgSpeedKmh} km/h de moyenne
-              </p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <p className="text-xs text-michelin-ink">
+                  {r.verifiedRides} sorties · {r.terrains} · {r.avgSpeedKmh} km/h de moyenne
+                </p>
+                <Link
+                  href={r.productId ? `/produits/${r.productId}` : "/produits"}
+                  className="shrink-0 rounded-pill bg-michelin-yellow px-3 py-1.5 text-xs font-bold text-michelin-navy transition-[filter] hover:brightness-95"
+                >
+                  Voir le pneu →
+                </Link>
+              </div>
             </Reveal>
           ))}
         </div>
@@ -110,13 +119,28 @@ export default function Communaute() {
           <Reveal as="p" delay={60} className="mt-1 text-sm text-michelin-ink">
             Vois ce que roulent les pros et les riders comme toi.
           </Reveal>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {pros.map((p, i) => (
-              <Reveal key={p.name} delay={(i % 4) * 70} className="group rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft card-interactive">
-                <TyreImage kind={kindFromText(p.tyre)} className="h-12 w-12 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
-                <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-michelin-ink">{p.discipline}</div>
-                <div className="mt-1 font-bold text-michelin-navy">{p.name}</div>
-                <div className="mt-2 text-sm font-semibold text-michelin-blue">{p.tyre}</div>
+              <Reveal key={p.name} delay={(i % 3) * 70}>
+                <Link
+                  href={p.productId ? `/produits/${p.productId}` : "/produits"}
+                  className="group flex flex-col rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <TyreImage kind={kindFromText(p.tyre)} className="h-12 w-12 shrink-0 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
+                    <span className="rounded-pill border border-michelin-gray-line px-2.5 py-0.5 text-[10px] font-semibold text-michelin-ink">
+                      {p.team}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-michelin-ink">{p.discipline}</div>
+                  <div className="mt-1 font-bold text-michelin-navy">{p.name}</div>
+                  <div className="mt-2 text-sm font-semibold text-michelin-blue">{p.tyre}</div>
+                  <div className="mt-4 flex items-center justify-end">
+                    <span className="rounded-pill bg-michelin-yellow px-3 py-1 text-xs font-bold text-michelin-navy transition-[filter] group-hover:brightness-95">
+                      Voir le pneu →
+                    </span>
+                  </div>
+                </Link>
               </Reveal>
             ))}
           </div>
