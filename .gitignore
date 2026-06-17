@@ -27,9 +27,9 @@ npm-debug.log*
 # Le moteur tourne sur data/products.sample.json (anonymise, versionne).
 # ---------------------------------------------------------------
 **/products.json
+supabase/*.local.sql
 *.xlsx
 *.pptx
 
 # .md
 CLAUDE.md
-

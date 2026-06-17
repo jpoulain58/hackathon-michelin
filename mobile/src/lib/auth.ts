@@ -52,6 +52,14 @@ function getWebAuthCallbackBase(): string {
   return "http://localhost:3000/auth/callback";
 }
 
+function getWebPasswordResetUrl(): string {
+  const url = new URL(getWebAuthCallbackBase());
+  url.pathname = "/auth/update-password";
+  url.search = "";
+  url.hash = "";
+  return url.toString();
+}
+
 function getSupabaseRedirectTo(mobileRedirectTo: string): string {
   const redirectTo = new URL(getWebAuthCallbackBase());
   redirectTo.searchParams.set("mobile_redirect_to", mobileRedirectTo);
@@ -216,6 +224,31 @@ export async function signInWithEmail(email: string): Promise<void> {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: redirectTo },
+  });
+
+  if (error) throw error;
+}
+
+export async function signInWithEmailPassword(
+  email: string,
+  password: string,
+): Promise<Session | null> {
+  if (!supabase) throw new Error("Configuration Supabase manquante.");
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+  return data.session;
+}
+
+export async function sendPasswordResetEmail(email: string): Promise<void> {
+  if (!supabase) throw new Error("Configuration Supabase manquante.");
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: getWebPasswordResetUrl(),
   });
 
   if (error) throw error;

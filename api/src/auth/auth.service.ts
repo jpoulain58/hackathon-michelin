@@ -23,6 +23,28 @@ type SyncedRider = {
   updated_at: string;
 };
 
+export type SafeProviderConnection = {
+  provider: string;
+  providerUserId: string | null;
+  scopes: string[];
+  profile: Record<string, unknown>;
+  stats: Record<string, unknown>;
+  createdAt: string | null;
+  updatedAt: string | null;
+  lastSyncAt: string | null;
+};
+
+type ProviderConnectionRow = {
+  provider: string;
+  provider_user_id: string | null;
+  scopes: string[] | null;
+  profile: Record<string, unknown> | null;
+  stats: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+  last_sync_at: string | null;
+};
+
 const realtimeTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 @Injectable()
@@ -66,9 +88,17 @@ export class AuthService {
     return user;
   }
 
+  async getOptionalUserFromAuthorization(authorization?: string): Promise<User | null> {
+    if (!authorization?.match(/^Bearer\s+(.+)$/i)) return null;
+    return this.getUserFromAuthorization(authorization);
+  }
+
   async syncRiderFromAuthorization(authorization?: string): Promise<SyncedRider> {
     const user = await this.getUserFromAuthorization(authorization);
+    return this.syncRider(user);
+  }
 
+  async syncRider(user: User): Promise<SyncedRider> {
     if (!this.supabase) {
       throw new InternalServerErrorException(
         "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
@@ -121,6 +151,37 @@ export class AuthService {
     return data as SyncedRider;
   }
 
+  async getProviderConnections(userId: string): Promise<SafeProviderConnection[]> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
+    const { data, error } = await this.supabase
+      .from("provider_connections")
+      .select("provider, provider_user_id, scopes, profile, stats, created_at, updated_at, last_sync_at")
+      .eq("user_id", userId);
+
+    if (error) {
+      if (isMissingProviderConnectionsTable(error.message)) return [];
+      throw new InternalServerErrorException(
+        `Impossible de lire les comptes connectes: ${error.message}`,
+      );
+    }
+
+    return ((data ?? []) as ProviderConnectionRow[]).map((connection) => ({
+      provider: connection.provider,
+      providerUserId: connection.provider_user_id,
+      scopes: connection.scopes ?? [],
+      profile: connection.profile ?? {},
+      stats: connection.stats ?? {},
+      createdAt: connection.created_at,
+      updatedAt: connection.updated_at,
+      lastSyncAt: connection.last_sync_at,
+    }));
+  }
+
   private getProvider(user: User): string | null {
     return this.firstString(user.app_metadata.provider) ?? null;
   }
@@ -138,4 +199,8 @@ export class AuthService {
   private firstString(...values: unknown[]): string | undefined {
     return values.find((value): value is string => typeof value === "string" && value.length > 0);
   }
+}
+
+function isMissingProviderConnectionsTable(message: string): boolean {
+  return /provider_connections|relation .* does not exist|Could not find the table/i.test(message);
 }

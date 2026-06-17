@@ -25,6 +25,7 @@ const TABS: {
     iconActive: "people",
   },
   { key: "club", label: "Club", icon: "ribbon-outline", iconActive: "ribbon" },
+  { key: "profil", label: "Profil", icon: "person-outline", iconActive: "person" },
 ];
 
 export function TabBar({
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingHorizontal: 24,
+    paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 6,
   },

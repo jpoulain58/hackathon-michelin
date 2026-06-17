@@ -25,6 +25,7 @@ const DEFAULT_USER_API_URL = "https://apis.garmin.com/wellness-api/rest/user/id"
 type PendingAuth = {
   codeVerifier: string;
   mobileRedirectTo: string;
+  linkUserId?: string;
   expiresAt: number;
 };
 
@@ -38,6 +39,11 @@ export type GarminSessionTicket = {
   mobileRedirectTo: string;
   tokenHash: string;
   type: "magiclink";
+};
+
+export type GarminLinkedTicket = {
+  mobileRedirectTo: string;
+  linked: true;
 };
 
 const STATE_TTL_MS = 10 * 60 * 1000;
@@ -61,7 +67,7 @@ export class GarminService {
   }
 
   /** Construit l'URL d'autorisation Garmin et memorise le PKCE pour le callback. */
-  buildAuthorizeUrl(mobileRedirectTo: string): string {
+  buildAuthorizeUrl(mobileRedirectTo: string, linkUserId?: string): string {
     if (!mobileRedirectTo) {
       throw new BadRequestException("Parametre mobile_redirect_to manquant.");
     }
@@ -75,6 +81,7 @@ export class GarminService {
     this.pending.set(state, {
       codeVerifier,
       mobileRedirectTo,
+      linkUserId,
       expiresAt: Date.now() + STATE_TTL_MS,
     });
 
@@ -100,7 +107,12 @@ export class GarminService {
     state?: string;
     error?: string;
     errorDescription?: string;
-  }): Promise<GarminSessionTicket | { mobileRedirectTo: string; error: string } | { error: string }> {
+  }): Promise<
+    | GarminSessionTicket
+    | GarminLinkedTicket
+    | { mobileRedirectTo: string; error: string }
+    | { error: string }
+  > {
     const pending = params.state ? this.pending.get(params.state) : undefined;
     if (params.state) this.pending.delete(params.state);
 
@@ -121,7 +133,12 @@ export class GarminService {
     try {
       const tokens = await this.exchangeCode(params.code, pending.codeVerifier);
       const garminUserId = await this.fetchGarminUserId(tokens.access_token);
-      const tokenHash = await this.provisionSupabaseUser(garminUserId);
+      if (pending.linkUserId) {
+        await this.linkSupabaseUser(pending.linkUserId, garminUserId, tokens);
+        return { mobileRedirectTo, linked: true };
+      }
+
+      const tokenHash = await this.provisionSupabaseUser(garminUserId, tokens);
       return { mobileRedirectTo, tokenHash, type: "magiclink" };
     } catch (error) {
       return {
@@ -186,11 +203,17 @@ export class GarminService {
    * Cree (ou met a jour) l'utilisateur Supabase associe au compte Garmin et
    * renvoie un token_hash magiclink que le mobile echangera contre une session.
    */
-  private async provisionSupabaseUser(garminUserId: string): Promise<string> {
+  private async provisionSupabaseUser(garminUserId: string, tokens: GarminTokens): Promise<string> {
     if (!this.supabase) {
       throw new InternalServerErrorException(
         "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
       );
+    }
+
+    const linkedUser = await this.findUserByProviderConnection(garminUserId);
+    if (linkedUser) {
+      await this.linkSupabaseUser(linkedUser.id, garminUserId, tokens);
+      return this.generateMagicLinkToken(linkedUser.email);
     }
 
     // Garmin ne fournit pas d'email : on derive un email stable et deterministe.
@@ -227,7 +250,129 @@ export class GarminService {
       });
     }
 
+    await this.upsertProviderConnection(userId, garminUserId, tokens);
+
     // Genere le token final apres que les metadonnees soient a jour.
+    const link = await this.supabase.auth.admin.generateLink({ type: "magiclink", email });
+    if (link.error || !link.data.properties?.hashed_token) {
+      throw new Error(link.error?.message ?? "Generation du lien de session Supabase echouee.");
+    }
+
+    return link.data.properties.hashed_token;
+  }
+
+  private async linkSupabaseUser(
+    userId: string,
+    garminUserId: string,
+    tokens: GarminTokens,
+  ): Promise<void> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
+    const { data, error } = await this.supabase.auth.admin.getUserById(userId);
+    if (error || !data.user) {
+      throw new Error(error?.message ?? "Utilisateur Supabase introuvable.");
+    }
+
+    const appMetadata = objectValue(data.user.app_metadata);
+    const existingProviders = Array.isArray(appMetadata.providers)
+      ? appMetadata.providers.filter((provider): provider is string => typeof provider === "string")
+      : [];
+    const providers = Array.from(new Set([...existingProviders, "garmin"]));
+    const userMetadata = objectValue(data.user.user_metadata);
+
+    await this.supabase.auth.admin.updateUserById(userId, {
+      app_metadata: {
+        ...appMetadata,
+        provider: stringValue(appMetadata.provider) ?? "garmin",
+        providers,
+      },
+      user_metadata: {
+        ...userMetadata,
+        garmin_id: garminUserId,
+        full_name: stringValue(userMetadata.full_name) ?? "Rider Garmin",
+      },
+    });
+
+    await this.upsertProviderConnection(userId, garminUserId, tokens);
+  }
+
+  private async upsertProviderConnection(
+    userId: string,
+    garminUserId: string,
+    tokens: GarminTokens,
+  ): Promise<void> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
+    const { error } = await this.supabase.from("provider_connections").upsert(
+      {
+        user_id: userId,
+        provider: "garmin",
+        provider_user_id: garminUserId,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token ?? null,
+        expires_at: tokens.expires_in
+          ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
+          : null,
+        scopes: [],
+        profile: { id: garminUserId },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,provider" },
+    );
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `Impossible d'enregistrer la connexion Garmin: ${formatProviderTableError(error.message)}`,
+      );
+    }
+  }
+
+  private async findUserByProviderConnection(
+    garminUserId: string,
+  ): Promise<{ id: string; email: string } | null> {
+    if (!this.supabase) return null;
+
+    const { data, error } = await this.supabase
+      .from("provider_connections")
+      .select("user_id")
+      .eq("provider", "garmin")
+      .eq("provider_user_id", garminUserId)
+      .maybeSingle();
+
+    if (error) {
+      if (isMissingProviderConnectionsTable(error.message)) return null;
+      throw new InternalServerErrorException(
+        `Impossible de retrouver la connexion Garmin: ${error.message}`,
+      );
+    }
+
+    const userId = stringValue((data as { user_id?: unknown } | null)?.user_id);
+    if (!userId) return null;
+
+    const user = await this.supabase.auth.admin.getUserById(userId);
+    const email = user.data.user?.email;
+    if (user.error || !email) {
+      throw new Error(user.error?.message ?? "Utilisateur lie a Garmin sans email Supabase.");
+    }
+
+    return { id: userId, email };
+  }
+
+  private async generateMagicLinkToken(email: string): Promise<string> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
     const link = await this.supabase.auth.admin.generateLink({ type: "magiclink", email });
     if (link.error || !link.data.properties?.hashed_token) {
       throw new Error(link.error?.message ?? "Generation du lien de session Supabase echouee.");
@@ -272,4 +417,25 @@ function isAlreadyRegistered(error: { message?: string; code?: string } | null):
   if (!error) return false;
   if (error.code === "email_exists") return true;
   return /already.*registered|already been registered|email_exists/i.test(error.message ?? "");
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function isMissingProviderConnectionsTable(message: string): boolean {
+  return /provider_connections|relation .* does not exist|Could not find the table/i.test(message);
+}
+
+function formatProviderTableError(message: string): string {
+  if (isMissingProviderConnectionsTable(message)) {
+    return `${message}. Execute supabase/riders.sql pour creer public.provider_connections.`;
+  }
+  return message;
 }
