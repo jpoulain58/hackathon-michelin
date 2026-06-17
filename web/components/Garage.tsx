@@ -377,34 +377,44 @@ export function Garage() {
         <div className="mt-6 rounded-2xl bg-michelin-gray-light p-4">
           <h4 className="text-sm font-bold text-michelin-navy">Ajouter un pneu</h4>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <input
-              value={draft.label}
-              onChange={(e) => setDraft({ ...draft, label: e.target.value })}
-              placeholder="Emplacement (ex. Pneu avant)"
-              className="rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-            />
-            <input
-              value={draft.model}
-              onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-              placeholder="Modele (ex. MICHELIN Power Cup)"
-              className="rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-            />
-            <input
-              type="number"
-              min={0}
-              value={draft.km}
-              onChange={(e) => setDraft({ ...draft, km: Number(e.target.value) })}
-              placeholder="Km parcourus"
-              className="rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-            />
-            <input
-              type="number"
-              min={1}
-              value={draft.lifespan_km}
-              onChange={(e) => setDraft({ ...draft, lifespan_km: Number(e.target.value) })}
-              placeholder="Duree de vie (km)"
-              className="rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-            />
+            <label className="block text-xs font-semibold text-michelin-ink">
+              Emplacement
+              <input
+                value={draft.label}
+                onChange={(e) => setDraft({ ...draft, label: e.target.value })}
+                placeholder="ex. Pneu avant"
+                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
+              />
+            </label>
+            <label className="block text-xs font-semibold text-michelin-ink">
+              Modele
+              <input
+                value={draft.model}
+                onChange={(e) => setDraft({ ...draft, model: e.target.value })}
+                placeholder="ex. MICHELIN Power Cup"
+                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
+              />
+            </label>
+            <label className="block text-xs font-semibold text-michelin-ink">
+              Km parcourus
+              <input
+                type="number"
+                min={0}
+                value={draft.km}
+                onChange={(e) => setDraft({ ...draft, km: Number(e.target.value) })}
+                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
+              />
+            </label>
+            <label className="block text-xs font-semibold text-michelin-ink">
+              Duree de vie estimee (km)
+              <input
+                type="number"
+                min={1}
+                value={draft.lifespan_km}
+                onChange={(e) => setDraft({ ...draft, lifespan_km: Number(e.target.value) })}
+                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
+              />
+            </label>
           </div>
           <Button onClick={addTyre} disabled={adding} className="mt-3">
             {adding ? "Ajout..." : "Ajouter le pneu"}
