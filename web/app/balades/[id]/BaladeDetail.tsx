@@ -1,14 +1,14 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
-import { Brand } from "@/components/Brand";
-import { BottomNav } from "@/components/BottomNav";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 const DIFFICULTY_STYLE: Record<string, string> = {
   Débutant: "border border-michelin-gray-line bg-white text-michelin-ink",
@@ -65,14 +65,6 @@ function IconFlame() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-    </svg>
-  );
-}
-
-function IconArrowLeft() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M19 12H5M5 12l7 7M5 12l7-7" />
     </svg>
   );
 }
@@ -138,32 +130,13 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
   const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=balades&q=${encodeURIComponent(ride.tyreDetail.name)}`;
 
   return (
-    <main className="min-h-screen pb-20 lg:pb-0">
-      {/* Header mobile */}
-      <div className="flex items-center gap-3 px-4 py-3 lg:hidden">
-        <Link href="/balades" className="text-michelin-ink" aria-label="Retour aux balades">
-          <IconArrowLeft />
-        </Link>
-        <span className="text-sm font-semibold text-michelin-navy">Balades</span>
-      </div>
+    <main className="min-h-screen">
+      <SiteHeader />
 
-      {/* Header desktop */}
-      <header className="mx-auto hidden max-w-6xl items-center justify-between px-6 py-5 lg:flex">
-        <Link href="/accueil">
-          <Brand />
-        </Link>
-        <nav className="flex items-center gap-4 text-sm font-semibold">
-          <Link href="/balades" className="flex items-center gap-1 text-michelin-blue hover:underline">
-            <IconArrowLeft />
-            Balades
-          </Link>
-          <Link href="/communaute" className="text-michelin-blue hover:underline">Communauté</Link>
-          <Link href="/club" className="text-michelin-blue hover:underline">Club</Link>
-          <Button asChild size="sm">
-            <Link href="/trouve-ton-pneu">Trouve ton pneu</Link>
-          </Button>
-        </nav>
-      </header>
+      <Breadcrumb items={[
+        { label: "Balades", href: "/balades" },
+        { label: ride.name },
+      ]} />
 
       {/* Carte */}
       <div className="relative">
@@ -274,7 +247,7 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
         </section>
       </div>
 
-      <BottomNav />
+      <SiteFooter />
     </main>
   );
 }
