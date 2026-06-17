@@ -52,6 +52,40 @@ export default async function Actualites() {
           Evenements, produits, balades et coulisses : tout ce qui fait rouler Michelin Trust Wheels.
         </Reveal>
 
+        {/* A la une : teaser produit dedie (page statique /actualites/power-pulse) */}
+        <Reveal delay={120}>
+          <Link href="/actualites/power-pulse">
+            <Card className="group mt-8 overflow-hidden card-interactive">
+              <div className="grid md:grid-cols-2">
+                <div className="relative min-h-[260px] overflow-hidden">
+                  <img
+                    src="/photos/road-sunny.jpg"
+                    alt=""
+                    className="img-zoom absolute inset-0 h-full w-full object-cover"
+                  />
+                  <span className="kicker absolute left-4 top-4">A la une</span>
+                </div>
+                <CardContent className="flex flex-col justify-center gap-3 p-8">
+                  <div className="flex items-center gap-3">
+                    <span className="kicker">Produit</span>
+                    <span className="text-xs font-semibold text-michelin-ink">Bientot · Juillet 2026</span>
+                  </div>
+                  <h2 className="text-2xl font-black leading-tight tracking-tight text-michelin-navy">
+                    MICHELIN Power Pulse : le pneu le plus rapide arrive
+                  </h2>
+                  <p className="text-michelin-ink">
+                    Le nouveau pneu route Michelin sort en juillet 2026. Membres du Club : reservez
+                    votre essai en avant-premiere.
+                  </p>
+                  <div>
+                    <Button className="mt-2">Decouvrir &amp; reserver</Button>
+                  </div>
+                </CardContent>
+              </div>
+            </Card>
+          </Link>
+        </Reveal>
+
         {featured && (
           <Reveal delay={120}>
             <Link href={`/actualites/${featured.slug}`}>

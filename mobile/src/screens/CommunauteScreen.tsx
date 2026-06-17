@@ -7,6 +7,7 @@ import {
   Dimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -27,9 +28,11 @@ const CARD_W = Dimensions.get("window").width - spacing.lg * 2;
 export function CommunauteScreen({
   session,
   onOpenRide,
+  onOpenPneuTest,
 }: {
   session: Session | null;
   onOpenRide: (ride: Ride) => void;
+  onOpenPneuTest: () => void;
 }) {
   const [newsIndex, setNewsIndex] = useState(0);
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -81,6 +84,24 @@ export function CommunauteScreen({
 
       {/* Actualités */}
       <SectionTitle>Actualités</SectionTitle>
+
+      {/* A la une : teaser nouveau pneu (ouvre l'ecran de reservation) */}
+      <Pressable onPress={onOpenPneuTest} style={{ marginBottom: spacing.md }}>
+        <RemoteImage uri="https://picsum.photos/seed/powerpulse/1000/500" style={styles.teaser}>
+          <LinearGradient
+            colors={["rgba(11,18,32,0.1)", "rgba(11,18,32,0.9)"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.teaserBadge}>
+            <Text style={styles.teaserBadgeText}>BIENTÔT · JUILLET 2026</Text>
+          </View>
+          <Text style={styles.newsTitle}>MICHELIN Power Pulse arrive</Text>
+          <Text style={styles.teaserSub}>
+            Membres du Club : réservez votre essai en avant-première →
+          </Text>
+        </RemoteImage>
+      </Pressable>
+
       <ScrollView
         horizontal
         pagingEnabled
@@ -175,6 +196,22 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 22,
   },
+  teaser: {
+    height: 180,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    justifyContent: "flex-end",
+  },
+  teaserBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.yellow,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: spacing.sm,
+  },
+  teaserBadgeText: { color: colors.navyDark, fontSize: font.tiny, fontWeight: "800" },
+  teaserSub: { color: "rgba(255,255,255,0.9)", fontSize: font.small, marginTop: 4 },
   sectionSpacer: { marginTop: spacing.xl },
   rides: { gap: spacing.md },
   emptyText: { color: colors.textMuted, fontSize: font.body },

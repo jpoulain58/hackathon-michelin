@@ -13,6 +13,7 @@ import { BaladeDetailScreen } from "./src/screens/BaladeDetailScreen";
 import { ClubScreen } from "./src/screens/ClubScreen";
 import { ComparateurScreen } from "./src/screens/ComparateurScreen";
 import { CommunauteScreen } from "./src/screens/CommunauteScreen";
+import { PneuTestScreen } from "./src/screens/PneuTestScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { TrouveTonPneuScreen } from "./src/screens/TrouveTonPneuScreen";
 import { WelcomeScreen } from "./src/screens/WelcomeScreen";
@@ -38,6 +39,7 @@ export default function App() {
   const [tab, setTab] = useState<TabKey>("trouver");
   const [compareTyres, setCompareTyres] = useState<Tyre[]>([]);
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
+  const [showPneuTest, setShowPneuTest] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
@@ -117,6 +119,7 @@ export default function App() {
       setSession(null);
       setTab("trouver");
       setSelectedRide(null);
+      setShowPneuTest(false);
     } catch (error) {
       setProfileMessage(error instanceof Error ? error.message : "Deconnexion impossible.");
     } finally {
@@ -142,6 +145,8 @@ export default function App() {
       <View style={styles.body}>
         {selectedRide ? (
           <BaladeDetailScreen ride={selectedRide} onBack={() => setSelectedRide(null)} />
+        ) : showPneuTest ? (
+          <PneuTestScreen session={session} onBack={() => setShowPneuTest(false)} />
         ) : tab === "trouver" ? (
           <TrouveTonPneuScreen
             session={session}
@@ -153,7 +158,11 @@ export default function App() {
         ) : tab === "comparer" ? (
           <ComparateurScreen selectedTyres={compareTyres} />
         ) : tab === "communaute" ? (
-          <CommunauteScreen session={session} onOpenRide={(ride) => setSelectedRide(ride)} />
+          <CommunauteScreen
+            session={session}
+            onOpenRide={(ride) => setSelectedRide(ride)}
+            onOpenPneuTest={() => setShowPneuTest(true)}
+          />
         ) : tab === "profil" ? (
           <ProfileScreen
             session={session}
@@ -165,7 +174,7 @@ export default function App() {
           <ClubScreen />
         )}
       </View>
-      {selectedRide ? null : <TabBar active={tab} onChange={setTab} />}
+      {selectedRide || showPneuTest ? null : <TabBar active={tab} onChange={setTab} />}
     </SafeAreaView>
   );
 }

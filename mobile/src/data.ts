@@ -208,7 +208,6 @@ export const clubPlan: ClubPlan = {
   price: "9 €/mois",
   advantages: [
     "2 pneus Michelin offerts / an",
-    "Chambres à air à volonté",
     "Accès prioritaire au Programme Testeur",
     "Mon Garage connecté : suivi d'usure de tes pneus",
     "Badge Testeur Michelin sur ton profil",
