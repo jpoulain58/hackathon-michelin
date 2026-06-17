@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/trouve-ton-pneu", label: "Trouve ton pneu", cta: true },
   { href: "/communaute", label: "Communaute" },
   { href: "/balades", label: "Balades" },
+  { href: "/produits", label: "Produits" },
   { href: "/actualites", label: "Actualites" },
   { href: "/club", label: "Club" },
   { href: "/profil", label: "Profil" },
