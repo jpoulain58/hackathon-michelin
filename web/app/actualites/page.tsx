@@ -1,71 +1,42 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { supabaseServer } from "@/lib/supabase/server";
 
 type Article = {
+  id: number;
+  slug: string;
   category: string;
-  date: string;
   title: string;
   excerpt: string;
-  photo: string;
+  photo: string | null;
+  is_featured: boolean;
+  published_at: string;
 };
 
-const FEATURED: Article = {
-  category: "Evenement",
-  date: "12 juin 2026",
-  title: "Trust Wheels x Tour de France : la caravane connectee",
-  excerpt:
-    "Cet ete, la communaute prend la route du Tour. Scanne les bornes Trust Wheels sur les etapes, debloque des defis et fais grimper tes kilometres verifies au classement collectif.",
-  photo: "/photos/peloton.jpg",
-};
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
-const ARTICLES: Article[] = [
-  {
-    category: "Produit",
-    date: "8 juin 2026",
-    title: "Power Cup : 3 920 km verifies, le verdict des riders",
-    excerpt:
-      "Rendement, accroche, longevite : on a compile les avis adosses aux vrais kilometres Strava. Le pneu route le plus recommande de la communaute ce mois-ci.",
-    photo: "/photos/bike-road.jpg",
-  },
-  {
-    category: "Balades",
-    date: "5 juin 2026",
-    title: "Gravel Series 2026 : 5 etapes, 1 pneu conseille par terrain",
-    excerpt:
-      "Du chemin blanc au single technique, decouvre les itineraires de la saison et la recommandation Michelin adaptee a chaque profil.",
-    photo: "/photos/trail.jpg",
-  },
-  {
-    category: "Communaute",
-    date: "1 juin 2026",
-    title: "Pauline Ferrand-Prevot partage ses sorties avec la communaute",
-    excerpt:
-      "La championne ouvre ses traces et ses choix de pneus. La preuve par la route, du peloton pro jusqu'a ton garage.",
-    photo: "/photos/community-duo.jpg",
-  },
-  {
-    category: "Coulisses",
-    date: "28 mai 2026",
-    title: "Comment on verifie un avis avec tes kilometres Strava",
-    excerpt:
-      "Pas d'avis sans preuve : on explique comment les sorties, terrains et distances rendent chaque retour credible et impossible a falsifier.",
-    photo: "/photos/road-forest.jpg",
-  },
-  {
-    category: "Club",
-    date: "22 mai 2026",
-    title: "Le Club Trust Wheels ouvre ses portes",
-    excerpt:
-      "Pneus offerts, chambres a air a volonte et defis premium : l'abonnement rider qui recompense ta fidelite, apres la preuve.",
-    photo: "/photos/city-rider.jpg",
-  },
-];
+export const revalidate = 60;
 
-export default function Actualites() {
+export default async function Actualites() {
+  const { data: articles = [] } = await supabaseServer
+    .from("articles")
+    .select("id, slug, category, title, excerpt, photo, is_featured, published_at")
+    .order("published_at", { ascending: false });
+
+  const featured = articles?.find((a) => a.is_featured) ?? articles?.[0] ?? null;
+  const rest = articles?.filter((a) => a !== featured) ?? [];
+
   return (
     <main className="min-h-screen">
       <SiteHeader />
@@ -81,53 +52,78 @@ export default function Actualites() {
           Evenements, produits, balades et coulisses : tout ce qui fait rouler Michelin Trust Wheels.
         </Reveal>
 
-        {/* A la une */}
-        <Reveal delay={120}>
-          <Card className="group mt-8 overflow-hidden card-interactive">
-            <div className="grid md:grid-cols-2">
-              <div className="relative min-h-[260px] overflow-hidden">
-                <img src={FEATURED.photo} alt="" className="img-zoom absolute inset-0 h-full w-full object-cover" />
-                <span className="kicker absolute left-4 top-4">A la une</span>
-              </div>
-              <CardContent className="flex flex-col justify-center gap-3 p-8">
-                <div className="flex items-center gap-3">
-                  <span className="kicker">{FEATURED.category}</span>
-                  <span className="text-xs font-semibold text-michelin-ink">{FEATURED.date}</span>
+        {featured && (
+          <Reveal delay={120}>
+            <Link href={`/actualites/${featured.slug}`}>
+              <Card className="group mt-8 overflow-hidden card-interactive">
+                <div className="grid md:grid-cols-2">
+                  <div className="relative min-h-[260px] overflow-hidden">
+                    {featured.photo && (
+                      <img
+                        src={featured.photo}
+                        alt=""
+                        className="img-zoom absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
+                    <span className="kicker absolute left-4 top-4">A la une</span>
+                  </div>
+                  <CardContent className="flex flex-col justify-center gap-3 p-8">
+                    <div className="flex items-center gap-3">
+                      <span className="kicker">{featured.category}</span>
+                      <span className="text-xs font-semibold text-michelin-ink">
+                        {formatDate(featured.published_at)}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-black leading-tight tracking-tight text-michelin-navy">
+                      {featured.title}
+                    </h2>
+                    <p className="text-michelin-ink">{featured.excerpt}</p>
+                    <div>
+                      <Button className="mt-2">Lire l&apos;article</Button>
+                    </div>
+                  </CardContent>
                 </div>
-                <h2 className="text-2xl font-black leading-tight tracking-tight text-michelin-navy">{FEATURED.title}</h2>
-                <p className="text-michelin-ink">{FEATURED.excerpt}</p>
-                <div>
-                  <Button className="mt-2">Lire l&apos;article</Button>
-                </div>
-              </CardContent>
-            </div>
-          </Card>
-        </Reveal>
-
-        {/* Grille d'articles */}
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {ARTICLES.map((a, i) => (
-            <Reveal key={a.title} delay={(i % 3) * 80} className="h-full">
-              <Card className="group flex h-full flex-col overflow-hidden card-interactive">
-                <div className="relative h-44 w-full overflow-hidden">
-                  <img src={a.photo} alt="" className="img-zoom absolute inset-0 h-full w-full object-cover" />
-                  <span className="kicker absolute left-3 top-3">{a.category}</span>
-                </div>
-                <CardContent className="flex flex-1 flex-col gap-2 p-5">
-                  <span className="text-xs font-semibold text-michelin-ink">{a.date}</span>
-                  <h3 className="text-lg font-bold leading-tight text-michelin-navy">{a.title}</h3>
-                  <p className="text-sm text-michelin-ink">{a.excerpt}</p>
-                  <a
-                    href="#"
-                    className="link-underline mt-auto w-fit pt-2 text-sm font-semibold text-michelin-blue"
-                  >
-                    Lire la suite →
-                  </a>
-                </CardContent>
               </Card>
-            </Reveal>
-          ))}
-        </div>
+            </Link>
+          </Reveal>
+        )}
+
+        {rest.length > 0 && (
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {rest.map((a: Article, i: number) => (
+              <Reveal key={a.id} delay={(i % 3) * 80} className="h-full">
+                <Link href={`/actualites/${a.slug}`} className="h-full">
+                  <Card className="group flex h-full flex-col overflow-hidden card-interactive">
+                    <div className="relative h-44 w-full overflow-hidden">
+                      {a.photo && (
+                        <img
+                          src={a.photo}
+                          alt=""
+                          className="img-zoom absolute inset-0 h-full w-full object-cover"
+                        />
+                      )}
+                      <span className="kicker absolute left-3 top-3">{a.category}</span>
+                    </div>
+                    <CardContent className="flex flex-1 flex-col gap-2 p-5">
+                      <span className="text-xs font-semibold text-michelin-ink">
+                        {formatDate(a.published_at)}
+                      </span>
+                      <h3 className="text-lg font-bold leading-tight text-michelin-navy">{a.title}</h3>
+                      <p className="text-sm text-michelin-ink">{a.excerpt}</p>
+                      <span className="link-underline mt-auto w-fit pt-2 text-sm font-semibold text-michelin-blue">
+                        Lire la suite →
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        )}
+
+        {!featured && (
+          <p className="mt-16 text-center text-michelin-ink">Aucun article publié pour l&apos;instant.</p>
+        )}
       </section>
 
       <SiteFooter />

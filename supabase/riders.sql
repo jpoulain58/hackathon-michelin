@@ -46,3 +46,29 @@ for update
 to authenticated
 using (auth.uid() = id)
 with check (auth.uid() = id);
+
+-- Connexions OAuth externes gerees uniquement par l'API avec la service role.
+-- Les tokens ne doivent pas etre exposes au client web/mobile.
+create table if not exists public.provider_connections (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  provider text not null,
+  provider_user_id text,
+  access_token text,
+  refresh_token text,
+  expires_at timestamptz,
+  scopes text[] not null default '{}',
+  profile jsonb not null default '{}'::jsonb,
+  stats jsonb not null default '{}'::jsonb,
+  last_sync_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, provider),
+  unique (provider, provider_user_id),
+  constraint provider_connections_known_provider
+    check (provider in ('strava', 'garmin', 'google'))
+);
+
+create index if not exists provider_connections_provider_user_idx
+on public.provider_connections (provider, provider_user_id);
+
+alter table public.provider_connections enable row level security;

@@ -1,4 +1,4 @@
-export type TabKey = "trouver" | "comparer" | "communaute" | "club";
+export type TabKey = "trouver" | "comparer" | "communaute" | "club" | "profil";
 
 export type TyreCategory = "Route" | "Montagne" | "Performance";
 

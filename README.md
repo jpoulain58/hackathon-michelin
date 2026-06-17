@@ -69,18 +69,23 @@ Le web et le mobile utilisent Supabase Auth avec :
 - Garmin (`custom:garmin`)
 - Email via magic link
 
-Google et email sont supportes nativement par Supabase. Strava et Garmin doivent etre
-crees dans Supabase Dashboard comme Custom OAuth/OIDC Providers avec les identifiants
-`custom:strava` et `custom:garmin`.
+Google et email sont supportes nativement par Supabase. Strava et Garmin passent
+par les callbacks backend `/api/auth/strava/*` et `/api/auth/garmin/*` pour
+provisionner ou relier un compte Supabase existant. Les tokens OAuth sont stockes
+dans `public.provider_connections` via la service role, jamais dans le client.
 
 Pour que Strava fonctionne sur mobile Expo Go, Supabase redirige vers le callback
 web, qui renvoie ensuite vers l'app mobile (`mtw://` ou `exp://`) :
 
-- `SUPABASE_SERVICE_ROLE_KEY` est obligatoire cote API pour synchroniser `public.riders`.
+- `SUPABASE_SERVICE_ROLE_KEY` est obligatoire cote API pour synchroniser
+  `public.riders` et `public.provider_connections`.
 - Executer `supabase/riders.sql` dans Supabase SQL Editor.
-- Dans le provider Supabase `custom:strava`, configurer l'attribute mapping :
-  `sub -> id`, `name -> username`, `given_name -> firstname`,
-  `family_name -> lastname`, `picture -> profile`.
+- Cote Strava Developer, configurer le callback sur
+  `http://localhost:3001/api/auth/strava/callback` (ou la valeur de
+  `STRAVA_REDIRECT_URI`).
+- Cote Garmin Developer, configurer le callback sur
+  `http://localhost:3001/api/auth/garmin/callback` (ou la valeur de
+  `GARMIN_REDIRECT_URI`).
 - Dans Supabase Auth > URL Configuration > Redirect URLs, ajouter
   `http://localhost:3000/auth/callback`. Sur Android Emulator, ajouter aussi
   `http://10.0.2.2:3000/auth/callback`. Sur telephone physique, ajouter
@@ -102,6 +107,7 @@ web, qui renvoie ensuite vers l'app mobile (`mtw://` ou `exp://`) :
 | GET | `/api/community/reviews?tyre=power%20cup` | Avis vérifiés (adossés aux km Strava) |
 | GET | `/api/community/pros` | Pneus des pros |
 | GET | `/api/auth/me` | Vérifie le JWT Supabase envoyé en `Authorization: Bearer ...` |
+| GET | `/api/auth/profile?refresh=1` | Profil connecté + comptes liés + données Strava réelles |
 | POST | `/api/auth/sync` | Cree/met a jour le profil `public.riders` depuis la session Supabase |
 
 ## Docker

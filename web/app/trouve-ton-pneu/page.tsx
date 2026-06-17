@@ -226,23 +226,18 @@ function ImageOptionCard({
       type="button"
       onClick={onPress}
       className={cn(
-        "relative h-[88px] w-full overflow-hidden rounded-2xl text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
-        active ? "ring-[3px] ring-michelin-blue" : "ring-0",
+        "relative h-[120px] w-full overflow-hidden rounded-2xl text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
+        active ? "ring-[3px] ring-michelin-blue" : "ring-0 hover:ring-2 hover:ring-michelin-blue/40",
       )}
     >
       <img src={opt.photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      <div
-        className={cn(
-          "absolute inset-0 transition-colors",
-          active ? "bg-michelin-navy/40" : "bg-michelin-navy/60",
-        )}
-      />
+      <div className="absolute inset-0 bg-gradient-to-t from-michelin-navy/80 via-michelin-navy/20 to-transparent" />
       {active && (
-        <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-michelin-blue text-xs font-bold text-white">
+        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-michelin-blue text-sm font-bold text-white shadow">
           ✓
         </span>
       )}
-      <span className="absolute bottom-0 left-0 right-0 p-4 text-sm font-bold text-white">
+      <span className="absolute bottom-0 left-0 right-0 p-4 text-base font-bold text-white drop-shadow">
         {opt.label}
       </span>
     </button>
@@ -254,7 +249,7 @@ function TextOptionCard({
   active,
   onPress,
 }: {
-  opt: { id: string; label: string };
+  opt: { id: string; label: string; gamme?: string };
   active: boolean;
   onPress: () => void;
 }) {
@@ -263,18 +258,30 @@ function TextOptionCard({
       type="button"
       onClick={onPress}
       className={cn(
-        "flex w-full items-center justify-between rounded-xl border px-4 py-3.5 text-left text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
+        "flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue",
         active
           ? "border-michelin-blue bg-michelin-blue text-white"
           : "border-michelin-gray-line bg-white text-michelin-navy hover:border-michelin-blue",
       )}
     >
-      {opt.label}
-      {active && (
-        <span className="ml-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25 text-[10px] font-bold">
-          ✓
-        </span>
-      )}
+      <div className="flex flex-col gap-0.5">
+        <span className="text-base font-bold">{opt.label}</span>
+        {opt.gamme && (
+          <span className={cn("text-xs font-medium", active ? "text-white/70" : "text-michelin-ink")}>
+            Gamme {opt.gamme}
+          </span>
+        )}
+      </div>
+      <span
+        className={cn(
+          "ml-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+          active
+            ? "border-white/50 bg-white/25 text-[10px] font-bold text-white"
+            : "border-michelin-gray-line",
+        )}
+      >
+        {active && "✓"}
+      </span>
     </button>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Brand } from "./Brand";
+import { SignOutButton } from "./SignOutButton";
 import { cn } from "@/lib/utils";
 
 // Liens de navigation. `cta` = action principale, sortie de la rangee et
@@ -15,6 +16,7 @@ const LINKS = [
   { href: "/balades", label: "Balades" },
   { href: "/actualites", label: "Actualites" },
   { href: "/club", label: "Club" },
+  { href: "/profil", label: "Profil" },
 ];
 
 const NAV_LINKS = LINKS.filter((l) => !l.cta);
@@ -89,12 +91,7 @@ export function SiteHeader() {
             <SearchGlyph />
             {CTA.label}
           </Link>
-          <Link
-            href="/"
-            className="rounded-lg px-3 py-2 text-sm font-semibold text-michelin-ink transition-colors duration-200 hover:bg-michelin-gray-light hover:text-michelin-navy"
-          >
-            Se deconnecter
-          </Link>
+          <SignOutButton className="rounded-lg px-3 py-2 text-sm font-semibold text-michelin-ink transition-colors duration-200 hover:bg-michelin-gray-light hover:text-michelin-navy" />
         </div>
 
         {/* Burger (mobile) */}
@@ -147,13 +144,10 @@ export function SiteHeader() {
                 </Link>
               );
             })}
-            <Link
-              href="/"
+            <SignOutButton
               onClick={() => setOpen(false)}
-              className="mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold text-michelin-ink transition-colors hover:bg-michelin-gray-light"
-            >
-              Se deconnecter
-            </Link>
+              className="mt-1 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-michelin-ink transition-colors hover:bg-michelin-gray-light"
+            />
           </div>
         </div>
       </nav>

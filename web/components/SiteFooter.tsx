@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { Brand } from "./Brand";
+import { SignOutButton } from "./SignOutButton";
 
 const FOOTER_LINKS = [
   { href: "/trouve-ton-pneu", label: "Trouve ton pneu" },
@@ -7,6 +9,7 @@ const FOOTER_LINKS = [
   { href: "/balades", label: "Balades" },
   { href: "/actualites", label: "Actualites" },
   { href: "/club", label: "Club" },
+  { href: "/profil", label: "Profil" },
 ];
 
 export function SiteFooter() {
@@ -38,9 +41,7 @@ export function SiteFooter() {
               {l.label}
             </Link>
           ))}
-          <Link href="/" className="mt-1 text-white/60 transition-colors hover:text-michelin-yellow">
-            Se deconnecter
-          </Link>
+          <SignOutButton className="mt-1 text-left text-white/60 transition-colors hover:text-michelin-yellow" />
         </nav>
       </div>
       <div className="border-t border-white/10">

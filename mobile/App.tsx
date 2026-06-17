@@ -14,12 +14,14 @@ import { BaladeDetailScreen } from "./src/screens/BaladeDetailScreen";
 import { ClubScreen } from "./src/screens/ClubScreen";
 import { ComparateurScreen } from "./src/screens/ComparateurScreen";
 import { CommunauteScreen } from "./src/screens/CommunauteScreen";
+import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { TrouveTonPneuScreen } from "./src/screens/TrouveTonPneuScreen";
 import { WelcomeScreen } from "./src/screens/WelcomeScreen";
 import { colors } from "./src/theme";
 import type { TabKey } from "./src/types";
 import {
-  signInWithEmail,
+  sendPasswordResetEmail,
+  signInWithEmailPassword,
   signInWithProvider,
   type AuthProviderId,
 } from "./src/lib/auth";
@@ -27,11 +29,13 @@ import { syncRider } from "./src/lib/api";
 import { isSupabaseConfigured, supabase } from "./src/lib/supabase";
 
 export default function App() {
-  const [authed, setAuthed] = useState(false);
-  const [authLoading, setAuthLoading] = useState<AuthProviderId | "email" | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState<AuthProviderId | "email" | "reset" | null>(null);
+  const [signOutLoading, setSignOutLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState<string | null>(
     isSupabaseConfigured ? null : "Configuration Supabase manquante.",
   );
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("trouver");
   const [rideId, setRideId] = useState<string | null>(null);
   // Selection par defaut (maquette : "Comparer la selection (2)").
@@ -49,7 +53,7 @@ export default function App() {
     if (!supabase) return;
 
     const handleSession = (session: Session | null) => {
-      setAuthed(Boolean(session));
+      setSession(session);
       syncRider(session).catch((error) => {
         setAuthMessage(error instanceof Error ? error.message : "Synchronisation rider impossible.");
       });
@@ -71,7 +75,7 @@ export default function App() {
     try {
       const session = await signInWithProvider(provider);
       if (session) {
-        setAuthed(true);
+        setSession(session);
         await syncRider(session);
       }
     } catch (error) {
@@ -81,12 +85,15 @@ export default function App() {
     }
   }
 
-  async function handleEmail(email: string) {
+  async function handleEmail(email: string, password: string) {
     setAuthMessage(null);
     setAuthLoading("email");
     try {
-      await signInWithEmail(email.trim());
-      setAuthMessage("Lien de connexion envoye. Verifie ta boite mail.");
+      const session = await signInWithEmailPassword(email.trim(), password);
+      if (session) {
+        setSession(session);
+        await syncRider(session);
+      }
     } catch (error) {
       setAuthMessage(error instanceof Error ? error.message : "Connexion email impossible.");
     } finally {
@@ -94,11 +101,45 @@ export default function App() {
     }
   }
 
-  if (!authed) {
+  async function handlePasswordReset(email: string) {
+    if (!email.trim()) {
+      setAuthMessage("Saisis ton email pour recevoir le lien de reinitialisation.");
+      return;
+    }
+
+    setAuthMessage(null);
+    setAuthLoading("reset");
+    try {
+      await sendPasswordResetEmail(email.trim());
+      setAuthMessage("Email de reinitialisation envoye.");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "Reset impossible.");
+    } finally {
+      setAuthLoading(null);
+    }
+  }
+
+  async function handleSignOut() {
+    setProfileMessage(null);
+    setSignOutLoading(true);
+    try {
+      await supabase?.auth.signOut();
+      setSession(null);
+      setTab("trouver");
+      setRideId(null);
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : "Deconnexion impossible.");
+    } finally {
+      setSignOutLoading(false);
+    }
+  }
+
+  if (!session) {
     return (
       <WelcomeScreen
         onProvider={handleProvider}
         onEmail={handleEmail}
+        onPasswordReset={handlePasswordReset}
         loading={authLoading}
         message={authMessage}
       />
@@ -123,6 +164,13 @@ export default function App() {
           <ComparateurScreen />
         ) : tab === "communaute" ? (
           <CommunauteScreen onOpenRide={(id) => setRideId(id)} />
+        ) : tab === "profil" ? (
+          <ProfileScreen
+            session={session}
+            onSignOut={handleSignOut}
+            signOutLoading={signOutLoading}
+            message={profileMessage}
+          />
         ) : (
           <ClubScreen />
         )}
