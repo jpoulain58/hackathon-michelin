@@ -29,6 +29,23 @@ function formatDate(iso: string) {
 export const revalidate = 60;
 
 export default async function Actualites() {
+  if (!supabaseServer) {
+    return (
+      <main className="min-h-screen">
+        <SiteHeader />
+        <section className="mx-auto max-w-6xl px-6 py-12 text-michelin-ink">
+          <h1 className="text-4xl font-black tracking-tight text-michelin-navy sm:text-5xl">
+            Actualités
+          </h1>
+          <p className="mt-6 text-lg text-michelin-ink">
+            La configuration Supabase est manquante. Vérifie les variables d'environnement.
+          </p>
+        </section>
+        <SiteFooter />
+      </main>
+    );
+  }
+
   const { data: articles = [] } = await supabaseServer
     .from("articles")
     .select("id, slug, category, title, excerpt, photo, is_featured, published_at")

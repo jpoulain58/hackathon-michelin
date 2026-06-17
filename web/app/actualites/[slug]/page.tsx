@@ -23,11 +23,19 @@ type Product = {
 type Params = { slug: string };
 
 export async function generateStaticParams() {
+  if (!supabaseServer) {
+    return [];
+  }
+
   const { data } = await supabaseServer.from("articles").select("slug");
   return (data ?? []).map((a) => ({ slug: a.slug }));
 }
 
 export default async function ArticlePage({ params }: { params: Promise<Params> }) {
+  if (!supabaseServer || !supabaseAdmin) {
+    notFound();
+  }
+
   const { slug } = await params;
 
   const { data: article } = await supabaseServer

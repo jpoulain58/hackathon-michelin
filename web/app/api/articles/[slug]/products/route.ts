@@ -8,6 +8,10 @@ export async function GET(
   const { slug } = await params;
 
   // Résoudre l'article via le client public
+  if (!supabaseServer || !supabaseAdmin) {
+    return NextResponse.json({ products: [] });
+  }
+
   const { data: article } = await supabaseServer
     .from("articles")
     .select("id")
