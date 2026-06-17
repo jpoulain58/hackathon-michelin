@@ -77,6 +77,14 @@ export class AuthController {
     res.redirect(target.toString());
   }
 
+  // Cumul des km Strava du rider connecte (Club : "Mon Garage"). Authentifie via
+  // le JWT Supabase ; les tokens Strava restent cote serveur.
+  @Get("strava/stats")
+  async stravaStats(@Headers("authorization") authorization?: string) {
+    const user = await this.authService.getUserFromAuthorization(authorization);
+    return this.stravaService.getRiderStats(user.id);
+  }
+
   // Demarre le flux Strava OAuth 2.0. Strava n'etant pas un provider OIDC (pas
   // d'id_token/JWKS), on ne peut pas passer par Supabase : flux backend dedie,
   // comme Garmin. Le client passe sa destination de retour (web /auth/callback

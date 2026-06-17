@@ -129,7 +129,7 @@ export class StravaService {
       const tokens = await this.exchangeCode(params.code);
       // Strava renvoie deja l'athlete dans la reponse token ; fallback sur l'API.
       const athlete = tokens.athlete ?? (await this.fetchAthlete(tokens.access_token));
-      const tokenHash = await this.provisionSupabaseUser(athlete);
+      const tokenHash = await this.provisionSupabaseUser(athlete, tokens);
       return { redirectTo, tokenHash, type: "magiclink" };
     } catch (error) {
       return {
@@ -189,7 +189,10 @@ export class StravaService {
    * Cree (ou met a jour) l'utilisateur Supabase associe au compte Strava et
    * renvoie un token_hash magiclink que le client echangera contre une session.
    */
-  private async provisionSupabaseUser(athlete: StravaAthlete): Promise<string> {
+  private async provisionSupabaseUser(
+    athlete: StravaAthlete,
+    tokens: StravaTokens,
+  ): Promise<string> {
     if (!this.supabase) {
       throw new InternalServerErrorException(
         "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
@@ -240,6 +243,10 @@ export class StravaService {
       });
     }
 
+    // Persiste les tokens Strava (server-only) pour pouvoir lire les km plus tard.
+    // Best-effort : un echec ici ne doit pas casser la connexion.
+    await this.storeTokens(userId, athlete, tokens).catch(() => undefined);
+
     // Genere le token final apres que les metadonnees soient a jour.
     const link = await this.supabase.auth.admin.generateLink({ type: "magiclink", email });
     if (link.error || !link.data.properties?.hashed_token) {
@@ -247,6 +254,136 @@ export class StravaService {
     }
 
     return link.data.properties.hashed_token;
+  }
+
+  /** Enregistre (ou met a jour) les tokens Strava du rider dans strava_tokens. */
+  private async storeTokens(
+    userId: string,
+    athlete: StravaAthlete,
+    tokens: StravaTokens,
+  ): Promise<void> {
+    if (!this.supabase || !tokens.access_token || !tokens.refresh_token) return;
+
+    const { error } = await this.supabase.from("strava_tokens").upsert(
+      {
+        rider_id: userId,
+        athlete_id: athlete.id != null ? String(athlete.id) : null,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expires_at ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "rider_id" },
+    );
+
+    if (error) {
+      throw new Error(`Stockage des tokens Strava echoue: ${error.message}`);
+    }
+  }
+
+  /**
+   * Cumul des km parcourus a velo, lu en direct depuis Strava (all_ride_totals).
+   * Rafraichit le token si necessaire. `connected: false` si le rider n'a pas de
+   * compte Strava lie.
+   */
+  async getRiderStats(
+    userId: string,
+  ): Promise<{ connected: boolean; totalKm: number; rideCount: number }> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
+    const { data, error } = await this.supabase
+      .from("strava_tokens")
+      .select("rider_id, athlete_id, access_token, refresh_token, expires_at")
+      .eq("rider_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      throw new InternalServerErrorException(`Lecture des tokens Strava echouee: ${error.message}`);
+    }
+    if (!data || !data.athlete_id) {
+      return { connected: false, totalKm: 0, rideCount: 0 };
+    }
+
+    const accessToken = await this.ensureFreshToken(data);
+    const statsUrl = `https://www.strava.com/api/v3/athletes/${data.athlete_id}/stats`;
+    const response = await fetch(statsUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new InternalServerErrorException(
+        `Recuperation des stats Strava echouee (${response.status}). ${detail}`.trim(),
+      );
+    }
+
+    const stats = (await response.json()) as {
+      all_ride_totals?: { count?: number; distance?: number };
+    };
+    const totals = stats.all_ride_totals ?? {};
+    return {
+      connected: true,
+      totalKm: Math.round((totals.distance ?? 0) / 1000),
+      rideCount: totals.count ?? 0,
+    };
+  }
+
+  /** Renvoie un access_token valide, en le rafraichissant via le refresh_token si expire. */
+  private async ensureFreshToken(row: {
+    rider_id: string;
+    access_token: string;
+    refresh_token: string;
+    expires_at: number | null;
+  }): Promise<string> {
+    const nowSec = Math.floor(Date.now() / 1000);
+    // Marge de 60 s pour eviter d'utiliser un token a la limite de l'expiration.
+    if (row.expires_at && row.expires_at > nowSec + 60) {
+      return row.access_token;
+    }
+
+    const clientId = this.requireEnv("STRAVA_CLIENT_ID");
+    const clientSecret = this.requireEnv("STRAVA_CLIENT_SECRET");
+    const tokenUrl = process.env.STRAVA_TOKEN_URL ?? DEFAULT_TOKEN_URL;
+
+    const body = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: row.refresh_token,
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new InternalServerErrorException(
+        `Rafraichissement du token Strava echoue (${response.status}). ${detail}`.trim(),
+      );
+    }
+
+    const tokens = (await response.json()) as StravaTokens;
+    if (!tokens.access_token) {
+      throw new InternalServerErrorException("Rafraichissement Strava sans access_token.");
+    }
+
+    await this.supabase!.from("strava_tokens")
+      .update({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token ?? row.refresh_token,
+        expires_at: tokens.expires_at ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("rider_id", row.rider_id);
+
+    return tokens.access_token;
   }
 
   /** redirect_uri enregistre chez Strava et utilise tel quel a l'echange. */

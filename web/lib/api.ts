@@ -134,6 +134,27 @@ export async function fetchPros(): Promise<ProRider[]> {
   return ((await res.json()) as { items: ProRider[] }).items;
 }
 
+// --- Strava (Mon Garage) ----------------------------------------------------
+
+export interface StravaStats {
+  connected: boolean;
+  totalKm: number;
+  rideCount: number;
+}
+
+/** Cumul des km Strava du rider connecte. Requiert le JWT Supabase. */
+export async function fetchStravaStats(accessToken: string): Promise<StravaStats> {
+  const res = await fetch(`${API_BASE}/api/auth/strava/stats`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  return (await res.json()) as StravaStats;
+}
+
 export function formatKm(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} M km`;
   if (n >= 1_000) return `${Math.round(n / 1_000)} k km`;

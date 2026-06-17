@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
 import { ClubMembership } from "@/components/ClubMembership";
+import { Garage } from "@/components/Garage";
 
 // Etapes du Programme Testeur (avantage phare du Club).
 const PROGRAMME = [
@@ -19,18 +20,6 @@ const PROGRAMME = [
     desc: "Ton avis verifie (km Strava a l'appui) guide la communaute et nourrit la R&D Michelin.",
   },
 ];
-
-// Donnees mock du "Garage connecte" (estimation d'usure basee sur les km).
-const GARAGE = [
-  { label: "Pneu avant", tyre: "Power Cup", km: "1 240 km", life: 78 },
-  { label: "Pneu arriere", tyre: "Power Cup", km: "1 240 km", life: 54 },
-];
-
-function lifeColor(life: number) {
-  if (life > 50) return "bg-michelin-green";
-  if (life > 20) return "bg-michelin-yellow";
-  return "bg-destructive";
-}
 
 export default function Club() {
   return (
@@ -59,7 +48,7 @@ export default function Club() {
       </section>
 
       {/* Offre + adhesion */}
-      <section className="mx-auto max-w-3xl px-6 py-12">
+      <section id="club-offre" className="mx-auto max-w-3xl px-6 py-12">
         <ClubMembership />
       </section>
 
@@ -96,49 +85,19 @@ export default function Club() {
       </section>
 
       {/* Mon Garage connecte */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
-          <div>
-            <Reveal as="span" className="inline-block">
-              <span className="kicker">Inclus dans le Club</span>
-            </Reveal>
-            <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
-              Mon Garage connecte
-            </Reveal>
-            <Reveal as="p" delay={120} className="mt-2 text-michelin-ink">
-              On relie tes kilometres Strava a tes pneus pour estimer leur usure en temps reel. Tu
-              sais exactement quand changer, et tu gardes l&apos;historique de tout ce que tu as
-              roule.
-            </Reveal>
-          </div>
-
-          <Reveal delay={120} className="rounded-3xl border border-michelin-gray-line bg-white p-6 shadow-soft">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-michelin-navy">Mon velo route</span>
-              <span className="chip">Synchronise Strava</span>
-            </div>
-            <div className="mt-5 space-y-5">
-              {GARAGE.map((g) => (
-                <div key={g.label}>
-                  <div className="flex items-baseline justify-between text-sm">
-                    <span className="font-semibold text-michelin-navy">{g.label}</span>
-                    <span className="text-michelin-ink">
-                      {g.tyre} &middot; {g.km}
-                    </span>
-                  </div>
-                  <div className="mt-2 h-2.5 w-full overflow-hidden rounded-pill bg-michelin-gray-line">
-                    <div
-                      className={`h-full rounded-pill ${lifeColor(g.life)}`}
-                      style={{ width: `${g.life}%` }}
-                    />
-                  </div>
-                  <div className="mt-1 text-xs font-medium text-michelin-ink">
-                    {g.life}% de vie restante
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
+      <section className="mx-auto max-w-3xl px-6 py-16">
+        <Reveal as="span" className="inline-block">
+          <span className="kicker">Inclus dans le Club</span>
+        </Reveal>
+        <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
+          Mon Garage connecte
+        </Reveal>
+        <Reveal as="p" delay={120} className="mt-2 text-michelin-ink">
+          Suis l&apos;usure de tes pneus en temps reel. Saisis tes km a la main, ou synchronise-les
+          directement depuis Strava pour savoir exactement quand changer.
+        </Reveal>
+        <div className="mt-8">
+          <Garage />
         </div>
       </section>
 

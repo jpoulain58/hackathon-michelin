@@ -79,6 +79,8 @@ export function ClubMembership() {
       return;
     }
     setState(next ? "member" : "guest");
+    // Previent les autres sections (Mon Garage) du changement d'adhesion.
+    window.dispatchEvent(new CustomEvent("club-membership-changed", { detail: { member: next } }));
   }
 
   const isMember = state === "member";
