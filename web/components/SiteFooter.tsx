@@ -21,7 +21,7 @@ export function SiteFooter() {
           <img
             src="/trust-wheels-logo-footer.png"
             alt="Michelin Trust Wheels"
-            className="h-14 w-auto rounded-lg"
+            className="h-14 w-auto"
           />
           <p className="max-w-xs text-sm text-white/70">
             La preuve par la route. La communaute qui transforme ses kilometres en preuve.
