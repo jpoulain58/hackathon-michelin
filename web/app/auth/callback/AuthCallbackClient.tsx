@@ -82,7 +82,7 @@ export function AuthCallbackClient() {
           throw new Error("Session Supabase introuvable apres le callback OAuth.");
         }
 
-        await syncRider(data.session);
+        await syncRider(data.session).catch(() => {});
 
         if (mounted) {
           router.replace(safeNext(search.get("next")));

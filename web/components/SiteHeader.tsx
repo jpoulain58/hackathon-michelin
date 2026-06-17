@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/comparateur", label: "Comparateur" },
   { href: "/communaute", label: "Communaute" },
   { href: "/balades", label: "Balades" },
+  { href: "/produits", label: "Produits" },
   { href: "/actualites", label: "Actualites" },
   { href: "/club", label: "Club" },
   { href: "/profil", label: "Profil" },
