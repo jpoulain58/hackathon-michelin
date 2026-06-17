@@ -1,6 +1,10 @@
+import { Platform } from "react-native";
 import type { Session } from "@supabase/supabase-js";
 
-export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
+const defaultApiBase = process.env.EXPO_PUBLIC_API_URL?.trim();
+export const API_BASE =
+  defaultApiBase ||
+  (Platform.OS === "android" ? "http://10.0.2.2:3001" : "http://localhost:3001");
 
 export type ProviderId = "strava" | "garmin" | "google";
 

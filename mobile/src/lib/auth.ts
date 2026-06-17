@@ -158,7 +158,9 @@ async function signInWithStrava(): Promise<Session | null> {
 
   // 2. Ouvre le consentement Strava ; le backend redirige vers notre deep link.
   const result = await WebBrowser.openAuthSessionAsync(authorizeUrl, mobileRedirectTo);
-  if (result.type !== "success") return null;
+  if (result.type !== "success") {
+    throw new Error(`Authentification Strava interrompue (${result.type}).`);
+  }
   assertMobileCallback(result.url, mobileRedirectTo);
 
   const callbackUrl = new URL(result.url);

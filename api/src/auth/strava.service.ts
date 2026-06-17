@@ -289,6 +289,67 @@ export class StravaService {
     athlete: StravaAthlete,
     tokens: StravaTokens,
   ): Promise<string> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
+    }
+
+    const stravaId = athlete.id != null ? String(athlete.id) : null;
+    if (!stravaId) {
+      throw new Error("Reponse Strava sans identifiant d'athlete.");
+    }
+
+    const linkedUser = await this.findUserByProviderConnection(stravaId);
+    if (linkedUser) {
+      await this.applyStravaMetadata(linkedUser.id, athlete);
+      await this.upsertProviderConnection(linkedUser.id, athlete, tokens);
+      return this.generateMagicLinkToken(linkedUser.email);
+    }
+
+    const email = `strava_${stravaId}@users.trustwheels.app`.toLowerCase();
+    const fullName =
+      [athlete.firstname, athlete.lastname].filter(Boolean).join(" ").trim() ||
+      athlete.username ||
+      "Rider Strava";
+    const appMetadata = { provider: "strava", providers: ["strava"] };
+    const userMetadata = {
+      provider: "strava",
+      strava_id: stravaId,
+      full_name: fullName,
+      username: athlete.username ?? null,
+    };
+
+    const created = await this.supabase.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      app_metadata: appMetadata,
+      user_metadata: userMetadata,
+    });
+
+    let userId = created.data.user?.id ?? null;
+
+    if (!userId) {
+      if (!isAlreadyRegistered(created.error)) {
+        throw new Error(created.error?.message ?? "Creation utilisateur Supabase echouee.");
+      }
+
+      const lookup = await this.supabase.auth.admin.generateLink({ type: "magiclink", email });
+      if (lookup.error || !lookup.data.user) {
+        throw new Error(lookup.error?.message ?? "Utilisateur Strava introuvable cote Supabase.");
+      }
+      userId = lookup.data.user.id;
+      await this.supabase.auth.admin.updateUserById(userId, {
+        app_metadata: appMetadata,
+        user_metadata: userMetadata,
+      });
+    }
+
+    await this.storeTokens(userId, athlete, tokens).catch(() => undefined);
+    await this.upsertProviderConnection(userId, athlete, tokens);
+    return this.generateMagicLinkToken(email);
+  }
+
   async getProfile(userId: string, forceRefresh = false): Promise<StravaProfileSummary | null> {
     const connection = await this.getStoredConnection(userId);
     if (!connection) return null;
@@ -330,73 +391,6 @@ export class StravaService {
       }
       throw error;
     }
-  }
-
-  private async provisionSupabaseUser(athlete: StravaAthlete, tokens: StravaTokens): Promise<string> {
-    if (!this.supabase) {
-      throw new InternalServerErrorException(
-        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
-      );
-    }
-
-    const stravaId = athlete.id != null ? String(athlete.id) : null;
-    if (!stravaId) {
-      throw new Error("Reponse Strava sans identifiant d'athlete.");
-    }
-
-    const linkedUser = await this.findUserByProviderConnection(stravaId);
-    if (linkedUser) {
-      await this.applyStravaMetadata(linkedUser.id, athlete);
-      await this.upsertProviderConnection(linkedUser.id, athlete, tokens);
-      return this.generateMagicLinkToken(linkedUser.email);
-    }
-
-    // Strava ne fournit pas d'email : on derive un email stable et deterministe.
-    const email = `strava_${stravaId}@users.trustwheels.app`.toLowerCase();
-    const fullName =
-      [athlete.firstname, athlete.lastname].filter(Boolean).join(" ").trim() ||
-      athlete.username ||
-      "Rider Strava";
-    const appMetadata = { provider: "strava", providers: ["strava"] };
-    const userMetadata = {
-      provider: "strava",
-      strava_id: stravaId,
-      full_name: fullName,
-      username: athlete.username ?? null,
-    };
-
-    const created = await this.supabase.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      app_metadata: appMetadata,
-      user_metadata: userMetadata,
-    });
-
-    let userId = created.data.user?.id ?? null;
-
-    if (!userId) {
-      if (!isAlreadyRegistered(created.error)) {
-        throw new Error(created.error?.message ?? "Creation utilisateur Supabase echouee.");
-      }
-      // Utilisateur deja present : retrouve-le et reapplique les metadonnees.
-      const lookup = await this.supabase.auth.admin.generateLink({ type: "magiclink", email });
-      if (lookup.error || !lookup.data.user) {
-        throw new Error(lookup.error?.message ?? "Utilisateur Strava introuvable cote Supabase.");
-      }
-      userId = lookup.data.user.id;
-      await this.supabase.auth.admin.updateUserById(userId, {
-        app_metadata: appMetadata,
-        user_metadata: userMetadata,
-      });
-    }
-
-    // Persiste les tokens Strava (server-only) pour pouvoir lire les km plus tard.
-    // Best-effort : un echec ici ne doit pas casser la connexion.
-    await this.storeTokens(userId, athlete, tokens).catch(() => undefined);
-
-    // Genere le token final apres que les metadonnees soient a jour.
-    await this.upsertProviderConnection(userId, athlete, tokens);
-    return this.generateMagicLinkToken(email);
   }
 
   private async linkSupabaseUser(
@@ -575,28 +569,24 @@ export class StravaService {
   async getRiderStats(
     userId: string,
   ): Promise<{ connected: boolean; totalKm: number; rideCount: number }> {
-  private async getStoredConnection(userId: string): Promise<StravaConnectionRow | null> {
-    if (!this.supabase) {
-      throw new InternalServerErrorException(
-        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
-      );
-    }
-
-    const { data, error } = await this.supabase
-      .from("strava_tokens")
-      .select("rider_id, athlete_id, access_token, refresh_token, expires_at")
-      .eq("rider_id", userId)
-      .maybeSingle();
-
-    if (error) {
-      throw new InternalServerErrorException(`Lecture des tokens Strava echouee: ${error.message}`);
-    }
-    if (!data || !data.athlete_id) {
+    const connection = await this.getStoredConnection(userId);
+    if (!connection || !connection.provider_user_id) {
       return { connected: false, totalKm: 0, rideCount: 0 };
     }
 
-    const accessToken = await this.ensureFreshToken(data);
-    const statsUrl = `https://www.strava.com/api/v3/athletes/${data.athlete_id}/stats`;
+    const accessToken = await this.getFreshAccessToken(connection);
+    const athleteId = stringifyId(connection.provider_user_id);
+    if (!athleteId) {
+      return { connected: false, totalKm: 0, rideCount: 0 };
+    }
+
+    const baseStatsUrl =
+      process.env.STRAVA_STATS_URL ??
+      `${(process.env.STRAVA_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, "")}/athletes/${encodeURIComponent(
+        athleteId,
+      )}/stats`;
+    const statsUrl = new URL(baseStatsUrl);
+
     const response = await fetch(statsUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -612,6 +602,7 @@ export class StravaService {
       all_ride_totals?: { count?: number; distance?: number };
     };
     const totals = stats.all_ride_totals ?? {};
+
     return {
       connected: true,
       totalKm: Math.round((totals.distance ?? 0) / 1000),
@@ -619,19 +610,14 @@ export class StravaService {
     };
   }
 
-  /** Renvoie un access_token valide, en le rafraichissant via le refresh_token si expire. */
-  private async ensureFreshToken(row: {
-    rider_id: string;
-    access_token: string;
-    refresh_token: string;
-    expires_at: number | null;
-  }): Promise<string> {
-    const nowSec = Math.floor(Date.now() / 1000);
-    // Marge de 60 s pour eviter d'utiliser un token a la limite de l'expiration.
-    if (row.expires_at && row.expires_at > nowSec + 60) {
-      return row.access_token;
+  private async getStoredConnection(userId: string): Promise<StravaConnectionRow | null> {
+    if (!this.supabase) {
+      throw new InternalServerErrorException(
+        "Supabase n'est pas configure cote API. Renseigne SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      );
     }
 
+    const { data, error } = await this.supabase
       .from("provider_connections")
       .select(
         "user_id, provider_user_id, access_token, refresh_token, expires_at, scopes, profile, stats, last_sync_at, created_at, updated_at",
@@ -660,7 +646,10 @@ export class StravaService {
       return connection.access_token;
     }
 
-    const tokens = await this.refreshAccessToken(connection.refresh_token);
+    const tokens = await this.refreshAccessToken({
+      user_id: connection.user_id,
+      refresh_token: connection.refresh_token,
+    });
     if (!tokens.access_token) throw new Error("Rafraichissement Strava sans access_token.");
     if (!tokens.refresh_token) throw new Error("Rafraichissement Strava sans refresh_token.");
 
@@ -686,7 +675,10 @@ export class StravaService {
     return tokens.access_token;
   }
 
-  private async refreshAccessToken(refreshToken: string): Promise<StravaTokens> {
+  private async refreshAccessToken(connection: {
+    user_id: string;
+    refresh_token: string;
+  }): Promise<StravaTokens> {
     const clientId = this.requireEnv("STRAVA_CLIENT_ID");
     const clientSecret = this.requireEnv("STRAVA_CLIENT_SECRET");
     const tokenUrl = process.env.STRAVA_TOKEN_URL ?? DEFAULT_TOKEN_URL;
@@ -695,8 +687,7 @@ export class StravaService {
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: "refresh_token",
-      refresh_token: row.refresh_token,
-      refresh_token: refreshToken,
+      refresh_token: connection.refresh_token,
     });
 
     const response = await fetch(tokenUrl, {
@@ -717,20 +708,23 @@ export class StravaService {
       throw new InternalServerErrorException("Rafraichissement Strava sans access_token.");
     }
 
-    await this.supabase!.from("strava_tokens")
-      .update({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token ?? row.refresh_token,
-        expires_at: tokens.expires_at ?? null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("rider_id", row.rider_id);
+    if (this.supabase) {
+      const { error } = await this.supabase
+        .from("strava_tokens")
+        .update({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token ?? connection.refresh_token,
+          expires_at: tokens.expires_at ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("rider_id", connection.user_id);
 
-    return tokens.access_token;
-      throw new Error(`Rafraichissement Strava echoue (${response.status}). ${detail}`.trim());
+      if (error) {
+        throw new Error(`Mise a jour des tokens Strava echouee: ${error.message}`);
+      }
     }
 
-    return (await response.json()) as StravaTokens;
+    return tokens;
   }
 
   private async fetchAthleteStats(
