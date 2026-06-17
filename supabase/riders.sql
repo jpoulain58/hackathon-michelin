@@ -12,9 +12,15 @@ create table if not exists public.riders (
   tier text not null default 'ROOKIE',
   total_km integer not null default 0,
   reviews_count integer not null default 0,
+  club_member boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Adhesion au Club Trust Wheels (toggle depuis la page /club).
+-- Idempotent : ajoute la colonne aux tables deja creees.
+alter table public.riders
+  add column if not exists club_member boolean not null default false;
 
 alter table public.riders enable row level security;
 

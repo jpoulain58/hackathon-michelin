@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { Brand } from "./Brand";
 import { SignOutButton } from "./SignOutButton";
 
 const FOOTER_LINKS = [
@@ -21,9 +21,11 @@ export function SiteFooter() {
       <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-michelin-blue/30 blur-3xl" />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
-          <span className="inline-flex rounded-pill bg-white px-2 py-1">
-            <Brand />
-          </span>
+          <img
+            src="/trust-wheels-logo-footer.png"
+            alt="Michelin Trust Wheels"
+            className="h-14 w-auto"
+          />
           <p className="max-w-xs text-sm text-white/70">
             La preuve par la route. La communaute qui transforme ses kilometres en preuve.
           </p>

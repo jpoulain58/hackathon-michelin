@@ -209,7 +209,10 @@ export const clubPlan: ClubPlan = {
   advantages: [
     "2 pneus Michelin offerts / an",
     "Chambres à air à volonté",
-    "Actualités exclusives",
-    "10 % de réduction sur le site",
+    "Accès prioritaire au Programme Testeur",
+    "Mon Garage connecté : suivi d'usure de tes pneus",
+    "Badge Testeur Michelin sur ton profil",
+    "Actualités & sorties exclusives",
+    "10 % de réduction chez nos revendeurs partenaires",
   ],
 };
