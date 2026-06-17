@@ -19,6 +19,7 @@ type SyncedRider = {
   tier: string;
   total_km: number;
   reviews_count: number;
+  club_member: boolean;
   created_at: string;
   updated_at: string;
 };

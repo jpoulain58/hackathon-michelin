@@ -1,0 +1,167 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/Reveal";
+import { supabase } from "@/lib/supabase/client";
+
+// Avantages affiches dans la carte "Club starter".
+const AVANTAGES = [
+  "2 pneus Michelin offerts / an",
+  "Chambres a air a volonte",
+  "Acces prioritaire au Programme Testeur",
+  "Mon Garage connecte : suivi d'usure de tes pneus",
+  "Badge Testeur Michelin sur ton profil",
+  "Actualites & sorties exclusives",
+  "10% de reduction chez nos revendeurs partenaires",
+];
+
+// loading : etat initial / anonymous : non connecte
+// guest : connecte, pas membre / member : membre du Club
+type State = "loading" | "anonymous" | "guest" | "member";
+
+export function ClubMembership() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [state, setState] = useState<State>("loading");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!supabase) {
+      setState("anonymous");
+      return;
+    }
+    let active = true;
+
+    const load = async (uid: string | null) => {
+      if (!active) return;
+      if (!uid) {
+        setUserId(null);
+        setState("anonymous");
+        return;
+      }
+      setUserId(uid);
+      // RLS : un rider ne lit que sa propre ligne (auth.uid() = id).
+      const { data, error } = await supabase!
+        .from("riders")
+        .select("club_member")
+        .eq("id", uid)
+        .maybeSingle();
+      if (!active) return;
+      if (error) {
+        setError(error.message);
+        setState("guest");
+        return;
+      }
+      setState(data?.club_member ? "member" : "guest");
+    };
+
+    supabase.auth.getSession().then(({ data }) => load(data.session?.user.id ?? null));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => load(session?.user.id ?? null));
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function setMembership(next: boolean) {
+    if (!supabase || !userId) return;
+    setBusy(true);
+    setError(null);
+    const { error } = await supabase.from("riders").update({ club_member: next }).eq("id", userId);
+    setBusy(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setState(next ? "member" : "guest");
+  }
+
+  const isMember = state === "member";
+
+  return (
+    <Reveal>
+      <div className="overflow-hidden rounded-3xl border border-michelin-gray-line shadow-soft card-interactive">
+        <div className="shine relative overflow-hidden bg-michelin-navy p-7 text-white">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-michelin-blue/40 blur-3xl" />
+          <div className="relative flex items-center justify-between gap-3">
+            <div className="text-3xl font-black text-michelin-yellow">Club starter</div>
+            {isMember ? (
+              <span className="inline-flex items-center gap-1.5 rounded-pill bg-michelin-green/20 px-3 py-1 text-xs font-bold text-white ring-1 ring-michelin-green/40">
+                <span className="h-1.5 w-1.5 rounded-full bg-michelin-green" />
+                Membre actif
+              </span>
+            ) : null}
+          </div>
+          <div className="relative mt-1 text-xl font-bold">9 &euro; / mois</div>
+        </div>
+
+        <div className="bg-white p-7">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-michelin-ink">
+            Mes avantages
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {AVANTAGES.map((a, i) => (
+              <Reveal as="li" key={a} delay={i * 50} className="flex items-center gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-michelin-green/10 text-sm font-bold text-michelin-green">
+                  &#10003;
+                </span>
+                <span className="text-michelin-navy">{a}</span>
+              </Reveal>
+            ))}
+          </ul>
+
+          <div className="mt-7">{renderAction()}</div>
+
+          {error ? (
+            <p className="mt-3 text-center text-sm font-medium text-destructive">{error}</p>
+          ) : null}
+        </div>
+      </div>
+    </Reveal>
+  );
+
+  function renderAction() {
+    if (state === "loading") {
+      return (
+        <Button size="lg" className="w-full" disabled>
+          Chargement...
+        </Button>
+      );
+    }
+    if (state === "anonymous") {
+      return (
+        <Button asChild size="lg" className="w-full">
+          <Link href="/">Connecte-toi pour rejoindre</Link>
+        </Button>
+      );
+    }
+    if (state === "member") {
+      return (
+        <div className="space-y-3">
+          <p className="text-center text-sm font-semibold text-michelin-green">
+            Tu fais partie du Club. Profite de tes avantages !
+          </p>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            disabled={busy}
+            onClick={() => setMembership(false)}
+          >
+            {busy ? "..." : "Quitter le Club"}
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <Button size="lg" className="w-full" disabled={busy} onClick={() => setMembership(true)}>
+        {busy ? "..." : "Rejoindre le Club"}
+      </Button>
+    );
+  }
+}
