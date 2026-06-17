@@ -10,6 +10,8 @@ import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { CENTER, fetchRides, formatDuration, type Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
 import { cn } from "@/lib/utils";
+import { useTagDefinitions } from "@/lib/tags";
+import { getTagIcon } from "@/lib/tag-icons";
 import { AddBaladeGpxButton } from "./AddBaladeGpxButton";
 
 declare global {
@@ -37,6 +39,7 @@ export default function Balades() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
+  const tagDefinitions = useTagDefinitions();
 
   const loadRides = useCallback(() => {
     setLoadingRides(true);
@@ -193,6 +196,8 @@ export default function Balades() {
                     <div className="flex flex-wrap gap-1.5">
                       {group.values.map((f) => {
                         const active = activeFilters.has(f);
+                        const tagDef = group.label === "Tags" ? tagDefinitions.get(f) : undefined;
+                        const TagIcon = tagDef ? getTagIcon(tagDef.icon) : null;
                         return (
                           <button
                             key={f}
@@ -204,7 +209,8 @@ export default function Balades() {
                                 : "border border-michelin-gray-line bg-white text-michelin-ink hover:border-michelin-blue hover:text-michelin-blue",
                             )}
                           >
-                            {f}
+                            {TagIcon && <TagIcon className="h-3 w-3" />}
+                            {tagDef?.label ?? f}
                             {active && (
                               <svg viewBox="0 0 24 24" className="h-3 w-3 text-michelin-yellow" fill="none" stroke="currentColor" strokeWidth={3}>
                                 <path d="M18 6 6 18M6 6l12 12" />
@@ -297,14 +303,30 @@ export default function Balades() {
                         <div className="mt-1 text-sm text-michelin-ink">
                           {r.km} km · {r.dplus} m D+ · {formatDuration(r.durationSeconds)}
                         </div>
-                        <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
+                        {r.tyre ? (
+                          <div className="mt-1 text-sm font-semibold text-michelin-green">{r.tyre}</div>
+                        ) : (
+                          r.usedTyre && (
+                            <div className="mt-1 text-sm font-semibold text-michelin-green">
+                              {[r.usedTyre.brand, r.usedTyre.range].filter(Boolean).join(" ")}
+                            </div>
+                          )
+                        )}
                         {r.tags.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
-                            {r.tags.map((tag) => (
-                              <span key={tag} className="rounded-pill bg-michelin-gray-light px-2 py-0.5 text-xs text-michelin-ink">
-                                {tag}
-                              </span>
-                            ))}
+                            {r.tags.map((tag) => {
+                              const def = tagDefinitions.get(tag);
+                              const Icon = getTagIcon(def?.icon ?? "");
+                              return (
+                                <span
+                                  key={tag}
+                                  className="inline-flex items-center gap-1 rounded-pill bg-michelin-gray-light px-2 py-0.5 text-xs text-michelin-ink"
+                                >
+                                  <Icon className="h-3 w-3" />
+                                  {def?.label ?? tag}
+                                </span>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

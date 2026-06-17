@@ -2,8 +2,11 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
+import { Star } from "lucide-react";
 import { formatDuration, type Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
+import { useTagDefinitions } from "@/lib/tags";
+import { getTagIcon } from "@/lib/tag-icons";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -73,6 +76,7 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
+  const tagDefinitions = useTagDefinitions();
 
   useEffect(() => {
     let cancelled = false;
@@ -175,14 +179,19 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
         {/* Titre */}
         <h1 className="mt-3 text-2xl font-bold text-michelin-navy">{ride.name}</h1>
 
-        {/* Tags libres */}
+        {/* Tags */}
         {ride.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {ride.tags.map((tag) => (
-              <span key={tag} className="chip">
-                {tag}
-              </span>
-            ))}
+            {ride.tags.map((tag) => {
+              const def = tagDefinitions.get(tag);
+              const Icon = getTagIcon(def?.icon ?? "");
+              return (
+                <span key={tag} className="chip inline-flex items-center gap-1">
+                  <Icon className="h-3 w-3" />
+                  {def?.label ?? tag}
+                </span>
+              );
+            })}
           </div>
         )}
 
@@ -228,6 +237,33 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
                 Le conseil de {ride.proTip.author}
               </p>
               <p className="mt-3 text-sm leading-relaxed opacity-90">{ride.proTip.text}</p>
+            </div>
+          </section>
+        )}
+
+        {/* Pneu utilisé par le rider */}
+        {ride.usedTyre && (
+          <section className="mt-6">
+            <h2 className="text-base font-bold text-michelin-navy">Pneu utilisé sur cette balade</h2>
+            <div className="mt-3 flex items-center gap-4 rounded-2xl border border-michelin-gray-line bg-white p-4 shadow-sm">
+              <TyreImage kind={kindFromText(ride.terrain)} className="h-14 w-14 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="font-bold leading-tight text-michelin-navy">
+                  {[ride.usedTyre.brand, ride.usedTyre.range].filter(Boolean).join(" ")}
+                </p>
+                <p className="text-sm text-michelin-ink">{ride.usedTyre.designation}</p>
+                {ride.usedTyre.rating != null && (
+                  <div className="mt-1 flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        className="h-3.5 w-3.5 text-michelin-yellow"
+                        fill={n <= ride.usedTyre!.rating! ? "currentColor" : "none"}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         )}

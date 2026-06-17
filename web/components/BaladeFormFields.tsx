@@ -1,5 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Star } from "lucide-react";
+import { fetchTags, type TagDefinition } from "@/lib/tags";
+import { getTagIcon } from "@/lib/tag-icons";
+import { type ProductOption } from "@/lib/products";
+import { TyreAutocomplete } from "@/components/TyreAutocomplete";
+import { cn } from "@/lib/utils";
+
 export interface BaladeFormValues {
   name: string;
   description: string;
@@ -7,13 +15,9 @@ export interface BaladeFormValues {
   terrain: string;
   landscape: string;
   difficulty: string;
-  tags: string;
-  tyre: string;
-  tyreDesignation: string;
-  tyreWeightG: string;
-  tyreDimensions: string;
-  proTipAuthor: string;
-  proTipText: string;
+  tags: string[];
+  usedTyre: ProductOption | null;
+  usedTyreRating: number | null;
 }
 
 export const EMPTY_BALADE_FORM: BaladeFormValues = {
@@ -23,13 +27,9 @@ export const EMPTY_BALADE_FORM: BaladeFormValues = {
   terrain: "Route",
   landscape: "",
   difficulty: "Intermédiaire",
-  tags: "",
-  tyre: "",
-  tyreDesignation: "",
-  tyreWeightG: "",
-  tyreDimensions: "",
-  proTipAuthor: "",
-  proTipText: "",
+  tags: [],
+  usedTyre: null,
+  usedTyreRating: null,
 };
 
 export function baladeFormToPayload(values: BaladeFormValues) {
@@ -40,18 +40,9 @@ export function baladeFormToPayload(values: BaladeFormValues) {
     terrain: values.terrain,
     landscape: values.landscape.trim(),
     difficulty: values.difficulty,
-    tags: values.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean),
-    tyre: values.tyre.trim(),
-    tyreDetail: {
-      name: values.tyre.trim(),
-      designation: values.tyreDesignation.trim(),
-      weightG: Number.parseInt(values.tyreWeightG, 10) || 0,
-      dimensions: Number.parseInt(values.tyreDimensions, 10) || 0,
-    },
-    proTip: { author: values.proTipAuthor.trim(), text: values.proTipText.trim() },
+    tags: values.tags,
+    usedTyreProductId: values.usedTyre?.id,
+    usedTyreRating: values.usedTyre ? values.usedTyreRating ?? undefined : undefined,
   };
 }
 
@@ -66,8 +57,20 @@ export function BaladeFormFields({
   values: BaladeFormValues;
   onChange: (values: BaladeFormValues) => void;
 }) {
-  const set = <K extends keyof BaladeFormValues>(key: K, value: string) =>
+  const [availableTags, setAvailableTags] = useState<TagDefinition[]>([]);
+
+  useEffect(() => {
+    fetchTags()
+      .then(setAvailableTags)
+      .catch(() => setAvailableTags([]));
+  }, []);
+
+  const set = <K extends keyof BaladeFormValues>(key: K, value: BaladeFormValues[K]) =>
     onChange({ ...values, [key]: value });
+
+  function toggleTag(key: string) {
+    set("tags", values.tags.includes(key) ? values.tags.filter((t) => t !== key) : [...values.tags, key]);
+  }
 
   return (
     <div className="space-y-3">
@@ -115,13 +118,54 @@ export function BaladeFormFields({
       </div>
 
       <div>
-        <label className={labelClass}>Tags (séparés par des virgules)</label>
-        <input
-          className={inputClass}
-          value={values.tags}
-          onChange={(e) => set("tags", e.target.value)}
-          placeholder="Panorama, Chrono, Grimpée"
-        />
+        <label className={labelClass}>Tags</label>
+        <div className="flex flex-wrap gap-2">
+          {availableTags.map((tag) => {
+            const Icon = getTagIcon(tag.icon);
+            const active = values.tags.includes(tag.key);
+            return (
+              <button
+                key={tag.key}
+                type="button"
+                onClick={() => toggleTag(tag.key)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-xs font-semibold transition-colors",
+                  active
+                    ? "border-michelin-blue bg-michelin-blue text-white"
+                    : "border-michelin-gray-line bg-white text-michelin-ink hover:border-michelin-blue",
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {tag.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-michelin-gray-line p-3">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-michelin-ink/60">Pneu utilisé</p>
+        <div className="space-y-2">
+          <TyreAutocomplete
+            value={values.usedTyre}
+            onSelect={(product) => onChange({ ...values, usedTyre: product, usedTyreRating: product ? values.usedTyreRating : null })}
+          />
+          {values.usedTyre && (
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-label={`Noter ${n} sur 5`}
+                  onClick={() => set("usedTyreRating", n)}
+                  className="p-0.5 text-michelin-yellow"
+                >
+                  <Star className="h-5 w-5" fill={values.usedTyreRating != null && n <= values.usedTyreRating ? "currentColor" : "none"} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div>
@@ -142,59 +186,6 @@ export function BaladeFormFields({
           value={values.instructions}
           onChange={(e) => set("instructions", e.target.value)}
         />
-      </div>
-
-      <div className="rounded-xl border border-michelin-gray-line p-3">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-michelin-ink/60">Pneu conseillé</p>
-        <div className="space-y-2">
-          <input
-            className={inputClass}
-            value={values.tyre}
-            onChange={(e) => set("tyre", e.target.value)}
-            placeholder="MICHELIN Power Cup"
-          />
-          <input
-            className={inputClass}
-            value={values.tyreDesignation}
-            onChange={(e) => set("tyreDesignation", e.target.value)}
-            placeholder="Competition Line"
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              className={inputClass}
-              type="number"
-              value={values.tyreWeightG}
-              onChange={(e) => set("tyreWeightG", e.target.value)}
-              placeholder="Poids (g)"
-            />
-            <input
-              className={inputClass}
-              type="number"
-              value={values.tyreDimensions}
-              onChange={(e) => set("tyreDimensions", e.target.value)}
-              placeholder="Dimensions dispo."
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-michelin-gray-line p-3">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-michelin-ink/60">Conseil du pro</p>
-        <div className="space-y-2">
-          <input
-            className={inputClass}
-            value={values.proTipAuthor}
-            onChange={(e) => set("proTipAuthor", e.target.value)}
-            placeholder="Auteur"
-          />
-          <textarea
-            className={inputClass}
-            rows={2}
-            value={values.proTipText}
-            onChange={(e) => set("proTipText", e.target.value)}
-            placeholder="Conseil…"
-          />
-        </div>
       </div>
     </div>
   );

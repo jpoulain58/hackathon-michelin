@@ -14,6 +14,14 @@ export interface ProTip {
   text: string;
 }
 
+export interface UsedTyre {
+  productId: number;
+  brand: string | null;
+  range: string;
+  designation: string;
+  rating: number | null;
+}
+
 export interface Ride {
   id: string;
   name: string;
@@ -27,6 +35,7 @@ export interface Ride {
   tags: string[];
   tyre: string | null;
   tyreDetail: TyreDetail | null;
+  usedTyre: UsedTyre | null;
   description: string;
   instructions: string;
   proTip: ProTip | null;

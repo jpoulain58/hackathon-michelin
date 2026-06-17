@@ -25,6 +25,14 @@ export interface ProTip {
   text: string;
 }
 
+export interface UsedTyre {
+  productId: number;
+  brand: string | null;
+  range: string;
+  designation: string;
+  rating: number | null;
+}
+
 export interface RideView {
   id: string;
   name: string;
@@ -38,6 +46,7 @@ export interface RideView {
   tags: string[];
   tyre: string | null;
   tyreDetail: TyreDetail | null;
+  usedTyre: UsedTyre | null;
   description: string;
   instructions: string;
   proTip: ProTip | null;
@@ -54,9 +63,11 @@ export interface CreateRideForm {
   landscape: string;
   difficulty?: string;
   tags?: string[];
-  tyre: string;
-  tyreDetail: TyreDetail;
-  proTip: ProTip;
+  tyre?: string;
+  tyreDetail?: TyreDetail;
+  proTip?: ProTip;
+  usedTyreProductId?: number;
+  usedTyreRating?: number;
   kcal?: number;
 }
 
@@ -73,6 +84,9 @@ type RideRow = {
   tags: string[] | null;
   tyre: string | null;
   tyre_detail: TyreDetail | null;
+  used_tyre_product_id: number | null;
+  used_tyre_rating: number | null;
+  used_tyre_product: { id: number; brand: string | null; range: string; designation: string } | null;
   description: string;
   instructions: string;
   pro_tip: ProTip | null;
@@ -83,6 +97,8 @@ type RideRow = {
 
 /** Estimation grossiere : ~40 kcal/km a velo, suffisant pour l'affichage demo. */
 const KCAL_PER_KM = 40;
+
+const RIDE_SELECT = "*, used_tyre_product:products(id, brand, range, designation)";
 
 @Injectable()
 export class RidesService {
@@ -103,7 +119,11 @@ export class RidesService {
 
   async listPublic(filters: { terrain?: string; difficulty?: string } = {}): Promise<RideView[]> {
     const client = this.requireClient();
-    let query = client.from("rides").select("*").eq("is_public", true).order("created_at", { ascending: false });
+    let query = client
+      .from("rides")
+      .select(RIDE_SELECT)
+      .eq("is_public", true)
+      .order("created_at", { ascending: false });
     if (filters.terrain) query = query.eq("terrain", filters.terrain);
     if (filters.difficulty) query = query.eq("difficulty", filters.difficulty);
 
@@ -114,7 +134,12 @@ export class RidesService {
 
   async getById(id: string): Promise<RideView> {
     const client = this.requireClient();
-    const { data, error } = await client.from("rides").select("*").eq("id", id).eq("is_public", true).maybeSingle();
+    const { data, error } = await client
+      .from("rides")
+      .select(RIDE_SELECT)
+      .eq("id", id)
+      .eq("is_public", true)
+      .maybeSingle();
     if (error) throw new InternalServerErrorException(`Impossible de lire la balade: ${error.message}`);
     if (!data) throw new NotFoundException("Balade introuvable.");
     return toView(data as RideRow);
@@ -153,9 +178,11 @@ export class RidesService {
       landscape: form.landscape,
       difficulty: form.difficulty ?? "Intermédiaire",
       tags: form.tags ?? [],
-      tyre: form.tyre,
-      tyreDetail: form.tyreDetail,
-      proTip: form.proTip,
+      tyre: form.tyre ?? null,
+      tyreDetail: form.tyreDetail ?? null,
+      proTip: form.proTip ?? null,
+      usedTyreProductId: form.usedTyreProductId ?? null,
+      usedTyreRating: form.usedTyreRating ?? null,
       pts,
     });
   }
@@ -186,9 +213,11 @@ export class RidesService {
       landscape: form.landscape,
       difficulty: form.difficulty ?? "Intermédiaire",
       tags: form.tags ?? [],
-      tyre: form.tyre,
-      tyreDetail: form.tyreDetail,
-      proTip: form.proTip,
+      tyre: form.tyre ?? null,
+      tyreDetail: form.tyreDetail ?? null,
+      proTip: form.proTip ?? null,
+      usedTyreProductId: form.usedTyreProductId ?? null,
+      usedTyreRating: form.usedTyreRating ?? null,
       pts: parsed.pts,
     });
   }
@@ -197,8 +226,12 @@ export class RidesService {
     if (!form.name?.trim()) throw new BadRequestException("Nom de balade requis.");
     if (!form.terrain?.trim()) throw new BadRequestException("Terrain requis.");
     if (!form.landscape?.trim()) throw new BadRequestException("Paysage requis.");
-    if (!form.tyre?.trim() || !form.tyreDetail?.name) throw new BadRequestException("Pneu conseillé requis.");
-    if (!form.proTip?.author || !form.proTip?.text) throw new BadRequestException("Conseil du pro requis.");
+    if (form.usedTyreRating != null) {
+      if (!form.usedTyreProductId) throw new BadRequestException("Choisis un pneu avant de le noter.");
+      if (!Number.isInteger(form.usedTyreRating) || form.usedTyreRating < 1 || form.usedTyreRating > 5) {
+        throw new BadRequestException("La note du pneu doit être comprise entre 1 et 5.");
+      }
+    }
   }
 
   private async insertRide(input: {
@@ -216,9 +249,11 @@ export class RidesService {
     landscape: string;
     difficulty: string;
     tags: string[];
-    tyre: string;
-    tyreDetail: TyreDetail;
-    proTip: ProTip;
+    tyre: string | null;
+    tyreDetail: TyreDetail | null;
+    proTip: ProTip | null;
+    usedTyreProductId: number | null;
+    usedTyreRating: number | null;
     pts: LatLng[];
   }): Promise<RideView> {
     const client = this.requireClient();
@@ -243,15 +278,20 @@ export class RidesService {
         tyre: input.tyre,
         tyre_detail: input.tyreDetail,
         pro_tip: input.proTip,
+        used_tyre_product_id: input.usedTyreProductId,
+        used_tyre_rating: input.usedTyreRating,
         pts: input.pts,
         is_public: true,
       })
-      .select("*")
+      .select(RIDE_SELECT)
       .single();
 
     if (error) {
       if (/duplicate key|already exists/i.test(error.message)) {
         throw new BadRequestException("Cette activité a déjà été ajoutée comme balade.");
+      }
+      if (/foreign key|violates/i.test(error.message)) {
+        throw new BadRequestException("Pneu sélectionné introuvable dans le catalogue.");
       }
       throw new InternalServerErrorException(`Impossible de créer la balade: ${error.message}`);
     }
@@ -283,6 +323,15 @@ function toView(row: RideRow): RideView {
     tags: row.tags ?? [],
     tyre: row.tyre,
     tyreDetail: row.tyre_detail,
+    usedTyre: row.used_tyre_product
+      ? {
+          productId: row.used_tyre_product.id,
+          brand: row.used_tyre_product.brand,
+          range: row.used_tyre_product.range,
+          designation: row.used_tyre_product.designation,
+          rating: row.used_tyre_rating,
+        }
+      : null,
     description: row.description,
     instructions: row.instructions,
     proTip: row.pro_tip,
