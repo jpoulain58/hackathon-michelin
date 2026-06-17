@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/Reveal";
 import { supabase } from "@/lib/supabase/client";
@@ -22,7 +23,7 @@ const AVANTAGES = [
 type State = "loading" | "anonymous" | "guest" | "member";
 
 export function ClubMembership() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,19 +35,19 @@ export function ClubMembership() {
     }
     let active = true;
 
-    const load = async (uid: string | null) => {
+    const load = async (sessionUser: User | null) => {
       if (!active) return;
-      if (!uid) {
-        setUserId(null);
+      if (!sessionUser) {
+        setUser(null);
         setState("anonymous");
         return;
       }
-      setUserId(uid);
+      setUser(sessionUser);
       // RLS : un rider ne lit que sa propre ligne (auth.uid() = id).
       const { data, error } = await supabase!
         .from("riders")
         .select("club_member")
-        .eq("id", uid)
+        .eq("id", sessionUser.id)
         .maybeSingle();
       if (!active) return;
       if (error) {
@@ -57,10 +58,10 @@ export function ClubMembership() {
       setState(data?.club_member ? "member" : "guest");
     };
 
-    supabase.auth.getSession().then(({ data }) => load(data.session?.user.id ?? null));
+    supabase.auth.getSession().then(({ data }) => load(data.session?.user ?? null));
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => load(session?.user.id ?? null));
+    } = supabase.auth.onAuthStateChange((_event, session) => load(session?.user ?? null));
 
     return () => {
       active = false;
@@ -69,15 +70,46 @@ export function ClubMembership() {
   }, []);
 
   async function setMembership(next: boolean) {
-    if (!supabase || !userId) return;
+    if (!supabase || !user) return;
     setBusy(true);
     setError(null);
-    const { error } = await supabase.from("riders").update({ club_member: next }).eq("id", userId);
-    setBusy(false);
-    if (error) {
-      setError(error.message);
+
+    // 1. Tente de mettre a jour la ligne existante du rider.
+    const { data: updated, error: updateError } = await supabase
+      .from("riders")
+      .update({ club_member: next, updated_at: new Date().toISOString() })
+      .eq("id", user.id)
+      .select("club_member");
+
+    if (updateError) {
+      setBusy(false);
+      setError(updateError.message);
       return;
     }
+
+    // 2. Aucune ligne touchee -> le rider n'a pas encore ete synchronise : on cree
+    //    sa ligne. Garantit que l'adhesion est bien persistee (survit au refresh).
+    if (!updated || updated.length === 0) {
+      const meta = user.user_metadata as Record<string, unknown> | undefined;
+      const displayName =
+        (typeof meta?.full_name === "string" && meta.full_name) ||
+        (typeof meta?.name === "string" && meta.name) ||
+        user.email ||
+        "Rider Michelin";
+      const { error: insertError } = await supabase.from("riders").insert({
+        id: user.id,
+        email: user.email ?? null,
+        display_name: displayName,
+        club_member: next,
+      });
+      if (insertError) {
+        setBusy(false);
+        setError(insertError.message);
+        return;
+      }
+    }
+
+    setBusy(false);
     setState(next ? "member" : "guest");
     // Previent les autres sections (Mon Garage) du changement d'adhesion.
     window.dispatchEvent(new CustomEvent("club-membership-changed", { detail: { member: next } }));

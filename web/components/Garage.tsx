@@ -111,14 +111,21 @@ export function Garage() {
     } = supabase.auth.onAuthStateChange((_event, next) => resolve(next));
 
     // L'adhesion peut changer depuis la carte Club : on reagit en direct.
+    // On relit la session fraiche pour eviter toute closure obsolete.
     const onMembership = (e: Event) => {
       const member = (e as CustomEvent<{ member: boolean }>).detail?.member;
-      const uid = session?.user.id;
-      if (member && uid) {
-        setGate("ready");
-        loadTyres(uid);
-      } else if (member === false) {
+      if (member === false) {
         setGate("locked");
+        return;
+      }
+      if (member) {
+        supabase!.auth.getSession().then(({ data }) => {
+          const next = data.session;
+          if (!next) return;
+          setSession(next);
+          setGate("ready");
+          loadTyres(next.user.id);
+        });
       }
     };
     window.addEventListener("club-membership-changed", onMembership);
