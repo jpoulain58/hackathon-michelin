@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 import type { TyreDetail } from "@/lib/api";
+import { getTyreImage } from "@/lib/tyre-images";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -14,6 +15,10 @@ function productName(range: string): string {
     .replace(/^MICHELIN\s+/i, "")
     .replace(/\s+(RACING|COMPETITION|PERFORMANCE|ACCESS)\s+LINE(\s*\([^)]*\))?$/i, "")
     .trim();
+}
+
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function segmentLabel(segment: string): string {
@@ -55,109 +60,143 @@ function techLabel(key: string): string {
   } as Record<string, string>)[key] ?? key;
 }
 
-function segmentColor(segment: string) {
-  if (segment.includes("RACING")) return "bg-michelin-blue";
-  if (segment.includes("PERFORMANCE")) return "bg-michelin-green";
-  if (segment.includes("ACCESS")) return "bg-michelin-ink/60";
-  return "bg-michelin-navy";
-}
-
 // ─── Composant ───────────────────────────────────────────────────────────────
 
 export function ProduitDetail({ product: p }: { product: TyreDetail }) {
   const name = productName(p.range);
   const techs = Object.entries(p.technologies ?? {}).filter(([, v]) => v && (v as string[]).length > 0);
+  const imgSrc = getTyreImage(p.globalId, p.cycleType, p.range);
 
   return (
-    <main className="min-h-screen bg-michelin-gray-light/30">
+    <div className="min-h-screen bg-white">
       <SiteHeader />
 
-      {/* Hero compact */}
-      <section className="bg-michelin-navy text-white">
-        <div className="mx-auto max-w-6xl px-6 py-10">
-          <Link
-            href="/produits"
-            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-white/60 transition-colors hover:text-white"
-          >
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path d="M19 12H5M12 5l-7 7 7 7" />
-            </svg>
-            Catalogue
-          </Link>
+      {/* Breadcrumb */}
+      <div className="border-b border-michelin-gray-line bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-3">
+          <nav className="flex items-center gap-2 text-xs text-michelin-ink/50">
+            <Link href="/" className="hover:text-michelin-blue">Accueil</Link>
+            <span>/</span>
+            <Link href="/produits" className="hover:text-michelin-blue">Catalogue</Link>
+            <span>/</span>
+            <span className="font-semibold text-michelin-navy">{name}</span>
+          </nav>
+        </div>
+      </div>
 
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={cn("rounded-pill px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white", segmentColor(p.segment))}>
-                  {segmentLabel(p.segment)}
-                </span>
-                <span className="rounded-pill border border-white/20 px-2.5 py-0.5 text-[10px] font-semibold text-white/70">
-                  {cycleLabel(p.cycleType)}
-                </span>
-              </div>
-              <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{name}</h1>
-              <p className="mt-1 text-base text-white/60">{p.designation}</p>
-            </div>
+      {/* Product layout */}
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
 
-            {/* Stats rapides */}
-            <div className="flex flex-wrap gap-4">
-              {p.weightG && (
-                <Stat label="Poids" value={`${p.weightG} g`} />
-              )}
-              {p.tpi && (
-                <Stat label="TPI" value={p.tpi} />
-              )}
-              {p.fitting && (
-                <Stat label="Montage" value={p.fitting === "FRONT/REAR" ? "AV/AR" : p.fitting} />
-              )}
-              {p.widthEtrto && p.diameterEtrto && (
-                <Stat label="Dimensions" value={`${p.widthEtrto}-${p.diameterEtrto}`} />
+          {/* ── Colonne image (sticky) ── */}
+          <div className="lg:sticky lg:top-24">
+            <div className="flex aspect-square items-center justify-center rounded-2xl bg-michelin-gray-light/60 p-12">
+              {imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt={name}
+                  className="h-full w-full object-contain drop-shadow-lg"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-michelin-ink/30">
+                  <svg viewBox="0 0 80 80" className="h-20 w-20" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                    <circle cx="40" cy="40" r="36" />
+                    <circle cx="40" cy="40" r="16" />
+                    <path d="M40 4v10M40 66v10M4 40h10M66 40h10" />
+                  </svg>
+                  <span className="text-sm font-semibold">Image non disponible</span>
+                </div>
               )}
             </div>
           </div>
-        </div>
-      </section>
 
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <div className="grid gap-6 lg:grid-cols-3">
+          {/* ── Colonne infos ── */}
+          <div className="space-y-7">
 
-          {/* Colonne principale */}
-          <div className="space-y-6 lg:col-span-2">
+            {/* En-tête : marque + nom */}
+            <div>
+              <p className="font-black italic tracking-wide text-michelin-navy">MICHELIN</p>
+              <h1 className="mt-1 text-3xl font-black leading-tight tracking-tight text-michelin-navy sm:text-4xl">
+                {toTitleCase(name)}
+              </h1>
 
-            {/* Usages */}
-            <Card title="Utilisations">
-              <div className="flex flex-wrap gap-2">
-                {p.use.map((u) => (
-                  <span key={u} className="rounded-pill bg-michelin-yellow/20 px-3 py-1 text-sm font-semibold text-michelin-navy">
-                    {useLabel(u)}
-                  </span>
-                ))}
+              {/* Gamme + type de vélo */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className={cn(
+                  "rounded-pill px-3 py-1 text-xs font-bold uppercase tracking-wider text-white",
+                  p.segment.includes("RACING") ? "bg-michelin-blue"
+                    : p.segment.includes("PERFORMANCE") ? "bg-michelin-green"
+                    : p.segment.includes("ACCESS") ? "bg-michelin-ink/50"
+                    : "bg-michelin-navy",
+                )}>
+                  {segmentLabel(p.segment)}
+                </span>
+                <span className="rounded-pill border border-michelin-gray-line px-3 py-1 text-xs font-semibold text-michelin-ink">
+                  {cycleLabel(p.cycleType)}
+                </span>
               </div>
-            </Card>
+            </div>
+
+            {/* Utilisations (chips style Michelin.com) */}
+            {p.use.length > 0 && (
+              <div>
+                <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-michelin-navy/50">Utilisations</p>
+                <div className="flex flex-wrap gap-2">
+                  {p.use.map((u) => (
+                    <span
+                      key={u}
+                      className="rounded-full bg-michelin-blue/8 px-3.5 py-1.5 text-xs font-semibold text-michelin-blue ring-1 ring-michelin-blue/20"
+                    >
+                      {useLabel(u)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Terrains */}
-            <Card title="Terrains">
-              <div className="flex flex-wrap gap-2">
-                {p.terrainTypes.map((t) => (
-                  <span key={t} className="rounded-pill border border-michelin-gray-line bg-white px-3 py-1 text-sm text-michelin-ink">
-                    {terrainLabel(t)}
-                  </span>
-                ))}
+            {p.terrainTypes.length > 0 && (
+              <div>
+                <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-michelin-navy/50">Terrains</p>
+                <div className="flex flex-wrap gap-2">
+                  {p.terrainTypes.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full bg-michelin-gray-light px-3.5 py-1.5 text-xs font-semibold text-michelin-ink ring-1 ring-michelin-gray-line"
+                    >
+                      {terrainLabel(t)}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </Card>
+            )}
+
+            {/* Séparateur */}
+            <div className="h-px bg-michelin-gray-line" />
+
+            {/* Stats rapides */}
+            {(p.weightG || p.tpi || p.fitting || (p.widthEtrto && p.diameterEtrto)) && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {p.weightG && <QuickStat label="Poids" value={`${p.weightG} g`} />}
+                {p.tpi && <QuickStat label="TPI" value={p.tpi} />}
+                {p.fitting && <QuickStat label="Montage" value={p.fitting === "FRONT/REAR" ? "AV / AR" : p.fitting} />}
+                {p.widthEtrto && p.diameterEtrto && (
+                  <QuickStat label="Dimensions" value={`${p.widthEtrto}-${p.diameterEtrto}`} />
+                )}
+              </div>
+            )}
 
             {/* Technologies */}
             {techs.length > 0 && (
-              <Card title="Technologies">
+              <div>
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-michelin-navy/50">Technologies</p>
                 <div className="space-y-3">
                   {techs.map(([key, values]) => (
                     <div key={key}>
-                      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-michelin-navy">
-                        {techLabel(key)}
-                      </p>
+                      <p className="mb-1.5 text-xs font-bold text-michelin-navy">{techLabel(key)}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {(values as string[]).map((v) => (
-                          <span key={v} className="rounded-pill bg-michelin-blue/10 px-2.5 py-0.5 text-xs font-semibold text-michelin-blue">
+                          <span key={v} className="rounded-pill bg-michelin-yellow/15 px-2.5 py-0.5 text-xs font-semibold text-michelin-navy">
                             {v}
                           </span>
                         ))}
@@ -165,98 +204,99 @@ export function ProduitDetail({ product: p }: { product: TyreDetail }) {
                     </div>
                   ))}
                 </div>
-              </Card>
+              </div>
             )}
-          </div>
 
-          {/* Colonne secondaire */}
-          <div className="space-y-6">
+            {/* Séparateur */}
+            <div className="h-px bg-michelin-gray-line" />
+
+            {/* Désignation / référence dimension */}
+            <div className="rounded-xl border border-michelin-gray-line bg-michelin-gray-light/40 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-michelin-navy/50">Référence sélectionnée</p>
+              <p className="mt-1 text-base font-black text-michelin-navy">{p.designation}</p>
+              {(p.eanCode || p.caiCode) && (
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {p.eanCode && (
+                    <span className="text-xs text-michelin-ink/60">EAN <span className="font-semibold text-michelin-ink">{p.eanCode}</span></span>
+                  )}
+                  {p.caiCode && (
+                    <span className="text-xs text-michelin-ink/60">CAI <span className="font-semibold text-michelin-ink">{p.caiCode}</span></span>
+                  )}
+                  {p.globalId && (
+                    <span className="text-xs text-michelin-ink/60">ID <span className="font-semibold text-michelin-ink">{p.globalId}</span></span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Pression */}
             {(p.minBar || p.maxBar) && (
-              <Card title="Pression recommandée">
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <span className="text-xs text-michelin-ink">Min</span>
-                    <span className="text-xs text-michelin-ink">Max</span>
+              <div className="rounded-xl border border-michelin-gray-line p-4">
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-michelin-navy/50">Pression recommandée</p>
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-michelin-navy">{p.minBar}</p>
+                    <p className="text-[10px] font-bold uppercase text-michelin-ink/50">bar min{p.minPsi ? ` · ${p.minPsi} psi` : ""}</p>
                   </div>
-                  <div className="relative h-2 rounded-full bg-michelin-gray-line">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-michelin-blue/40 to-michelin-blue" />
+                  <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-michelin-gray-line">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-michelin-blue/40 via-michelin-blue to-michelin-blue" />
                   </div>
-                  <div className="flex items-end justify-between">
-                    <div className="text-center">
-                      <p className="text-xl font-black text-michelin-navy">{p.minBar} <span className="text-sm font-semibold">bar</span></p>
-                      {p.minPsi && <p className="text-xs text-michelin-ink/60">{p.minPsi} psi</p>}
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xl font-black text-michelin-navy">{p.maxBar} <span className="text-sm font-semibold">bar</span></p>
-                      {p.maxPsi && <p className="text-xs text-michelin-ink/60">{p.maxPsi} psi</p>}
-                    </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-michelin-navy">{p.maxBar}</p>
+                    <p className="text-[10px] font-bold uppercase text-michelin-ink/50">bar max{p.maxPsi ? ` · ${p.maxPsi} psi` : ""}</p>
                   </div>
                 </div>
-              </Card>
+              </div>
             )}
 
-            {/* Références */}
-            <Card title="Références">
-              <dl className="space-y-2">
-                {p.eanCode && <Row label="EAN" value={p.eanCode} />}
-                {p.caiCode && <Row label="CAI" value={p.caiCode} />}
-                {p.globalId && <Row label="ID Global" value={p.globalId} />}
-                {p.productType && <Row label="Type" value={p.productType} />}
-                {p.brand && <Row label="Marque" value={p.brand} />}
+            {/* Références supplémentaires */}
+            {(p.brand || p.productType || p.discontinuedDate) && (
+              <div className="space-y-1.5">
+                {p.brand && <RefRow label="Marque" value={p.brand} />}
+                {p.productType && <RefRow label="Type de produit" value={p.productType} />}
                 {p.discontinuedDate && (
-                  <Row label="Fin de vie" value={new Date(p.discontinuedDate).toLocaleDateString("fr-FR", { year: "numeric", month: "long" })} />
+                  <RefRow
+                    label="Fin de vie"
+                    value={new Date(p.discontinuedDate).toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
+                  />
                 )}
-              </dl>
-            </Card>
+              </div>
+            )}
 
             {/* CTA */}
-            <div className="rounded-2xl bg-michelin-blue p-5 text-white">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Ce pneu vous convient ?</p>
-              <p className="mt-1 text-lg font-black">{name}</p>
-              <p className="mt-0.5 text-sm text-white/70">{p.designation}</p>
-              <button className="mt-4 w-full rounded-pill bg-michelin-yellow px-4 py-2.5 text-sm font-bold text-michelin-navy transition-[filter] hover:brightness-95">
+            <div className="pt-2">
+              <button className="w-full rounded-pill bg-michelin-yellow px-6 py-4 text-base font-black text-michelin-navy transition-[filter] hover:brightness-95">
                 Voir où acheter →
               </button>
+              <p className="mt-2 text-center text-xs text-michelin-ink/40">
+                Disponible chez vos revendeurs Michelin agréés
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <SiteFooter />
-    </main>
+    </div>
   );
 }
 
 // ─── Sous-composants ─────────────────────────────────────────────────────────
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function QuickStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-michelin-gray-line bg-white p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <div className="h-4 w-0.5 bg-michelin-yellow" />
-        <h2 className="text-xs font-bold uppercase tracking-widest text-michelin-navy">{title}</h2>
-      </div>
-      {children}
+    <div className="rounded-xl border border-michelin-gray-line bg-white p-3 text-center">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-michelin-ink/40">{label}</p>
+      <p className="mt-1 text-sm font-black text-michelin-navy">{value}</p>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function RefRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-center backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/60">{label}</p>
-      <p className="mt-0.5 text-base font-black text-white">{value}</p>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-michelin-gray-line pb-2 last:border-0 last:pb-0">
-      <dt className="text-xs font-semibold text-michelin-ink/60">{label}</dt>
-      <dd className="text-right text-xs font-semibold text-michelin-navy">{value}</dd>
+    <div className="flex items-center justify-between gap-4 border-b border-michelin-gray-line pb-1.5 last:border-0">
+      <dt className="text-xs text-michelin-ink/50">{label}</dt>
+      <dd className="text-xs font-semibold text-michelin-navy">{value}</dd>
     </div>
   );
 }

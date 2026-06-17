@@ -2,6 +2,7 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:300
 
 export interface TyreView {
   id?: number;
+  globalId?: string;
   range: string;
   designation: string;
   segment: string;

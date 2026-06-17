@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
 import type { TyreView } from "@/lib/api";
+import { getTyreImage } from "@/lib/tyre-images";
 
 // ─── Labels d'affichage ──────────────────────────────────────────────────────
 
@@ -236,52 +237,65 @@ function ProductCard({ tyre }: { tyre: TyreView }) {
   const isRacing = tyre.segment?.includes("RACING");
   const isPerf = tyre.segment?.includes("PERFORMANCE");
   const isAccess = tyre.segment?.includes("ACCESS");
+  const imgSrc = getTyreImage(tyre.globalId, tyre.cycleType, tyre.range);
 
   return (
     <Link
       href={tyre.id ? `/produits/${tyre.id}` : "#"}
-      className="group flex flex-col rounded-2xl border border-michelin-gray-line bg-white p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-michelin-gray-line bg-white transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-sm font-black leading-tight text-michelin-navy">{name}</h3>
-          <p className="mt-0.5 truncate text-xs text-michelin-ink/60">{tyre.designation}</p>
+      {imgSrc ? (
+        <div className="flex h-36 items-center justify-center bg-michelin-gray-light/60 px-6">
+          <img
+            src={imgSrc}
+            alt={name}
+            className="h-full w-auto max-w-full object-contain py-3 transition-transform duration-300 group-hover:scale-105"
+          />
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white",
-            isRacing ? "bg-michelin-blue"
-              : isPerf ? "bg-michelin-green"
-              : isAccess ? "bg-michelin-ink/60"
-              : "bg-michelin-navy",
-          )}
-        >
-          {segmentShort(tyre.segment ?? "")}
-        </span>
-      </div>
+      ) : null}
 
-      <div className="mt-3 flex-1 space-y-2">
-        <div className="flex flex-wrap gap-1">
-          {(tyre.use ?? []).map((u) => (
-            <span key={u} className="rounded-pill bg-michelin-yellow/20 px-2 py-0.5 text-[10px] font-semibold text-michelin-navy">
-              {useLabel(u)}
-            </span>
-          ))}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-sm font-black leading-tight text-michelin-navy">{name}</h3>
+            <p className="mt-0.5 truncate text-xs text-michelin-ink/60">{tyre.designation}</p>
+          </div>
+          <span
+            className={cn(
+              "shrink-0 rounded-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white",
+              isRacing ? "bg-michelin-blue"
+                : isPerf ? "bg-michelin-green"
+                : isAccess ? "bg-michelin-ink/60"
+                : "bg-michelin-navy",
+            )}
+          >
+            {segmentShort(tyre.segment ?? "")}
+          </span>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {(tyre.terrainTypes ?? []).map((t) => (
-            <span key={t} className="rounded-pill bg-michelin-gray-light px-2 py-0.5 text-[10px] text-michelin-ink">
-              {terrainLabel(t)}
-            </span>
-          ))}
-        </div>
-      </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-michelin-gray-line pt-3">
-        <span className="text-xs font-semibold text-michelin-ink">
-          {tyre.weightG ? `${tyre.weightG} g` : "—"}
-        </span>
-        <span className="chip">{cycleLabel(tyre.cycleType ?? "")}</span>
+        <div className="mt-3 flex-1 space-y-2">
+          <div className="flex flex-wrap gap-1">
+            {(tyre.use ?? []).map((u) => (
+              <span key={u} className="rounded-pill bg-michelin-yellow/20 px-2 py-0.5 text-[10px] font-semibold text-michelin-navy">
+                {useLabel(u)}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {(tyre.terrainTypes ?? []).map((t) => (
+              <span key={t} className="rounded-pill bg-michelin-gray-light px-2 py-0.5 text-[10px] text-michelin-ink">
+                {terrainLabel(t)}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-t border-michelin-gray-line pt-3">
+          <span className="text-xs font-semibold text-michelin-ink">
+            {tyre.weightG ? `${tyre.weightG} g` : "—"}
+          </span>
+          <span className="chip">{cycleLabel(tyre.cycleType ?? "")}</span>
+        </div>
       </div>
     </Link>
   );

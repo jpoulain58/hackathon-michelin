@@ -5,7 +5,7 @@ import { ProduitsClient } from "./ProduitsClient";
 async function fetchProductsFromDb(): Promise<TyreView[]> {
   const { data, error } = await supabaseAdmin
     .from("products")
-    .select("id, range, designation, cycle_type, segment, use, terrain_types, weight_g")
+    .select("id, global_id, range, designation, cycle_type, segment, use, terrain_types, weight_g")
     .order("segment")
     .order("range")
     .limit(1000);
@@ -14,6 +14,7 @@ async function fetchProductsFromDb(): Promise<TyreView[]> {
 
   return data.map((p) => ({
     id: p.id,
+    globalId: p.global_id ?? undefined,
     range: p.range,
     designation: p.designation,
     cycleType: p.cycle_type,
