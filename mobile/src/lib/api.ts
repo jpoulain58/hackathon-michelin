@@ -256,6 +256,33 @@ export async function createRideFromGpx(
   return (await res.json()) as ApiRide;
 }
 
+export interface StravaStats {
+  connected: boolean;
+  totalKm: number;
+  rideCount: number;
+}
+
+/**
+ * Cumul des km Strava du rider connecte (Club : "Mon Garage"). Reutilise l'API
+ * profil existante (/api/auth/profile -> strava.totals.allRideKm).
+ */
+export async function fetchStravaStats(accessToken: string): Promise<StravaStats> {
+  const res = await fetch(`${API_BASE}/api/auth/profile`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  const data = (await res.json()) as AuthProfile;
+  const totals = data.strava?.totals;
+  return {
+    connected: Boolean(data.strava),
+    totalKm: Math.round(totals?.allRideKm ?? 0),
+    rideCount: totals?.allRideCount ?? 0,
+  };
+}
+
 export async function fetchAuthProfile(
   session: Session | null,
   options: { refresh?: boolean } = {},
