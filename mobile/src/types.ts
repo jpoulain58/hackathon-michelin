@@ -10,6 +10,29 @@ export interface Tyre {
   matchScore: number; // 0-100
   bestChoice?: boolean;
   categories: TyreCategory[];
+  range?: string;
+  designation?: string;
+  productType?: string;
+  segment?: string;
+  cycleType?: string;
+  use?: string[];
+  terrainTypes?: string[];
+  fitting?: string;
+  widthEtrto?: string;
+  diameterEtrto?: string;
+  webDiameterInch?: string;
+  webWidthMm?: string;
+  tpi?: string;
+  weightG?: number;
+  pressure?: {
+    minBar?: number | null;
+    maxBar?: number | null;
+    minPsi?: number | null;
+    maxPsi?: number | null;
+  };
+  technologies?: Record<string, string[]>;
+  score?: number;
+  why?: string[];
 }
 
 export interface CompareColumn {

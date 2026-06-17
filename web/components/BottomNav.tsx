@@ -16,6 +16,18 @@ const ITEMS = [
     ),
   },
   {
+    label: "Comparer",
+    href: "/comparateur",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+        <path d="M8 7h12" />
+        <path d="M4 7h.01" />
+        <path d="M4 17h12" />
+        <path d="M20 17h.01" />
+      </svg>
+    ),
+  },
+  {
     label: "Balades",
     href: "/balades",
     icon: (

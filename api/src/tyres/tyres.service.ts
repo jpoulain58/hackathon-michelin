@@ -10,14 +10,24 @@ import {
 
 /** Vue produit exposee par l'API (pas de fuite de champs internes). */
 export interface TyreView {
+  id: string;
   range: string;
   designation: string;
+  productType: string;
   segment: string;
   cycleType: string;
   use: string[];
   terrainTypes: string[];
+  fitting?: string;
+  widthEtrto?: string;
+  diameterEtrto?: string;
+  webDiameterInch?: string;
+  webWidthMm?: string;
+  tpi?: string;
   weightG?: number;
+  pressure?: Product["pressure"];
   technologies?: Record<string, string[]>;
+  sidewallColor?: string;
 }
 
 export interface RecoView extends TyreView {
@@ -46,7 +56,15 @@ export class TyresService {
     };
   }
 
-  list(opts: { discipline?: string; limit?: number } = {}): TyreView[] {
+  list(opts: { discipline?: string; ids?: string[]; limit?: number } = {}): TyreView[] {
+    if (opts.ids?.length) {
+      const byId = new Map(this.tyres.map((p) => [makeTyreId(p), p]));
+      return opts.ids
+        .map((id) => byId.get(id))
+        .filter((p): p is Product => Boolean(p))
+        .map(toTyreView);
+    }
+
     let items = this.tyres;
     if (opts.discipline) {
       const disc = DISCIPLINES[opts.discipline];
@@ -83,13 +101,37 @@ function clampLimit(value: number | undefined, max: number): number {
 
 function toTyreView(p: Product): TyreView {
   return {
+    id: makeTyreId(p),
     range: p.range,
     designation: p.designation,
+    productType: p.productType,
     segment: p.segment,
     cycleType: p.cycleType,
     use: p.use,
     terrainTypes: p.terrainTypes,
+    fitting: cleanText(p.fitting),
+    widthEtrto: cleanText(p.widthEtrto),
+    diameterEtrto: cleanText(p.diameterEtrto),
+    webDiameterInch: cleanText(p.webDiameterInch),
+    webWidthMm: cleanText(p.webWidthMm),
+    tpi: p.tpi,
     weightG: p.weightG,
+    pressure: p.pressure,
     technologies: p.technologies,
+    sidewallColor: cleanText(p.sidewallColor),
   };
+}
+
+function makeTyreId(p: Product): string {
+  return `${p.range} ${p.designation}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function cleanText(value: unknown): string | undefined {
+  const text = String(value ?? "").trim();
+  return text.length > 0 ? text : undefined;
 }

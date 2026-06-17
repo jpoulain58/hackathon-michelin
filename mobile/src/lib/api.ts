@@ -73,16 +73,31 @@ export type AuthProfile = {
 };
 
 export interface ApiTyre {
+  id: string;
   range: string;
   designation: string;
+  productType: string;
   segment: string;
   cycleType: string;
   use: string[];
   terrainTypes: string[];
+  fitting?: string;
+  widthEtrto?: string;
+  diameterEtrto?: string;
+  webDiameterInch?: string;
+  webWidthMm?: string;
+  tpi?: string;
   weightG?: number;
+  pressure?: {
+    minBar?: number | null;
+    maxBar?: number | null;
+    minPsi?: number | null;
+    maxPsi?: number | null;
+  };
   technologies?: Record<string, string[]>;
-  score: number;
-  why: string[];
+  sidewallColor?: string;
+  score?: number;
+  why?: string[];
 }
 
 export async function fetchRecommendations(params: {
@@ -98,6 +113,16 @@ export async function fetchRecommendations(params: {
     limit: String(params.limit ?? 5),
   });
   const res = await fetch(`${API_BASE}/api/tyres/recommend?${q}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ApiTyre[] }).items;
+}
+
+export async function fetchTyres(params: { ids?: string[]; limit?: number } = {}): Promise<ApiTyre[]> {
+  const q = new URLSearchParams();
+  if (params.ids?.length) q.set("ids", params.ids.join(","));
+  if (params.limit) q.set("limit", String(params.limit));
+  const suffix = q.toString() ? `?${q}` : "";
+  const res = await fetch(`${API_BASE}/api/tyres${suffix}`);
   if (!res.ok) throw new Error(`API ${res.status}`);
   return ((await res.json()) as { items: ApiTyre[] }).items;
 }

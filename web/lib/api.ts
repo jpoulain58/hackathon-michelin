@@ -1,14 +1,29 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export interface TyreView {
+  id: string;
   range: string;
   designation: string;
+  productType: string;
   segment: string;
   cycleType: string;
   use: string[];
   terrainTypes: string[];
+  fitting?: string;
+  widthEtrto?: string;
+  diameterEtrto?: string;
+  webDiameterInch?: string;
+  webWidthMm?: string;
+  tpi?: string;
   weightG?: number;
+  pressure?: {
+    minBar?: number | null;
+    maxBar?: number | null;
+    minPsi?: number | null;
+    maxPsi?: number | null;
+  };
   technologies?: Record<string, string[]>;
+  sidewallColor?: string;
 }
 
 export interface RecoView extends TyreView {
@@ -67,6 +82,26 @@ export async function fetchRecommendations(params: {
     throw new Error(body.message ?? `API ${res.status}`);
   }
   const data = (await res.json()) as { items: RecoView[] };
+  return data.items;
+}
+
+export async function fetchTyres(params: {
+  ids?: string[];
+  discipline?: string;
+  limit?: number;
+} = {}): Promise<TyreView[]> {
+  const q = new URLSearchParams();
+  if (params.ids?.length) q.set("ids", params.ids.join(","));
+  if (params.discipline) q.set("discipline", params.discipline);
+  if (params.limit) q.set("limit", String(params.limit));
+
+  const suffix = q.toString() ? `?${q.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/tyres${suffix}`, { cache: "no-store" });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  const data = (await res.json()) as { items: TyreView[] };
   return data.items;
 }
 

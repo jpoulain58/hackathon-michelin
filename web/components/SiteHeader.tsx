@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/accueil", label: "Accueil" },
   { href: "/trouve-ton-pneu", label: "Trouve ton pneu", cta: true },
+  { href: "/comparateur", label: "Comparateur" },
   { href: "/communaute", label: "Communaute" },
   { href: "/balades", label: "Balades" },
   { href: "/actualites", label: "Actualites" },

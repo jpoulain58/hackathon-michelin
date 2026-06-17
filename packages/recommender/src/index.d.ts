@@ -5,6 +5,11 @@ export interface Product {
   segment: string;
   range: string;
   designation: string;
+  fitting?: string;
+  widthEtrto?: string;
+  diameterEtrto?: string;
+  webDiameterInch?: string;
+  webWidthMm?: string;
   use: string[];
   terrainTypes: string[];
   tpi?: string;
