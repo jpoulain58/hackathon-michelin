@@ -10,7 +10,6 @@ import { supabase } from "@/lib/supabase/client";
 // Avantages affiches dans la carte "Club starter".
 const AVANTAGES = [
   "2 pneus Michelin offerts / an",
-  "Chambres a air a volonte",
   "Acces prioritaire au Programme Testeur",
   "Mon Garage connecte : suivi d'usure de tes pneus",
   "Badge Testeur Michelin sur ton profil",
