@@ -1,11 +1,17 @@
-import { Controller, Get, Inject, Query } from "@nestjs/common";
-import { TyresService } from "./tyres.service";
+import { Controller, Get, Headers, Inject, NotFoundException, Query } from "@nestjs/common";
+import { AuthService } from "../auth/auth.service";
+import { StravaService } from "../auth/strava.service";
+import { inferProfileFromStrava, TyresService } from "./tyres.service";
 
 @Controller("tyres")
 export class TyresController {
   // @Inject explicite : l'injection fonctionne meme sans metadata de type
   // (necessaire en dev avec tsx/esbuild, qui n'emet pas design:paramtypes).
-  constructor(@Inject(TyresService) private readonly tyres: TyresService) {}
+  constructor(
+    @Inject(TyresService) private readonly tyres: TyresService,
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(StravaService) private readonly stravaService: StravaService,
+  ) {}
 
   /** GET /api/tyres?discipline=road&limit=12 ou /api/tyres?ids=id-a,id-b */
   @Get()
@@ -39,6 +45,28 @@ export class TyresController {
       limit: toInt(limit),
     });
     return { profile: { discipline, priority, ebike: ebike === "true" || ebike === "1" }, items };
+  }
+
+  /** GET /api/tyres/recommend/from-strava — profil deduit des sorties velo Strava. */
+  @Get("recommend/from-strava")
+  async recommendFromStrava(@Headers("authorization") authorization?: string) {
+    const user = await this.authService.getUserFromAuthorization(authorization);
+    const strava = await this.stravaService.getProfile(user.id);
+    if (!strava || strava.recentActivities.length === 0) {
+      throw new NotFoundException(
+        "Aucune sortie velo Strava recente a analyser. Relie Strava et synchronise au moins une sortie.",
+      );
+    }
+
+    const inferred = inferProfileFromStrava(strava);
+    const items = this.tyres.recommend({
+      discipline: inferred.discipline,
+      priority: inferred.priority,
+      ebike: inferred.ebike,
+      limit: 5,
+    });
+
+    return { profile: inferred, items };
   }
 }
 

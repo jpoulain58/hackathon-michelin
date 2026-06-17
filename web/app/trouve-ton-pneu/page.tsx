@@ -1,15 +1,16 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TyreImage, tyreKind } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
-import { fetchRecommendations, type RecoView } from "@/lib/api";
-import { QUESTIONS, answersToApiParams, getOptions, type Answers } from "@/lib/questions";
+import { fetchRecommendations, fetchStravaTyreProfile, type RecoView } from "@/lib/api";
+import { QUESTIONS, answersToApiParams, getOptions, inferredToAnswers, type Answers } from "@/lib/questions";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase/client";
 
 type Phase = "quiz" | "loading" | "results";
 
@@ -20,6 +21,26 @@ export default function TrouveTonPneu() {
   const [results, setResults] = useState<RecoView[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [stravaPrefill, setStravaPrefill] = useState<{ basedOnRides: number } | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      const token = data.session?.access_token;
+      if (!token) return;
+      fetchStravaTyreProfile(token)
+        .then((result) => {
+          if (cancelled || !result) return;
+          setAnswers((prev) => ({ ...inferredToAnswers(result.profile), ...prev }));
+          setStravaPrefill({ basedOnRides: result.profile.basedOnRides });
+        })
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const currentQ = QUESTIONS[step - 1];
   const options = getOptions(currentQ, answers);
@@ -28,6 +49,12 @@ export default function TrouveTonPneu() {
 
   function handleSelect(questionId: number, optionId: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+  }
+
+  function clearStravaPrefill() {
+    setStravaPrefill(null);
+    setAnswers({});
+    setStep(1);
   }
 
   async function handleNext() {
@@ -82,6 +109,8 @@ export default function TrouveTonPneu() {
             currentAnswer={currentAnswer}
             isLast={isLast}
             error={error}
+            stravaPrefill={stravaPrefill}
+            onClearStravaPrefill={clearStravaPrefill}
             onSelect={handleSelect}
             onNext={handleNext}
             onBack={() => setStep((s) => s - 1)}
@@ -119,6 +148,8 @@ function QuizPhaseView({
   currentAnswer,
   isLast,
   error,
+  stravaPrefill,
+  onClearStravaPrefill,
   onSelect,
   onNext,
   onBack,
@@ -129,12 +160,30 @@ function QuizPhaseView({
   currentAnswer: string | undefined;
   isLast: boolean;
   error: string | null;
+  stravaPrefill: { basedOnRides: number } | null;
+  onClearStravaPrefill: () => void;
   onSelect: (qId: number, optId: string) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
   return (
     <>
+      {stravaPrefill && step === 1 && (
+        <div className="mb-5 flex items-start justify-between gap-3 rounded-xl bg-[#FC5200]/10 p-4 text-sm">
+          <p className="text-michelin-navy">
+            <span className="font-bold">Pré-rempli depuis Strava</span> — déduit de tes{" "}
+            {stravaPrefill.basedOnRides} dernières sorties vélo. Modifie les réponses si besoin.
+          </p>
+          <button
+            type="button"
+            onClick={onClearStravaPrefill}
+            className="shrink-0 whitespace-nowrap font-semibold text-michelin-blue hover:underline"
+          >
+            Effacer
+          </button>
+        </div>
+      )}
+
       {/* Progress */}
       <div
         className="flex gap-1.5"
@@ -415,6 +464,6 @@ function ResultsPhaseView({
   );
 }
 
-function tyreId(t: RecoView) {
-  return t.id;
+function tyreId(t: RecoView): string {
+  return String(t.id);
 }

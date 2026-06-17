@@ -10,10 +10,13 @@ import {
   Text,
   View,
 } from "react-native";
+import { BaladeFormModal } from "../components/BaladeFormModal";
 import { Badge, PrimaryButton, ScreenTitle, SectionTitle } from "../components/ui";
 import {
+  createRideFromStrava,
   fetchAuthProfile,
   type AuthProfile,
+  type CreateRideForm,
   type ProviderId,
   type ProviderSummary,
   type StravaProfile,
@@ -147,6 +150,7 @@ export function ProfileScreen({
         loading={profileLoading}
         refreshing={profileRefreshing}
         onRefresh={() => refreshProfile(true)}
+        session={session}
       />
 
       <SectionTitle>Comptes connectés</SectionTitle>
@@ -228,12 +232,21 @@ function StravaActivityCard({
   loading,
   refreshing,
   onRefresh,
+  session,
 }: {
   strava: StravaProfile | null;
   loading: boolean;
   refreshing: boolean;
   onRefresh: () => void;
+  session: Session;
 }) {
+  const [selectedActivity, setSelectedActivity] = useState<{ id: string; name: string } | null>(null);
+
+  async function submitBalade(form: CreateRideForm) {
+    if (!selectedActivity) return;
+    await createRideFromStrava(session, selectedActivity.id, form);
+  }
+
   if (!strava) {
     return (
       <View style={styles.stravaCard}>
@@ -298,6 +311,14 @@ function StravaActivityCard({
                   {formatDuration(activity.movingTimeSeconds)}
                 </Text>
               </View>
+              {activity.polyline && (
+                <Pressable
+                  onPress={() => setSelectedActivity({ id: activity.id, name: activity.name })}
+                  hitSlop={6}
+                >
+                  <Text style={styles.addBaladeLink}>Ajouter comme balade</Text>
+                </Pressable>
+              )}
             </View>
           ))
         ) : (
@@ -310,6 +331,14 @@ function StravaActivityCard({
         onPress={onRefresh}
         disabled={refreshing}
         icon={<Ionicons name="refresh" size={18} color={colors.white} />}
+      />
+
+      <BaladeFormModal
+        visible={selectedActivity !== null}
+        onClose={() => setSelectedActivity(null)}
+        title="Publier cette sortie comme balade"
+        initialName={selectedActivity?.name ?? ""}
+        onSubmit={submitBalade}
       />
     </View>
   );
@@ -642,6 +671,14 @@ const styles = StyleSheet.create({
   activityStats: { alignItems: "flex-end" },
   activityStat: { color: colors.navy, fontSize: font.small, fontWeight: "900" },
   activityDuration: { color: colors.textMuted, fontSize: font.tiny, fontWeight: "700", marginTop: 2 },
+  addBaladeLink: {
+    width: "100%",
+    marginTop: spacing.xs,
+    color: colors.navy,
+    fontSize: font.tiny,
+    fontWeight: "800",
+    textAlign: "right",
+  },
   emptyState: { color: colors.textMuted, fontSize: font.small, fontWeight: "700" },
   preferenceRow: {
     flexDirection: "row",

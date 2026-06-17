@@ -79,7 +79,7 @@ web, qui renvoie ensuite vers l'app mobile (`mtw://` ou `exp://`) :
 
 - `SUPABASE_SERVICE_ROLE_KEY` est obligatoire cote API pour synchroniser
   `public.riders` et `public.provider_connections`.
-- Executer `supabase/riders.sql` dans Supabase SQL Editor.
+- Executer `supabase/riders.sql` puis `supabase/rides.sql` dans Supabase SQL Editor (la seconde table porte les balades publiques, importées depuis Strava ou un GPX).
 - Cote Strava Developer, configurer le callback sur
   `http://localhost:3001/api/auth/strava/callback` (ou la valeur de
   `STRAVA_REDIRECT_URI`).
@@ -109,6 +109,11 @@ web, qui renvoie ensuite vers l'app mobile (`mtw://` ou `exp://`) :
 | GET | `/api/auth/me` | Vérifie le JWT Supabase envoyé en `Authorization: Bearer ...` |
 | GET | `/api/auth/profile?refresh=1` | Profil connecté + comptes liés + données Strava réelles |
 | POST | `/api/auth/sync` | Cree/met a jour le profil `public.riders` depuis la session Supabase |
+| GET | `/api/tyres/recommend/from-strava` | Recommandation déduite des dernières sorties Strava (auth requis) |
+| GET | `/api/rides` | Liste des balades publiques |
+| GET | `/api/rides/:id` | Détail d'une balade |
+| POST | `/api/rides/from-strava` | Publie une activité Strava comme balade (auth requis) |
+| POST | `/api/rides/from-gpx` | Publie une balade depuis un fichier GPX (auth requis) |
 
 ## Docker
 

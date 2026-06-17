@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import {
   ImageBackground,
   ImageSourcePropType,
@@ -24,17 +25,19 @@ const PHOTO_MAP: Record<string, ImageSourcePropType> = {
 };
 import { FeaturedTyreCard, TyreRow } from "../components/cards";
 import { PrimaryButton, ScreenTitle, Spinner } from "../components/ui";
-import { fetchRecommendations } from "../lib/api";
+import { fetchRecommendations, fetchStravaTyreProfile } from "../lib/api";
 import { apiToTyre } from "../lib/tyres";
-import { answersToApiParams, getOptions, QUESTIONS, type Answers } from "../lib/questions";
+import { answersToApiParams, getOptions, inferredToAnswers, QUESTIONS, type Answers } from "../lib/questions";
 import { colors, font, radius, spacing } from "../theme";
 import type { Tyre } from "../types";
 
 type Phase = "quiz" | "loading" | "results";
 
 export function TrouveTonPneuScreen({
+  session,
   onCompare,
 }: {
+  session: Session | null;
   onCompare: (tyres: Tyre[]) => void;
 }) {
   const [step, setStep] = useState(1);
@@ -43,6 +46,21 @@ export function TrouveTonPneuScreen({
   const [results, setResults] = useState<Tyre[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [stravaPrefill, setStravaPrefill] = useState<{ basedOnRides: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchStravaTyreProfile(session)
+      .then((result) => {
+        if (cancelled || !result) return;
+        setAnswers((prev) => ({ ...inferredToAnswers(result.profile), ...prev }));
+        setStravaPrefill({ basedOnRides: result.profile.basedOnRides });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
   const currentQ = QUESTIONS[step - 1];
   const options = getOptions(currentQ, answers);
@@ -51,6 +69,12 @@ export function TrouveTonPneuScreen({
 
   function handleSelect(questionId: number, optionId: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+  }
+
+  function clearStravaPrefill() {
+    setStravaPrefill(null);
+    setAnswers({});
+    setStep(1);
   }
 
   async function handleNext() {
@@ -147,6 +171,18 @@ export function TrouveTonPneuScreen({
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      {stravaPrefill && step === 1 && (
+        <View style={styles.stravaBanner}>
+          <Text style={styles.stravaBannerText}>
+            <Text style={{ fontWeight: "800" }}>Pré-rempli depuis Strava</Text> — déduit de tes{" "}
+            {stravaPrefill.basedOnRides} dernières sorties vélo.
+          </Text>
+          <TouchableOpacity onPress={clearStravaPrefill}>
+            <Text style={styles.stravaBannerClear}>Effacer</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Progress bar */}
       <View style={styles.progress}>
         {QUESTIONS.map((_, i) => (
@@ -257,6 +293,19 @@ const styles = StyleSheet.create({
     fontSize: font.h3,
     fontWeight: "700",
   },
+
+  // Bandeau Strava
+  stravaBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    backgroundColor: "#FC520022",
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  stravaBannerText: { flex: 1, color: colors.text, fontSize: font.small, lineHeight: 18 },
+  stravaBannerClear: { color: colors.navy, fontWeight: "700", fontSize: font.small },
 
   // Progress
   progress: { flexDirection: "row", gap: 4 },

@@ -1,6 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 
-export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
+export const API_BASE = (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001").replace(/\/+$/, "");
 
 export type ProviderId = "strava" | "garmin" | "google";
 
@@ -42,6 +42,10 @@ export type StravaProfile = {
     movingTimeSeconds: number;
     sportType: string;
     startDate: string | null;
+    polyline: string | null;
+    averageSpeedKmh: number | null;
+    bikeBucket: "road" | "gravel" | "mtb";
+    ebike: boolean;
   }>;
   scopes: string[];
   lastSyncAt: string | null;
@@ -141,6 +145,115 @@ export async function syncRider(session: Session | null): Promise<void> {
     const body = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(body.message ?? `Sync auth API ${response.status}`);
   }
+}
+
+export interface InferredProfile {
+  discipline: "road" | "gravel" | "mtb" | "city";
+  priority: "speed" | "grip" | "durability" | "comfort" | "puncture";
+  ebike: boolean;
+  basedOnRides: number;
+}
+
+/** Profil pneu deduit des dernieres sorties Strava de l'utilisateur connecte. */
+export async function fetchStravaTyreProfile(
+  session: Session | null,
+): Promise<{ profile: InferredProfile; items: ApiTyre[] } | null> {
+  if (!session?.access_token) return null;
+
+  const res = await fetch(`${API_BASE}/api/tyres/recommend/from-strava`, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as { profile: InferredProfile; items: ApiTyre[] };
+}
+
+export interface RideTyreDetail {
+  name: string;
+  designation: string;
+  weightG: number;
+  dimensions: number;
+}
+
+export interface RideProTip {
+  author: string;
+  text: string;
+}
+
+export interface ApiRide {
+  id: string;
+  name: string;
+  km: number;
+  dplus: number;
+  durationSeconds: number;
+  kcal: number | null;
+  terrain: string;
+  landscape: string | null;
+  difficulty: string;
+  tags: string[];
+  tyre: string | null;
+  tyreDetail: RideTyreDetail | null;
+  description: string;
+  instructions: string;
+  proTip: RideProTip | null;
+  pts: [number, number][];
+  source: "strava" | "manual";
+  createdAt: string;
+}
+
+export interface CreateRideForm {
+  name: string;
+  description?: string;
+  instructions?: string;
+  terrain: string;
+  landscape: string;
+  difficulty?: string;
+  tags?: string[];
+  tyre: string;
+  tyreDetail: RideTyreDetail;
+  proTip: RideProTip;
+}
+
+export async function fetchRides(): Promise<ApiRide[]> {
+  const res = await fetch(`${API_BASE}/api/rides`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ApiRide[] }).items;
+}
+
+export async function createRideFromStrava(
+  session: Session | null,
+  activityId: string,
+  form: CreateRideForm,
+): Promise<ApiRide> {
+  if (!session?.access_token) throw new Error("Connecte-toi pour publier une balade.");
+  const res = await fetch(`${API_BASE}/api/rides/from-strava`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ activityId, ...form }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  return (await res.json()) as ApiRide;
+}
+
+export async function createRideFromGpx(
+  session: Session | null,
+  gpxXml: string,
+  form: CreateRideForm,
+): Promise<ApiRide> {
+  if (!session?.access_token) throw new Error("Connecte-toi pour publier une balade.");
+  const res = await fetch(`${API_BASE}/api/rides/from-gpx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ gpxXml, ...form }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  return (await res.json()) as ApiRide;
 }
 
 export async function fetchAuthProfile(

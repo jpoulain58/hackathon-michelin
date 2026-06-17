@@ -142,6 +142,23 @@ export function answersToApiParams(answers: Answers) {
   };
 }
 
+const DISCIPLINE_REVERSE_MAP = invert(DISCIPLINE_MAP);
+const PRIORITY_REVERSE_MAP = invert(PRIORITY_MAP);
+
+/** Pre-remplit les reponses 1 (velo) et 5 (priorite) a partir d'un profil deduit de Strava. */
+export function inferredToAnswers(profile: { discipline: string; priority: string }): Answers {
+  const answers: Answers = {};
+  const bikeType = DISCIPLINE_REVERSE_MAP[profile.discipline];
+  const priority = PRIORITY_REVERSE_MAP[profile.priority];
+  if (bikeType) answers[1] = bikeType;
+  if (priority) answers[5] = priority;
+  return answers;
+}
+
+function invert(map: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(map).map(([key, value]) => [value, key]));
+}
+
 export function getOptions(q: Question, answers: Answers): QuestionOption[] {
   if (q.options) return q.options;
   if (q.optionsByBikeType) {

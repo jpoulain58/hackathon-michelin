@@ -3,8 +3,9 @@ import { HealthModule } from "./health/health.module";
 import { TyresModule } from "./tyres/tyres.module";
 import { CommunityModule } from "./community/community.module";
 import { AuthModule } from "./auth/auth.module";
+import { RidesModule } from "./rides/rides.module";
 
 @Module({
-  imports: [HealthModule, TyresModule, CommunityModule, AuthModule],
+  imports: [HealthModule, TyresModule, CommunityModule, AuthModule, RidesModule],
 })
 export class AppModule {}

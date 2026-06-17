@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
-import type { Ride } from "@/lib/balades";
+import { formatDuration, type Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
     };
   }, [ride.pts]);
 
-  const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=balades&q=${encodeURIComponent(ride.tyreDetail.name)}`;
+  const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=balades&q=${encodeURIComponent(ride.tyreDetail?.name ?? ride.tyre ?? "")}`;
 
   return (
     <main className="min-h-screen">
@@ -152,15 +152,17 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
       <div className="mx-auto max-w-2xl px-4 py-5">
         {/* Tags */}
         <div className="flex flex-wrap gap-2">
-          {ride.best && (
+          {ride.source === "strava" && (
             <span className="inline-flex items-center rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">
-              Meilleur
+              Depuis Strava
             </span>
           )}
-          <span className="inline-flex items-center gap-1 rounded-pill bg-michelin-blue/10 px-3 py-1 text-xs font-semibold text-michelin-blue">
-            {LANDSCAPE_ICON[ride.landscape] ?? null}
-            {ride.landscape}
-          </span>
+          {ride.landscape && (
+            <span className="inline-flex items-center gap-1 rounded-pill bg-michelin-blue/10 px-3 py-1 text-xs font-semibold text-michelin-blue">
+              {LANDSCAPE_ICON[ride.landscape] ?? null}
+              {ride.landscape}
+            </span>
+          )}
           <span
             className={`inline-flex items-center rounded-pill px-3 py-1 text-xs font-semibold ${
               DIFFICULTY_STYLE[ride.difficulty] ?? DIFFICULTY_STYLE["Débutant"]
@@ -196,12 +198,14 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
           </span>
           <span className="flex items-center gap-1.5 text-michelin-blue">
             <IconClock />
-            <strong className="text-michelin-navy">{ride.duration}</strong>
+            <strong className="text-michelin-navy">{formatDuration(ride.durationSeconds)}</strong>
           </span>
-          <span className="flex items-center gap-1.5 text-michelin-blue">
-            <IconFlame />
-            <strong className="text-michelin-navy">~{ride.kcal} kcal</strong>
-          </span>
+          {ride.kcal != null && (
+            <span className="flex items-center gap-1.5 text-michelin-blue">
+              <IconFlame />
+              <strong className="text-michelin-navy">~{ride.kcal} kcal</strong>
+            </span>
+          )}
         </div>
 
         {/* Résumé */}
@@ -217,34 +221,38 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
         </section>
 
         {/* Conseil du pro */}
-        <section className="mt-5">
-          <div className="rounded-2xl bg-gradient-to-br from-michelin-navy via-slate-700 to-slate-800 p-5 text-white">
-            <p className="text-xs font-bold uppercase tracking-wider text-michelin-yellow">
-              Le conseil de {ride.proTip.author}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed opacity-90">{ride.proTip.text}</p>
-          </div>
-        </section>
+        {ride.proTip && (
+          <section className="mt-5">
+            <div className="rounded-2xl bg-gradient-to-br from-michelin-navy via-slate-700 to-slate-800 p-5 text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-michelin-yellow">
+                Le conseil de {ride.proTip.author}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed opacity-90">{ride.proTip.text}</p>
+            </div>
+          </section>
+        )}
 
         {/* Pneu recommandé */}
-        <section className="mt-6">
-          <h2 className="text-base font-bold text-michelin-navy">Nos conseils de pneus</h2>
-          <div className="mt-3 flex items-center gap-4 rounded-2xl border border-michelin-gray-line bg-white p-4 shadow-sm">
-            <TyreImage kind={kindFromText(ride.terrain)} className="h-14 w-14 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="font-bold leading-tight text-michelin-navy">{ride.tyreDetail.name}</p>
-              <p className="text-sm text-michelin-ink">{ride.tyreDetail.designation}</p>
-              <p className="mt-0.5 text-xs text-michelin-ink">
-                {ride.tyreDetail.weightG} g · {ride.tyreDetail.dimensions} dimensions disponibles
-              </p>
+        {ride.tyreDetail && (
+          <section className="mt-6">
+            <h2 className="text-base font-bold text-michelin-navy">Nos conseils de pneus</h2>
+            <div className="mt-3 flex items-center gap-4 rounded-2xl border border-michelin-gray-line bg-white p-4 shadow-sm">
+              <TyreImage kind={kindFromText(ride.terrain)} className="h-14 w-14 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="font-bold leading-tight text-michelin-navy">{ride.tyreDetail.name}</p>
+                <p className="text-sm text-michelin-ink">{ride.tyreDetail.designation}</p>
+                <p className="mt-0.5 text-xs text-michelin-ink">
+                  {ride.tyreDetail.weightG} g · {ride.tyreDetail.dimensions} dimensions disponibles
+                </p>
+              </div>
             </div>
-          </div>
-          <Button asChild className="mt-3 w-full">
-            <a href={retailerUrl} target="_blank" rel="noopener noreferrer">
-              Voir où acheter
-            </a>
-          </Button>
-        </section>
+            <Button asChild className="mt-3 w-full">
+              <a href={retailerUrl} target="_blank" rel="noopener noreferrer">
+                Voir où acheter
+              </a>
+            </Button>
+          </section>
+        )}
       </div>
 
       <SiteFooter />

@@ -1,12 +1,13 @@
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+export const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+).replace(/\/+$/, "");
 
 export interface TyreView {
-  id?: number;
+  id?: string | number;
   globalId?: string;
   range: string;
   designation: string;
-  productType: string;
+  productType?: string;
   segment: string;
   cycleType: string;
   use: string[];
@@ -29,13 +30,7 @@ export interface TyreView {
 
 export interface TyreDetail extends TyreView {
   id: number;
-  globalId?: string;
   brand?: string;
-  productType?: string;
-  fitting?: string;
-  tpi?: string;
-  widthEtrto?: string;
-  diameterEtrto?: string;
   eanCode?: string;
   caiCode?: string;
   minBar?: number;
@@ -108,11 +103,24 @@ export async function fetchRecommendations(params: {
   return data.items;
 }
 
-export async function fetchTyres(): Promise<TyreView[]> {
-  const res = await fetch(`${API_BASE}/api/tyres?limit=50`, {
+export async function fetchTyres(params: {
+  ids?: string[];
+  discipline?: string;
+  limit?: number;
+} = {}): Promise<TyreView[]> {
+  const q = new URLSearchParams();
+  if (params.ids?.length) q.set("ids", params.ids.join(","));
+  if (params.discipline) q.set("discipline", params.discipline);
+  if (params.limit) q.set("limit", String(params.limit));
+
+  const suffix = q.toString() ? `?${q.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/tyres${suffix}`, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(`API ${res.status}`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
   const data = (await res.json()) as { items: TyreView[] };
   return data.items;
 }
@@ -317,6 +325,26 @@ export const FALLBACK_TYRES: TyreView[] = [
     weightG: 1260,
   },
 ];
+
+export interface InferredProfile {
+  discipline: "road" | "gravel" | "mtb" | "city";
+  priority: "speed" | "grip" | "durability" | "comfort" | "puncture";
+  ebike: boolean;
+  basedOnRides: number;
+}
+
+/** Profil pneu deduit des dernieres sorties Strava de l'utilisateur connecte. */
+export async function fetchStravaTyreProfile(
+  accessToken: string,
+): Promise<{ profile: InferredProfile; items: RecoView[] } | null> {
+  const res = await fetch(`${API_BASE}/api/tyres/recommend/from-strava`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as { profile: InferredProfile; items: RecoView[] };
+}
 
 // --- Communaute -------------------------------------------------------------
 

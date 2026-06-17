@@ -7,6 +7,7 @@ import {
   type Product,
   type Reco,
 } from "@mtw/recommender";
+import type { StravaProfileSummary } from "../auth/strava.service";
 
 /** Vue produit exposee par l'API (pas de fuite de champs internes). */
 export interface TyreView {
@@ -38,6 +39,53 @@ export interface RecoView extends TyreView {
 export interface OptionView {
   key: string;
   label: string;
+}
+
+export interface InferredProfile {
+  discipline: "road" | "gravel" | "mtb" | "city";
+  priority: "speed" | "grip" | "durability" | "comfort" | "puncture";
+  ebike: boolean;
+  basedOnRides: number;
+}
+
+/**
+ * Deduit un profil de rider (discipline + priorite) a partir des dernieres
+ * sorties velo Strava, plutot que des 7 questions saisies a la main.
+ * Regles simples et deterministes : ordre choisi pour la demo, pas une science exacte.
+ */
+export function inferProfileFromStrava(strava: StravaProfileSummary): InferredProfile {
+  const rides = strava.recentActivities;
+  const basedOnRides = rides.length;
+  const ebike = rides.some((ride) => ride.ebike);
+
+  const bucketCounts: Record<"road" | "gravel" | "mtb", number> = { road: 0, gravel: 0, mtb: 0 };
+  for (const ride of rides) bucketCounts[ride.bikeBucket]++;
+
+  let discipline: InferredProfile["discipline"] =
+    basedOnRides > 0
+      ? (Object.entries(bucketCounts).sort((a, b) => b[1] - a[1])[0][0] as InferredProfile["discipline"])
+      : "road";
+
+  const totalKm = rides.reduce((sum, ride) => sum + ride.distanceKm, 0);
+  const totalElevationM = rides.reduce((sum, ride) => sum + ride.elevationM, 0);
+  const speeds = rides.map((ride) => ride.averageSpeedKmh).filter((v): v is number => v !== null);
+  const avgKmPerRide = basedOnRides > 0 ? totalKm / basedOnRides : 0;
+  const avgSpeedKmh = speeds.length > 0 ? speeds.reduce((sum, v) => sum + v, 0) / speeds.length : 0;
+  const elevationPerKm = totalKm > 0 ? totalElevationM / totalKm : 0;
+
+  // Sorties route courtes et lentes : plus proche d'un usage utilitaire que sportif.
+  if (discipline === "road" && avgKmPerRide > 0 && avgKmPerRide < 12 && avgSpeedKmh < 18) {
+    discipline = "city";
+  }
+
+  let priority: InferredProfile["priority"];
+  if (avgSpeedKmh >= 27) priority = "speed";
+  else if (elevationPerKm >= 14) priority = "grip";
+  else if (avgKmPerRide >= 60) priority = "durability";
+  else if (avgKmPerRide > 0 && avgKmPerRide <= 15) priority = "puncture";
+  else priority = "comfort";
+
+  return { discipline, priority, ebike, basedOnRides };
 }
 
 @Injectable()
