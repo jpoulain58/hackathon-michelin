@@ -42,7 +42,7 @@ export default function Communaute() {
           <div className="absolute inset-0 hero-veil" />
         </div>
         <div className="pointer-events-none absolute -left-20 top-10 -z-10 h-72 w-72 rounded-full bg-michelin-blue/40 blur-3xl" />
-        <div className="mx-auto max-w-5xl px-6 py-20">
+        <div className="mx-auto max-w-5xl px-6 pb-20 pt-32">
           <Reveal as="span" className="inline-block">
             <span className="kicker">La communaute</span>
           </Reveal>

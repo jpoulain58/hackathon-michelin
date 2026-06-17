@@ -7,7 +7,7 @@ type BreadcrumbItem = {
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav aria-label="Fil d'Ariane" className="border-b border-michelin-gray-line bg-white/80">
+    <nav aria-label="Fil d'Ariane" className="border-b border-michelin-gray-line bg-white/80 pt-24">
       <ol className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-2.5 sm:px-6">
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-1">

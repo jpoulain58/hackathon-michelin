@@ -3,30 +3,82 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  ChevronDownIcon,
+  Cross2Icon,
+  ExitIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+  PersonIcon,
+} from "@radix-ui/react-icons";
 import { Brand } from "./Brand";
 import { SignOutButton } from "./SignOutButton";
 import { cn } from "@/lib/utils";
 
-// Liens de navigation. `cta` = action principale, sortie de la rangee et
-// affichee en bouton jaune a droite (desktop).
-const LINKS = [
-  { href: "/accueil", label: "Accueil" },
-  { href: "/trouve-ton-pneu", label: "Trouve ton pneu", cta: true },
-  { href: "/comparateur", label: "Comparateur" },
-  { href: "/communaute", label: "Communaute" },
-  { href: "/balades", label: "Balades" },
-  { href: "/produits", label: "Produits" },
-  { href: "/actualites", label: "Actualites" },
-  { href: "/club", label: "Club" },
-  { href: "/profil", label: "Profil" },
-];
+const DIRECT_LINKS = [{ href: "/accueil", label: "Accueil" }];
 
-const NAV_LINKS = LINKS.filter((l) => !l.cta);
-const CTA = LINKS.find((l) => l.cta)!;
+const MENU_GROUPS = [
+  {
+    id: "outils",
+    label: "Outils",
+    items: [
+      {
+        href: "/trouve-ton-pneu",
+        label: "Trouve ton pneu",
+        description: "Reco pneus personnalisee",
+        highlight: true,
+      },
+      {
+        href: "/comparateur",
+        label: "Comparateur",
+        description: "Comparer les gammes et usages",
+      },
+    ],
+  },
+  {
+    id: "communaute",
+    label: "Communaute",
+    items: [
+      {
+        href: "/communaute",
+        label: "Avis verifies",
+        description: "Retours relies aux sorties",
+      },
+      {
+        href: "/actualites",
+        label: "Actualites",
+        description: "Conseils, guides et nouveautés",
+      },
+      {
+        href: "/club",
+        label: "Club",
+        description: "Statut, avantages et recompenses",
+      },
+    ],
+  },
+  {
+    id: "explorer",
+    label: "Explorer",
+    items: [
+      {
+        href: "/balades",
+        label: "Balades",
+        description: "Parcours et inspirations route",
+      },
+      {
+        href: "/produits",
+        label: "Produits",
+        description: "Catalogue pneus Michelin",
+      },
+    ],
+  },
+];
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -36,132 +88,290 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+    setOpenMenu(null);
+    setAccountOpen(false);
+  }, [pathname]);
+
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const groupIsActive = (items: Array<{ href: string }>) => items.some((item) => isActive(item.href));
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b backdrop-blur-md transition-[background-color,box-shadow,border-color] duration-300 ease-out-strong",
-        scrolled
-          ? "border-michelin-gray-line bg-white/90 shadow-soft"
-          : "border-transparent bg-white/75",
+        "fixed inset-x-0 top-3 z-50 px-3 transition-transform duration-300 ease-out-strong sm:px-6",
+        scrolled ? "translate-y-0" : "translate-y-0",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        {/* Logo */}
+      <div
+        className={cn(
+          "liquid-glass-nav mx-auto flex h-[4.25rem] max-w-6xl items-center gap-3 px-3 transition-[box-shadow,border-color,background] duration-300 ease-out-strong sm:px-4",
+          scrolled && "shadow-[0_22px_70px_-34px_rgba(0,12,52,0.55)]",
+        )}
+      >
         <Link
           href="/accueil"
           aria-label="Accueil Michelin Trust Wheels"
-          className="shrink-0 transition-transform duration-200 ease-out-strong hover:scale-[1.03]"
+          className="shrink-0 rounded-pill px-1 transition-transform duration-200 ease-out-strong hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60"
         >
           <Brand />
         </Link>
 
-        {/* Nav centrale (desktop) : liens texte + soulignement anime */}
         <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
-          {NAV_LINKS.map((l) => {
-            const active = isActive(l.href);
+          {DIRECT_LINKS.map((link) => {
+            const active = isActive(link.href);
             return (
               <Link
-                key={l.href}
-                href={l.href}
+                key={link.href}
+                href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "group relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-200 ease-out-strong",
-                  active ? "text-michelin-blue" : "text-michelin-ink hover:text-michelin-navy",
+                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  active
+                    ? "bg-white/70 text-michelin-blue shadow-[inset_0_0_0_1px_rgba(39,80,155,0.14)]"
+                    : "text-michelin-navy/75 hover:bg-white/55 hover:text-michelin-navy",
                 )}
               >
-                {l.label}
-                <span
-                  className={cn(
-                    "pointer-events-none absolute inset-x-3 bottom-1 h-0.5 origin-center rounded-pill bg-michelin-blue transition-transform duration-300 ease-out-strong",
-                    active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-                  )}
-                />
+                {link.label}
               </Link>
+            );
+          })}
+
+          {MENU_GROUPS.map((group) => {
+            const active = groupIsActive(group.items);
+            const expanded = openMenu === group.id;
+
+            return (
+              <div
+                key={group.id}
+                className="relative"
+              >
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  aria-controls={`nav-menu-${group.id}`}
+                  onClick={() => {
+                    setAccountOpen(false);
+                    setOpenMenu((current) => (current === group.id ? null : group.id));
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-pill px-3.5 py-2 text-sm font-bold transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                    active || expanded
+                      ? "bg-white/70 text-michelin-blue shadow-[inset_0_0_0_1px_rgba(39,80,155,0.14)]"
+                      : "text-michelin-navy/75 hover:bg-white/55 hover:text-michelin-navy",
+                  )}
+                >
+                  {group.label}
+                  <ChevronDownIcon
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200 ease-out-strong",
+                      expanded && "rotate-180",
+                    )}
+                  />
+                </button>
+
+                <div
+                  id={`nav-menu-${group.id}`}
+                  className={cn(
+                    "liquid-glass-menu absolute left-1/2 top-full mt-3 w-[19rem] -translate-x-1/2 overflow-hidden p-2 transition-[opacity,transform,visibility] duration-200 ease-out-strong",
+                    expanded
+                      ? "visible translate-y-0 opacity-100"
+                      : "invisible -translate-y-1 opacity-0",
+                  )}
+                >
+                  <div className="grid gap-1">
+                    {group.items.map((item) => {
+                      const itemActive = isActive(item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          aria-current={itemActive ? "page" : undefined}
+                          className={cn(
+                            "group/item rounded-2xl px-3 py-3 transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                            itemActive
+                              ? "bg-michelin-blue text-white"
+                              : item.highlight
+                                ? "bg-michelin-yellow/90 text-michelin-navy hover:bg-michelin-yellow"
+                                : "text-michelin-navy hover:bg-white/70",
+                          )}
+                        >
+                          <span className="flex items-center justify-between gap-3 text-sm font-black">
+                            {item.label}
+                            {item.highlight ? <MagnifyingGlassIcon className="h-4 w-4" /> : null}
+                          </span>
+                          <span
+                            className={cn(
+                              "mt-1 block text-xs font-semibold",
+                              itemActive ? "text-white/75" : "text-michelin-ink/75",
+                            )}
+                          >
+                            {item.description}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </nav>
 
-        {/* Actions (desktop) : un seul CTA + deconnexion discrete */}
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <Link
-            href={CTA.href}
-            aria-current={isActive(CTA.href) ? "page" : undefined}
-            className="inline-flex items-center gap-2 rounded-pill bg-michelin-yellow px-4 py-2 text-sm font-bold text-michelin-navy shadow-[0_6px_18px_-8px_rgba(252,229,0,0.9)] transition-[transform,filter,box-shadow] duration-200 ease-out-strong hover:-translate-y-0.5 hover:shadow-lift hover:brightness-[0.97]"
-          >
-            <SearchGlyph />
-            {CTA.label}
-          </Link>
-          <SignOutButton className="rounded-lg px-3 py-2 text-sm font-semibold text-michelin-ink transition-colors duration-200 hover:bg-michelin-gray-light hover:text-michelin-navy" />
+          <div className="relative">
+            <button
+              type="button"
+              aria-label="Ouvrir le menu du compte"
+              aria-expanded={accountOpen}
+              aria-controls="account-menu"
+              onClick={() => {
+                setOpenMenu(null);
+                setAccountOpen((current) => !current);
+              }}
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/65 text-michelin-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_-20px_rgba(0,12,52,0.55)] transition-[background,color,box-shadow] duration-200 ease-out-strong hover:bg-michelin-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                accountOpen && "bg-michelin-yellow",
+              )}
+            >
+              <PersonIcon className="h-5 w-5" />
+            </button>
+
+            <div
+              id="account-menu"
+              className={cn(
+                "liquid-glass-menu absolute right-0 top-full mt-3 w-56 overflow-hidden p-2 transition-[opacity,transform,visibility] duration-200 ease-out-strong",
+                accountOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0",
+              )}
+            >
+              <Link
+                href="/profil"
+                className={cn(
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy",
+                )}
+              >
+                <PersonIcon className="h-4 w-4" />
+                Profil
+              </Link>
+              <SignOutButton
+                label="Se déconnecter"
+                loadingLabel="Déconnexion..."
+                className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
+              >
+                <ExitIcon className="h-4 w-4" />
+              </SignOutButton>
+            </div>
+          </div>
         </div>
 
-        {/* Burger (mobile) */}
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={open}
+          onClick={() => setMobileOpen((current) => !current)}
+          aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={mobileOpen}
           aria-controls="menu-mobile"
-          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-pill text-michelin-navy transition-colors duration-200 hover:bg-michelin-gray-light lg:hidden"
+          className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/65 text-michelin-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition-colors duration-200 hover:bg-michelin-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 lg:hidden"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <line x1="4" y1="7" x2="20" y2="7" className="origin-center transition-transform duration-300 ease-out-strong" style={{ transform: open ? "translateY(5px) rotate(45deg)" : undefined }} />
-            <line x1="4" y1="12" x2="20" y2="12" className="transition-opacity duration-200" style={{ opacity: open ? 0 : 1 }} />
-            <line x1="4" y1="17" x2="20" y2="17" className="origin-center transition-transform duration-300 ease-out-strong" style={{ transform: open ? "translateY(-5px) rotate(-45deg)" : undefined }} />
-          </svg>
+          {mobileOpen ? <Cross2Icon className="h-5 w-5" /> : <HamburgerMenuIcon className="h-5 w-5" />}
         </button>
       </div>
 
-      {/* Panneau mobile : ouverture/fermeture fluides (grid-rows) */}
       <nav
         id="menu-mobile"
         className={cn(
-          "grid overflow-hidden bg-white/95 backdrop-blur transition-[grid-template-rows] duration-300 ease-out-strong lg:hidden",
-          open ? "grid-rows-[1fr] border-t border-michelin-gray-line" : "grid-rows-[0fr]",
+          "mx-auto mt-2 grid max-w-6xl overflow-hidden transition-[grid-template-rows] duration-300 ease-out-strong lg:hidden",
+          mobileOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
         )}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
-            {LINKS.map((l, i) => {
-              const active = isActive(l.href);
+          <div className="liquid-glass-menu menu-scroll no-scrollbar flex max-h-[calc(100dvh-6rem)] flex-col gap-2 overflow-y-auto p-2">
+            {DIRECT_LINKS.map((link, index) => {
+              const active = isActive(link.href);
               return (
                 <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setOpen(false)}
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
                   aria-current={active ? "page" : undefined}
-                  style={{ transitionDelay: open ? `${i * 30}ms` : "0ms" }}
+                  style={{ transitionDelay: mobileOpen ? `${index * 24}ms` : "0ms" }}
                   className={cn(
-                    "rounded-lg px-3 py-2.5 text-sm font-semibold transition-[background-color,color,opacity,transform] duration-300 ease-out-strong",
-                    open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0",
-                    l.cta
-                      ? "bg-michelin-yellow text-michelin-navy hover:brightness-95"
-                      : active
-                        ? "bg-michelin-blue/10 text-michelin-blue"
-                        : "text-michelin-navy hover:bg-michelin-gray-light",
+                    "rounded-2xl px-3.5 py-3 transition-[background-color,color,opacity,transform] duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                    mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0",
+                    active ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
                   )}
                 >
-                  {l.label}
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="block text-sm font-black">{link.label}</span>
+                  </span>
                 </Link>
               );
             })}
+            {MENU_GROUPS.map((group, groupIndex) => (
+              <div key={group.id} className="rounded-2xl bg-white/30 p-1">
+                <p className="px-2.5 pb-1 pt-2 text-[0.68rem] font-black uppercase tracking-wide text-michelin-ink/65">
+                  {group.label}
+                </p>
+                <div className="grid gap-1">
+                  {group.items.map((link, linkIndex) => {
+                    const active = isActive(link.href);
+                    const delay = DIRECT_LINKS.length + groupIndex * 3 + linkIndex;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        style={{ transitionDelay: mobileOpen ? `${delay * 24}ms` : "0ms" }}
+                        className={cn(
+                          "rounded-xl px-3 py-2.5 transition-[background-color,color,opacity,transform] duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                          mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0",
+                          active
+                            ? "bg-michelin-blue text-white"
+                            : link.highlight
+                              ? "bg-michelin-yellow/90 text-michelin-navy"
+                              : "text-michelin-navy hover:bg-white/70",
+                        )}
+                      >
+                        <span className="flex items-center justify-between gap-3">
+                          <span>
+                            <span className="block text-sm font-black">{link.label}</span>
+                            <span className={cn("mt-0.5 block text-xs font-semibold", active ? "text-white/70" : "text-michelin-ink/70")}>
+                              {link.description}
+                            </span>
+                          </span>
+                          {link.highlight ? <MagnifyingGlassIcon className="h-4 w-4 shrink-0" /> : null}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            <div className="my-1 h-px bg-michelin-navy/10" />
+            <Link
+              href="/profil"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
+              )}
+            >
+              <PersonIcon className="h-4 w-4" />
+              Profil
+            </Link>
             <SignOutButton
-              onClick={() => setOpen(false)}
-              className="mt-1 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-michelin-ink transition-colors hover:bg-michelin-gray-light"
-            />
+              label="Se déconnecter"
+              loadingLabel="Déconnexion..."
+              onClick={() => setMobileOpen(false)}
+              className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left text-sm font-black text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
+            >
+              <ExitIcon className="h-4 w-4" />
+            </SignOutButton>
           </div>
         </div>
       </nav>
     </header>
-  );
-}
-
-function SearchGlyph() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.5" y2="16.5" />
-    </svg>
   );
 }

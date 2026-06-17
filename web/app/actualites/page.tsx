@@ -41,7 +41,7 @@ export default async function Actualites() {
     <main className="min-h-screen">
       <SiteHeader />
 
-      <section className="mx-auto max-w-6xl px-6 py-12">
+      <section className="mx-auto max-w-6xl px-6 pb-12 pt-32">
         <Reveal as="span" className="inline-block">
           <span className="kicker">Actualites</span>
         </Reveal>

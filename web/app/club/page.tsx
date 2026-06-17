@@ -33,7 +33,7 @@ export default function Club() {
           <div className="absolute inset-0 hero-veil" />
         </div>
         <div className="pointer-events-none absolute right-0 top-0 -z-10 h-64 w-64 rounded-full bg-michelin-yellow/20 blur-3xl animate-float" />
-        <div className="mx-auto max-w-3xl px-6 py-20">
+        <div className="mx-auto max-w-3xl px-6 pb-20 pt-32">
           <Reveal as="span" className="inline-block">
             <span className="kicker">Le Club</span>
           </Reveal>

@@ -171,7 +171,7 @@ export function ProfileClient() {
 
   if (loading) {
     return (
-      <section className="mx-auto flex min-h-[55vh] max-w-6xl items-center px-6 py-16">
+      <section className="mx-auto flex min-h-[55vh] max-w-6xl items-center px-6 pb-16 pt-32">
         <div className="h-2 w-48 overflow-hidden rounded-pill bg-michelin-gray-light">
           <span className="block h-full w-1/2 animate-shimmer rounded-pill bg-michelin-blue" />
         </div>
@@ -219,7 +219,7 @@ export function ProfileClient() {
   return (
     <>
       <section className="mesh-navy text-white">
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-[1fr_360px] lg:items-end">
+        <div className="mx-auto grid max-w-6xl gap-8 px-6 pb-14 pt-32 lg:grid-cols-[1fr_360px] lg:items-end">
           <div>
             <span className="kicker">Mon profil</span>
             <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -517,7 +517,7 @@ function ProfileShell({
   children: ReactNode;
 }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16">
+    <section className="mx-auto max-w-6xl px-6 pb-16 pt-32">
       <span className="kicker">Mon profil</span>
       <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-michelin-navy sm:text-5xl">
         {title}

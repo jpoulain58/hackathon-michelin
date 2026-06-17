@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TyreImage, tyreKind } from "@/components/TyreImage";
 import { Button } from "@/components/ui/button";
+import { getTyreImage } from "@/lib/tyre-images";
 import { fetchRecommendations, fetchStravaTyreProfile, type RecoView } from "@/lib/api";
 import { QUESTIONS, answersToApiParams, getOptions, inferredToAnswers, type Answers } from "@/lib/questions";
 import { cn } from "@/lib/utils";
@@ -100,7 +101,7 @@ export default function TrouveTonPneu() {
     <main className="min-h-screen">
       <SiteHeader />
 
-      <div className="mx-auto max-w-xl px-4 pb-16 pt-8 sm:px-6">
+      <div className="mx-auto max-w-xl px-4 pb-16 pt-28 sm:px-6">
         {phase === "quiz" && (
           <QuizPhaseView
             step={step}
@@ -390,7 +391,7 @@ function ResultsPhaseView({
           </span>
         </div>
         <div className="my-5 flex justify-center">
-          <TyreImage kind={tyreKind(featured)} className="h-32 w-32" />
+          <ResultImage tyre={featured} className="h-32 w-32" />
         </div>
         <p className="text-center text-base font-bold text-michelin-navy">
           {featured.range} {featured.designation}
@@ -418,7 +419,7 @@ function ResultsPhaseView({
                     : "border-michelin-gray-line bg-white hover:border-michelin-blue",
                 )}
               >
-                <TyreImage kind={tyreKind(t)} className="h-11 w-11 shrink-0" />
+                <ResultImage tyre={t} className="h-11 w-11 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-michelin-navy">
                     {t.range} {t.designation}
@@ -466,4 +467,13 @@ function ResultsPhaseView({
 
 function tyreId(t: RecoView): string {
   return String(t.id);
+}
+
+/** Photo produit reelle (catalogue Michelin), repli sur l'illustration generique. */
+function ResultImage({ tyre, className }: { tyre: RecoView; className?: string }) {
+  const src = getTyreImage(tyre.globalId, tyre.cycleType, tyre.range);
+  if (src) {
+    return <img src={src} alt={`${tyre.range} ${tyre.designation}`} className={cn("object-contain", className)} />;
+  }
+  return <TyreImage kind={tyreKind(tyre)} className={className} />;
 }

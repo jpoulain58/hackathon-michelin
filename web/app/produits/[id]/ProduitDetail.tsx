@@ -72,7 +72,7 @@ export function ProduitDetail({ product: p }: { product: TyreDetail }) {
       <SiteHeader />
 
       {/* Breadcrumb */}
-      <div className="border-b border-michelin-gray-line bg-white">
+      <div className="border-b border-michelin-gray-line bg-white pt-24">
         <div className="mx-auto max-w-7xl px-6 py-3">
           <nav className="flex items-center gap-2 text-xs text-michelin-ink/50">
             <Link href="/" className="hover:text-michelin-blue">Accueil</Link>

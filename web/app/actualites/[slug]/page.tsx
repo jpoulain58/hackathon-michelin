@@ -57,7 +57,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
     <main className="min-h-screen">
       <SiteHeader />
 
-      <article className="mx-auto max-w-3xl px-6 py-12">
+      <article className="mx-auto max-w-3xl px-6 pb-12 pt-32">
         {/* Breadcrumb */}
         <nav className="mb-8 flex items-center gap-2 text-sm text-michelin-ink">
           <Link href="/actualites" className="hover:text-michelin-blue transition-colors">

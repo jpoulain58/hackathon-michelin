@@ -54,7 +54,7 @@ export default function Accueil() {
         <div className="pointer-events-none absolute -left-24 top-10 -z-10 h-72 w-72 rounded-full bg-michelin-blue/40 blur-3xl" />
         <div className="pointer-events-none absolute right-10 top-1/3 -z-10 h-56 w-56 rounded-full bg-michelin-yellow/20 blur-3xl animate-float" />
 
-        <div className="mx-auto max-w-6xl px-6 py-28 text-white sm:py-32">
+        <div className="mx-auto max-w-6xl px-6 pb-28 pt-36 text-white sm:pb-32 sm:pt-40">
           <Reveal as="span" className="inline-block">
             <span className="kicker">Michelin Trust Wheels</span>
           </Reveal>

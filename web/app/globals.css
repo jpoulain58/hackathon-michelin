@@ -192,4 +192,95 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* Approximation web "liquid glass" pour la navigation flottante. */
+  .liquid-glass-nav,
+  .liquid-glass-menu {
+    isolation: isolate;
+    border: 1px solid rgb(255 255 255 / 0.58);
+    background:
+      radial-gradient(circle at 10% 0%, rgb(255 255 255 / 0.76), transparent 34%),
+      linear-gradient(135deg, rgb(255 255 255 / 0.78), rgb(255 255 255 / 0.42)),
+      rgb(255 255 255 / 0.58);
+    backdrop-filter: blur(24px) saturate(180%) contrast(1.04);
+    -webkit-backdrop-filter: blur(24px) saturate(180%) contrast(1.04);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.78),
+      inset 0 -1px 0 rgb(255 255 255 / 0.24),
+      0 18px 52px rgb(0 12 52 / 0.14);
+  }
+
+  .liquid-footer-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 1.45rem;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    background:
+      linear-gradient(135deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.045)),
+      rgb(255 255 255 / 0.06);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 20px 60px rgb(0 0 0 / 0.16);
+  }
+
+  .liquid-footer-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 15% 0%, rgb(255 255 255 / 0.16), transparent 32%),
+      radial-gradient(circle at 90% 10%, rgb(252 229 0 / 0.08), transparent 34%);
+    pointer-events: none;
+  }
+
+  .liquid-glass-nav {
+    position: relative;
+    overflow: visible;
+    border-radius: 999px;
+  }
+
+  .liquid-glass-menu {
+    overflow: hidden;
+    border-radius: 1.45rem;
+  }
+
+  .liquid-glass-menu.menu-scroll {
+    overflow-y: auto;
+  }
+
+  .liquid-glass-menu:not(.absolute) {
+    position: relative;
+  }
+
+  .liquid-glass-nav::before,
+  .liquid-glass-menu::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      linear-gradient(90deg, rgb(252 229 0 / 0.16), transparent 36%, rgb(39 80 155 / 0.11)),
+      radial-gradient(circle at 92% 0%, rgb(39 80 155 / 0.18), transparent 28%);
+    pointer-events: none;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .liquid-glass-nav,
+    .liquid-glass-menu {
+      background: rgb(255 255 255 / 0.96);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .liquid-glass-nav,
+    .liquid-glass-menu {
+      background: rgb(255 255 255 / 0.98);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
 }

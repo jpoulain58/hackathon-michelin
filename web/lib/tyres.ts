@@ -10,6 +10,20 @@ export function tyreFullName(tyre: Pick<TyreView, "range" | "designation">): str
   return `${tyre.range} ${tyre.designation}`.trim();
 }
 
+/**
+ * Slug stable derive de range+designation, identique a `makeTyreId` cote API.
+ * Sert de cle commune entre les recommandations (dataset statique) et les
+ * produits Supabase, qui n'ont pas le meme identifiant numerique.
+ */
+export function tyreSlug(tyre: Pick<TyreView, "range" | "designation">): string {
+  return `${tyre.range} ${tyre.designation}`
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function tyreSize(tyre: TyreView): string {
   if (tyre.widthEtrto && tyre.diameterEtrto) return `${tyre.widthEtrto}-${tyre.diameterEtrto}`;
   const diameter = tyre.webDiameterInch ? `${tyre.webDiameterInch}"` : "";

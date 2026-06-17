@@ -12,6 +12,7 @@ type SignOutButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function SignOutButton({
+  children,
   className,
   label = "Se deconnecter",
   loadingLabel = "Deconnexion...",
@@ -46,6 +47,7 @@ export function SignOutButton({
       onClick={handleClick}
       {...props}
     >
+      {children}
       {loading ? loadingLabel : label}
     </button>
   );
