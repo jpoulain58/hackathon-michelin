@@ -32,6 +32,24 @@ export async function fetchRecommendations(params: {
   return ((await res.json()) as { items: ApiTyre[] }).items;
 }
 
+export interface StravaStats {
+  connected: boolean;
+  totalKm: number;
+  rideCount: number;
+}
+
+/** Cumul des km Strava du rider connecte (Club : "Mon Garage"). */
+export async function fetchStravaStats(accessToken: string): Promise<StravaStats> {
+  const res = await fetch(`${API_BASE}/api/auth/strava/stats`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `API ${res.status}`);
+  }
+  return (await res.json()) as StravaStats;
+}
+
 export async function syncRider(session: Session | null): Promise<void> {
   if (!session?.access_token) return;
 
