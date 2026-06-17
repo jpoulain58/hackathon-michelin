@@ -24,33 +24,18 @@ const PHOTO_MAP: Record<string, ImageSourcePropType> = {
 };
 import { FeaturedTyreCard, TyreRow } from "../components/cards";
 import { PrimaryButton, ScreenTitle, Spinner } from "../components/ui";
-import { fetchRecommendations, type ApiTyre } from "../lib/api";
+import { fetchRecommendations } from "../lib/api";
+import { apiToTyre } from "../lib/tyres";
 import { answersToApiParams, getOptions, QUESTIONS, type Answers } from "../lib/questions";
 import { colors, font, radius, spacing } from "../theme";
-import type { Tyre, TyreCategory } from "../types";
+import type { Tyre } from "../types";
 
 type Phase = "quiz" | "loading" | "results";
-
-function apiToTyre(t: ApiTyre, index: number): Tyre {
-  return {
-    id: `${t.range}-${index}`,
-    name: `${t.range} ${t.designation}`.trim(),
-    weight: t.weightG ? `${t.weightG} g` : "—",
-    dimensions: t.segment
-      ? t.segment.charAt(0) + t.segment.slice(1).toLowerCase()
-      : "—",
-    matchScore: Math.min(99, Math.max(1, t.score)),
-    bestChoice: index === 0,
-    categories: ["Route"] as TyreCategory[],
-  };
-}
 
 export function TrouveTonPneuScreen({
   onCompare,
 }: {
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-  onCompare: () => void;
+  onCompare: (tyres: Tyre[]) => void;
 }) {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<Answers>({});
@@ -117,6 +102,7 @@ export function TrouveTonPneuScreen({
   if (phase === "results") {
     const featured = results[0];
     const rest = results.slice(1);
+    const selectedTyres = results.filter((tyre) => selectedIds.includes(tyre.id));
     return (
       <ScrollView
         style={styles.screen}
@@ -124,7 +110,13 @@ export function TrouveTonPneuScreen({
         showsVerticalScrollIndicator={false}
       >
         <ScreenTitle title="Trouve ton pneu" subtitle="D'après tes réponses" />
-        {featured && <FeaturedTyreCard tyre={featured} />}
+        {featured && (
+          <FeaturedTyreCard
+            tyre={featured}
+            selected={selectedIds.includes(featured.id)}
+            onPress={() => toggleSelect(featured.id)}
+          />
+        )}
         <View style={styles.list}>
           {rest.map((t) => (
             <TyreRow
@@ -137,7 +129,7 @@ export function TrouveTonPneuScreen({
         </View>
         <PrimaryButton
           title={`Comparer la sélection (${selectedIds.length})`}
-          onPress={onCompare}
+          onPress={() => onCompare(selectedTyres)}
           disabled={selectedIds.length < 2}
         />
         <TouchableOpacity onPress={restart} style={styles.secondaryBtn}>

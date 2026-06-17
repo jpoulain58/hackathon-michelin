@@ -7,10 +7,14 @@ export class TyresController {
   // (necessaire en dev avec tsx/esbuild, qui n'emet pas design:paramtypes).
   constructor(@Inject(TyresService) private readonly tyres: TyresService) {}
 
-  /** GET /api/tyres?discipline=road&limit=12 */
+  /** GET /api/tyres?discipline=road&limit=12 ou /api/tyres?ids=id-a,id-b */
   @Get()
-  list(@Query("discipline") discipline?: string, @Query("limit") limit?: string) {
-    const items = this.tyres.list({ discipline, limit: toInt(limit) });
+  list(
+    @Query("discipline") discipline?: string,
+    @Query("limit") limit?: string,
+    @Query("ids") ids?: string,
+  ) {
+    const items = this.tyres.list({ discipline, ids: parseIds(ids), limit: toInt(limit) });
     return { count: items.length, total: this.tyres.count(), items };
   }
 
@@ -42,4 +46,13 @@ function toInt(value?: string): number | undefined {
   if (value === undefined) return undefined;
   const n = Number.parseInt(value, 10);
   return Number.isNaN(n) ? undefined : n;
+}
+
+function parseIds(value?: string): string[] | undefined {
+  if (!value) return undefined;
+  const ids = value
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return ids.length > 0 ? ids : undefined;
 }

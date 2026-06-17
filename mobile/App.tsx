@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { TabBar } from "./src/components/TabBar";
-import { rides, tyres } from "./src/data";
+import { rides } from "./src/data";
 import { BaladeDetailScreen } from "./src/screens/BaladeDetailScreen";
 import { ClubScreen } from "./src/screens/ClubScreen";
 import { ComparateurScreen } from "./src/screens/ComparateurScreen";
@@ -18,7 +18,7 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { TrouveTonPneuScreen } from "./src/screens/TrouveTonPneuScreen";
 import { WelcomeScreen } from "./src/screens/WelcomeScreen";
 import { colors } from "./src/theme";
-import type { TabKey } from "./src/types";
+import type { TabKey, Tyre } from "./src/types";
 import {
   sendPasswordResetEmail,
   signInWithEmailPassword,
@@ -38,16 +38,7 @@ export default function App() {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("trouver");
   const [rideId, setRideId] = useState<string | null>(null);
-  // Selection par defaut (maquette : "Comparer la selection (2)").
-  const [selectedIds, setSelectedIds] = useState<string[]>([
-    tyres[1].id,
-    tyres[2].id,
-  ]);
-
-  const toggle = (id: string) =>
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+  const [compareTyres, setCompareTyres] = useState<Tyre[]>([]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -156,12 +147,13 @@ export default function App() {
           <BaladeDetailScreen ride={ride} onBack={() => setRideId(null)} />
         ) : tab === "trouver" ? (
           <TrouveTonPneuScreen
-            selectedIds={selectedIds}
-            onToggle={toggle}
-            onCompare={() => setTab("comparer")}
+            onCompare={(tyres) => {
+              setCompareTyres(tyres);
+              setTab("comparer");
+            }}
           />
         ) : tab === "comparer" ? (
-          <ComparateurScreen />
+          <ComparateurScreen selectedTyres={compareTyres} />
         ) : tab === "communaute" ? (
           <CommunauteScreen onOpenRide={(id) => setRideId(id)} />
         ) : tab === "profil" ? (

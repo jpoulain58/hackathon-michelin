@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TyreImage, tyreKind } from "@/components/TyreImage";
@@ -313,6 +314,7 @@ function ResultsPhaseView({
   const [featured, ...rest] = results;
   const featuredId = tyreId(featured);
   const featuredScore = Math.min(99, Math.max(1, featured.score));
+  const compareHref = `/comparateur?ids=${encodeURIComponent([...selectedIds].join(","))}`;
 
   return (
     <>
@@ -392,9 +394,15 @@ function ResultsPhaseView({
 
       {/* Actions */}
       <div className="mt-6 flex flex-col gap-2.5">
-        <Button size="lg" className="w-full" disabled={selectedIds.size < 2}>
-          Comparer la sélection ({selectedIds.size})
-        </Button>
+        {selectedIds.size >= 2 ? (
+          <Button asChild size="lg" className="w-full">
+            <Link href={compareHref}>Comparer la sélection ({selectedIds.size})</Link>
+          </Button>
+        ) : (
+          <Button size="lg" className="w-full" disabled>
+            Comparer la sélection ({selectedIds.size})
+          </Button>
+        )}
         <button
           type="button"
           onClick={onRestart}
@@ -408,5 +416,5 @@ function ResultsPhaseView({
 }
 
 function tyreId(t: RecoView) {
-  return `${t.range}-${t.designation}`;
+  return t.id;
 }

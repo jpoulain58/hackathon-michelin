@@ -6,12 +6,21 @@ import { Badge, RemoteImage, Stars, TyreDonut } from "./ui";
 
 /* ------------------------------------------------- Carte pneu mise en avant */
 
-export function FeaturedTyreCard({ tyre }: { tyre: Tyre }) {
-  return (
-    <View style={styles.featured}>
+export function FeaturedTyreCard({
+  tyre,
+  selected = false,
+  onPress,
+}: {
+  tyre: Tyre;
+  selected?: boolean;
+  onPress?: () => void;
+}) {
+  const content = (
+    <>
       <View style={styles.featuredBadges}>
         <Badge label={`${tyre.matchScore}%`} tone="green" />
         {tyre.bestChoice ? <Badge label="Meilleur choix" /> : null}
+        {selected ? <Badge label="Sélectionné" /> : null}
       </View>
       <View style={styles.featuredImage}>
         <TyreDonut size={130} />
@@ -20,8 +29,18 @@ export function FeaturedTyreCard({ tyre }: { tyre: Tyre }) {
       <Text style={styles.meta}>
         {tyre.weight} - {tyre.dimensions}
       </Text>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <Pressable onPress={onPress} style={[styles.featured, selected && styles.featuredSelected]}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return <View style={[styles.featured, selected && styles.featuredSelected]}>{content}</View>;
 }
 
 /* --------------------------------------------- Ligne pneu (selectionnable) */
@@ -156,6 +175,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.white,
     ...shadow.card,
+  },
+  featuredSelected: {
+    backgroundColor: "#F4F7FC",
   },
   featuredBadges: { flexDirection: "row", gap: spacing.sm },
   featuredImage: { alignItems: "center", paddingVertical: spacing.lg },

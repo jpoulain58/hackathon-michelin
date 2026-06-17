@@ -5,6 +5,7 @@ import { SignOutButton } from "./SignOutButton";
 
 const FOOTER_LINKS = [
   { href: "/trouve-ton-pneu", label: "Trouve ton pneu" },
+  { href: "/comparateur", label: "Comparateur" },
   { href: "/communaute", label: "Communaute" },
   { href: "/balades", label: "Balades" },
   { href: "/actualites", label: "Actualites" },
