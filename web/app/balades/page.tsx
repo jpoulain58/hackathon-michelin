@@ -20,13 +20,22 @@ declare global {
 
 function matchesFilters(ride: Ride, active: Set<string>): boolean {
   if (active.size === 0) return true;
+  const tags = Array.isArray(ride.tags) ? ride.tags : [];
   return [...active].every(
     (f) =>
       ride.terrain === f ||
       ride.difficulty === f ||
       ride.landscape === f ||
-      ride.tags.includes(f),
+      tags.includes(f),
   );
+}
+
+function rideTags(ride: Ride): string[] {
+  return Array.isArray(ride.tags) ? ride.tags : [];
+}
+
+function ridePoints(ride: Ride) {
+  return Array.isArray(ride.pts) ? ride.pts.filter((pt) => Array.isArray(pt) && pt.length === 2) : [];
 }
 
 export default function Balades() {
@@ -59,7 +68,7 @@ export default function Balades() {
       { label: "Discipline", values: ["Route", "Gravel", "VTT"] },
       { label: "Niveau", values: ["Débutant", "Intermédiaire", "Expert"] },
       { label: "Paysage", values: [...new Set(rides.map((r) => r.landscape).filter(Boolean))].sort() as string[] },
-      { label: "Tags", values: [...new Set(rides.flatMap((r) => r.tags))].sort() },
+      { label: "Tags", values: [...new Set(rides.flatMap(rideTags))].sort() },
     ],
     [rides],
   );
@@ -117,16 +126,18 @@ export default function Balades() {
     layersRef.current = [];
     if (filteredRides.length === 0) return;
     filteredRides.forEach((r) => {
+      const points = ridePoints(r);
+      if (points.length < 2) return;
       const active = r.id === selectedId;
-      const line = L.polyline(r.pts, {
+      const line = L.polyline(points, {
         color: active ? "#FCE500" : "#27509B",
         weight: active ? 6 : 3,
         opacity: active ? 1 : 0.5,
       }).addTo(map);
       layersRef.current.push(line);
       if (active) {
-        const start = r.pts[0];
-        const mid = r.pts[Math.floor(r.pts.length / 2)];
+        const start = points[0];
+        const mid = points[Math.floor(points.length / 2)];
         layersRef.current.push(
           L.circleMarker(start, { radius: 7, color: "#27509B", fillColor: "#27509B", fillOpacity: 1 }).addTo(map),
         );
@@ -346,9 +357,9 @@ export default function Balades() {
                             </div>
                           )
                         )}
-                        {r.tags.length > 0 && (
+                        {rideTags(r).length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
-                            {r.tags.map((tag) => {
+                            {rideTags(r).map((tag) => {
                               const def = tagDefinitions.get(tag);
                               const Icon = getTagIcon(def?.icon ?? "");
                               return (

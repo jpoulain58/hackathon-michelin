@@ -8,10 +8,10 @@ import { loadLeaflet } from "@/lib/leaflet";
 import { useTagDefinitions } from "@/lib/tags";
 import { getTagIcon } from "@/lib/tag-icons";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
-import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { RetailersSheetTrigger } from "@/components/RetailersSheetTrigger";
 
 const DIFFICULTY_STYLE: Record<string, string> = {
   Débutant: "border border-michelin-gray-line bg-white text-michelin-ink",
@@ -130,8 +130,6 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
       }
     };
   }, [ride.pts]);
-
-  const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=balades&q=${encodeURIComponent(ride.tyreDetail?.name ?? ride.tyre ?? "")}`;
 
   return (
     <main className="min-h-screen">
@@ -290,11 +288,9 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
                 </p>
               </div>
             </div>
-            <Button asChild className="mt-3 w-full">
-              <a href={retailerUrl} target="_blank" rel="noopener noreferrer">
-                Voir où acheter
-              </a>
-            </Button>
+            <RetailersSheetTrigger productName={ride.tyreDetail.name} className="mt-3 w-full">
+              Voir où acheter
+            </RetailersSheetTrigger>
           </section>
         )}
       </div>

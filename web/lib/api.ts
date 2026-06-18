@@ -635,6 +635,25 @@ export async function fetchPros(): Promise<ProRider[]> {
   return ((await res.json()) as { items: ProRider[] }).items;
 }
 
+export interface Retailer {
+  id: number;
+  region: string | null;
+  country: string | null;
+  website: string;
+}
+
+export async function fetchRetailers(params: { country?: string; limit?: number } = {}): Promise<Retailer[]> {
+  const q = new URLSearchParams();
+  if (params.country) q.set("country", params.country);
+  if (params.limit) q.set("limit", String(params.limit));
+  const suffix = q.toString() ? `?${q.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/retailers${suffix}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: Retailer[] }).items;
+}
+
 // --- Strava (Mon Garage) ----------------------------------------------------
 
 export interface StravaStats {

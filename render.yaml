@@ -1,0 +1,30 @@
+# Blueprint Render pour l'API NestJS (@mtw/api).
+# Render > New > Blueprint > selectionne ce repo : il lit ce fichier.
+# Les secrets (sync: false) se saisissent dans le dashboard Render, jamais ici.
+services:
+  - type: web
+    name: mtw-api
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: .
+    plan: free
+    branch: main
+    autoDeploy: true            # push/merge sur main => redeploiement prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: WEB_ORIGIN          # origine du front (CORS), ex. https://<projet>.vercel.app
+        sync: false
+      - key: API_PUBLIC_URL      # URL publique de cette API (callbacks OAuth)
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRAVA_CLIENT_ID
+        sync: false
+      - key: STRAVA_CLIENT_SECRET
+        sync: false
+      - key: STRAVA_REDIRECT_URI # ex. https://mtw-api.onrender.com/api/auth/strava/callback
+        sync: false
