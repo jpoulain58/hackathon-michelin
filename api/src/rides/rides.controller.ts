@@ -9,10 +9,14 @@ export class RidesController {
     private readonly authService: AuthService,
   ) {}
 
-  /** GET /api/rides?terrain=Route&difficulty=Expert */
+  /** GET /api/rides?terrain=Route&difficulty=Expert&ambassador=true */
   @Get()
-  async list(@Query("terrain") terrain?: string, @Query("difficulty") difficulty?: string) {
-    const items = await this.ridesService.listPublic({ terrain, difficulty });
+  async list(
+    @Query("terrain") terrain?: string,
+    @Query("difficulty") difficulty?: string,
+    @Query("ambassador") ambassador?: string,
+  ) {
+    const items = await this.ridesService.listPublic({ terrain, difficulty, ambassador: ambassador === "true" });
     return { items };
   }
 

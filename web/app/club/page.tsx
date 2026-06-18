@@ -17,7 +17,7 @@ const PROGRAMME = [
   },
   {
     titre: "Partage ta preuve",
-    desc: "Ton avis verifie (km Strava a l'appui) guide la communaute et nourrit la R&D Michelin.",
+    desc: "Ton avis guide la communaute et nourrit la R&D Michelin.",
   },
 ];
 

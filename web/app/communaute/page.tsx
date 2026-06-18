@@ -1,35 +1,49 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
 import { TyreImage, kindFromText } from "@/components/TyreImage";
+import { CommunityReviewForm } from "@/components/CommunityReviewForm";
 import {
   fetchStats,
-  fetchReviews,
+  fetchRecentReviews,
   fetchPros,
   formatKm,
   FALLBACK_STATS,
-  FALLBACK_REVIEWS,
   FALLBACK_PROS,
   type CommunityStats,
-  type VerifiedReview,
+  type ReviewItem,
   type ProRider,
 } from "@/lib/api";
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+
 export default function Communaute() {
   const [stats, setStats] = useState<CommunityStats>(FALLBACK_STATS);
-  const [reviews, setReviews] = useState<VerifiedReview[]>(FALLBACK_REVIEWS);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [reviewCount, setReviewCount] = useState(0);
   const [pros, setPros] = useState<ProRider[]>(FALLBACK_PROS);
+
+  const loadReviews = useCallback(() => {
+    fetchRecentReviews(20)
+      .then(({ items, count }) => {
+        setReviews(items);
+        setReviewCount(count);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchStats().then(setStats).catch(() => {});
-    fetchReviews().then(setReviews).catch(() => {});
+    loadReviews();
     fetchPros().then(setPros).catch(() => {});
-  }, []);
+  }, [loadReviews]);
 
   return (
     <main className="min-h-screen">
@@ -50,56 +64,60 @@ export default function Communaute() {
             La communaute Michelin
           </Reveal>
           <Reveal as="p" delay={120} className="mt-3 max-w-2xl text-lg text-white/85">
-            La preuve sociale qui manquait : des avis <strong className="text-white">adosses aux vrais kilometres</strong>, impossibles a falsifier.
+            Les avis des riders qui roulent vraiment ces pneus, partagés avec toute la communauté.
           </Reveal>
           <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat i={0} k={formatKm(stats.monthKm)} v="roules ce mois" />
             <Stat i={1} k={stats.ridersCount.toLocaleString("fr-FR")} v="riders" />
-            <Stat i={2} k={stats.verifiedReviews.toLocaleString("fr-FR")} v="avis verifies" />
+            <Stat i={2} k={reviewCount.toLocaleString("fr-FR")} v="avis" />
             <Stat i={3} k={formatKm(stats.totalKm)} v="cumul communaute" />
           </div>
         </div>
       </section>
 
-      {/* Avis verifies */}
+      {/* Avis */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <Reveal as="h2" className="text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
-          Avis verifies
+          Avis de la communaute
         </Reveal>
         <Reveal as="p" delay={60} className="mt-1 text-sm text-michelin-ink">
-          Chaque avis affiche les km, sorties et terrains Strava qui le rendent credible.
+          Ce que les riders pensent vraiment de leurs pneus, avis ambassadeurs mis en avant.
         </Reveal>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+
+        <div className="mt-8">
+          <CommunityReviewForm onSubmitted={loadReviews} />
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           {reviews.map((r, i) => (
             <Reveal as="article" key={r.id} delay={(i % 2) * 80} className="rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft card-interactive">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-michelin-navy">{r.rider}</span>
-                <span className="rounded-pill bg-michelin-green/10 px-3 py-1 text-xs font-semibold text-michelin-green">
-                  Verifie · {r.verifiedKm.toLocaleString("fr-FR")} km
-                </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold text-michelin-navy">{r.riderName}</span>
+                {r.isAmbassador && (
+                  <span className="rounded-pill bg-michelin-yellow/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-michelin-navy">
+                    Ambassadeur
+                  </span>
+                )}
               </div>
-              <div className="mt-1 flex items-center gap-2">
-                <TyreImage kind={kindFromText(r.tyre)} className="h-8 w-8 shrink-0" />
-                <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
-              </div>
-              <div className="mt-2 flex items-center gap-2" aria-label={`Avis vérifié, ${r.rating} sur 5`}>
-                <span className="text-xs font-semibold text-michelin-green">Avis vérifié</span>
-                <span className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <span
-                      key={n}
-                      className={`h-2 w-2 rounded-full ${n <= r.rating ? "bg-michelin-blue" : "bg-michelin-gray-line"}`}
-                    />
-                  ))}
-                </span>
+              {r.tyre && (
+                <div className="mt-1 flex items-center gap-2">
+                  <TyreImage kind={kindFromText(r.tyre)} className="h-8 w-8 shrink-0" />
+                  <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
+                </div>
+              )}
+              <div className="mt-2 flex items-center gap-1" aria-label={`Avis, ${r.rating} sur 5`}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <span
+                    key={n}
+                    className={`h-2 w-2 rounded-full ${n <= r.rating ? "bg-michelin-blue" : "bg-michelin-gray-line"}`}
+                  />
+                ))}
               </div>
               <p className="mt-2 text-sm text-michelin-navy">&laquo; {r.text} &raquo;</p>
               <div className="mt-3 flex items-center justify-between gap-3">
-                <p className="text-xs text-michelin-ink">
-                  {r.verifiedRides} sorties · {r.terrains} · {r.avgSpeedKmh} km/h de moyenne
-                </p>
+                <p className="text-xs text-michelin-ink/50">{formatDate(r.createdAt)}</p>
                 <Link
-                  href={r.productId ? `/produits/${r.productId}` : "/produits"}
+                  href={`/produits/${r.productId}`}
                   className="shrink-0 rounded-pill bg-michelin-yellow px-3 py-1.5 text-xs font-bold text-michelin-navy transition-[filter] hover:brightness-95"
                 >
                   Voir le pneu →

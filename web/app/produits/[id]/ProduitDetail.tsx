@@ -4,8 +4,10 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ReviewsSection } from "@/components/ReviewsSection";
 import { cn } from "@/lib/utils";
 import type { TyreDetail } from "@/lib/api";
+import type { ProductReview } from "@/lib/reviews";
 import { getTyreImage } from "@/lib/tyre-images";
 import { RetailersSheetTrigger } from "@/components/RetailersSheetTrigger";
 
@@ -63,7 +65,7 @@ function techLabel(key: string): string {
 
 // ─── Composant ───────────────────────────────────────────────────────────────
 
-export function ProduitDetail({ product: p }: { product: TyreDetail }) {
+export function ProduitDetail({ product: p, reviews }: { product: TyreDetail; reviews: ProductReview[] }) {
   const name = productName(p.range);
   const techs = Object.entries(p.technologies ?? {}).filter(([, v]) => v && (v as string[]).length > 0);
   const imgSrc = getTyreImage(p.globalId, p.cycleType, p.range);
@@ -277,6 +279,10 @@ export function ProduitDetail({ product: p }: { product: TyreDetail }) {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-16 max-w-3xl border-t border-michelin-gray-line pt-10">
+          <ReviewsSection productId={p.id} productName={toTitleCase(name)} initialReviews={reviews} />
         </div>
       </div>
 

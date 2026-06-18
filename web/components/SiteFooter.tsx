@@ -20,7 +20,7 @@ const FOOTER_GROUPS = [
   {
     title: "Communauté",
     links: [
-      { href: "/communaute", label: "Avis vérifiés" },
+      { href: "/communaute", label: "Avis" },
       { href: "/balades", label: "Balades" },
       { href: "/actualites", label: "Actualités" },
     ],

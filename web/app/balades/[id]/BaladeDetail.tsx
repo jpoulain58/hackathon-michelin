@@ -154,6 +154,14 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
       <div className="mx-auto max-w-2xl px-4 py-5">
         {/* Tags */}
         <div className="flex flex-wrap gap-2">
+          {ride.isAmbassador && (
+            <span className="inline-flex items-center gap-1 rounded-pill bg-michelin-navy px-3 py-1 text-xs font-bold text-michelin-yellow">
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor">
+                <path d="M12 2.5l2.9 6.16 6.6.74-4.92 4.6 1.31 6.6L12 17.6l-5.89 3 1.31-6.6-4.92-4.6 6.6-.74L12 2.5z" />
+              </svg>
+              Balade d&apos;ambassadeur
+            </span>
+          )}
           {ride.source === "strava" && (
             <span className="inline-flex items-center rounded-pill bg-[#FC5200] px-3 py-1 text-xs font-semibold text-white">
               Depuis Strava
