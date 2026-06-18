@@ -76,7 +76,7 @@ export function RetailersSheetTrigger({
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-pill border border-michelin-blue/12 bg-michelin-blue/6 px-3 py-1 text-xs font-black uppercase tracking-wide text-michelin-blue">
                   <CheckCircledIcon className="h-3.5 w-3.5" />
-                  Revendeurs de la base
+                  Revendeurs partenaires
                 </div>
                 <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Où acheter ce pneu</h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-michelin-ink">
