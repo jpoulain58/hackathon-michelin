@@ -70,6 +70,11 @@ const MENU_GROUPS = [
         label: "Produits",
         description: "Catalogue pneus Michelin",
       },
+      {
+        href: "/trouver-un-revendeur",
+        label: "Trouver un revendeur",
+        description: "Carte des revendeurs proches",
+      },
     ],
   },
 ];

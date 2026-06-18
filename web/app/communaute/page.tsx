@@ -135,27 +135,35 @@ export default function Communaute() {
             Les pneus des pros
           </Reveal>
           <Reveal as="p" delay={60} className="mt-1 text-sm text-michelin-ink">
-            Vois ce que roulent les pros et les riders comme toi.
+            Vois ce que roulent les pros sur leurs compétitions, et retrouve les mêmes pneus pour toi.
           </Reveal>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pros.map((p, i) => (
-              <Reveal key={p.name} delay={(i % 3) * 70}>
+              <Reveal key={p.slug ?? p.name} delay={(i % 3) * 70}>
                 <Link
-                  href={p.productId ? `/produits/${p.productId}` : "/produits"}
-                  className="group flex flex-col rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-michelin-blue hover:shadow-soft"
+                  href={p.slug ? `/communaute/pros/${p.slug}` : p.productId ? `/produits/${p.productId}` : "/produits"}
+                  className="group relative block aspect-[4/5] overflow-hidden rounded-2xl shadow-soft transition-[box-shadow,transform] duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <TyreImage kind={kindFromText(p.tyre)} className="h-12 w-12 shrink-0 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
-                    <span className="rounded-pill border border-michelin-gray-line px-2.5 py-0.5 text-[10px] font-semibold text-michelin-ink">
-                      {p.team}
-                    </span>
-                  </div>
-                  <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-michelin-ink">{p.discipline}</div>
-                  <div className="mt-1 font-bold text-michelin-navy">{p.name}</div>
-                  <div className="mt-2 text-sm font-semibold text-michelin-blue">{p.tyre}</div>
-                  <div className="mt-4 flex items-center justify-end">
-                    <span className="rounded-pill bg-michelin-yellow px-3 py-1 text-xs font-bold text-michelin-navy transition-[filter] group-hover:brightness-95">
-                      Voir le pneu →
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out-strong group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-michelin-gray-light">
+                      <TyreImage kind={kindFromText(p.tyre)} className="h-16 w-16" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-michelin-navy/90 via-michelin-navy/20 to-transparent" />
+                  <span className="absolute right-3 top-3 rounded-pill bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold text-michelin-navy backdrop-blur-sm">
+                    {p.team}
+                  </span>
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-white/80">{p.discipline}</div>
+                    <div className="text-lg font-bold text-white">{p.name}</div>
+                    <span className="mt-2 inline-block rounded-pill bg-michelin-yellow px-3 py-1 text-xs font-bold text-michelin-navy transition-[filter] group-hover:brightness-95">
+                      Voir sa fiche →
                     </span>
                   </div>
                 </Link>
