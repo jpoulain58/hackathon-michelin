@@ -3,10 +3,49 @@ import "./env";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 
+// Origines autorisees a appeler l'API depuis le navigateur (CORS) :
+// - WEB_ORIGIN : liste separee par des virgules (domaine(s) de prod canonique).
+// - *.vercel.app : previews et alias de deploiement Vercel (sinon bloques).
+// - localhost / 127.0.0.1 : developpement local.
+function isAllowedOrigin(origin: string, allowList: string[]): boolean {
+  const clean = origin.replace(/\/+$/, "");
+  if (allowList.includes(clean)) return true;
+
+  let host: string;
+  try {
+    host = new URL(clean).hostname;
+  } catch {
+    return false;
+  }
+
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  if (host === "vercel.app" || host.endsWith(".vercel.app")) return true;
+  return false;
+}
+
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  // Le front Next.js consomme cette API : on autorise le CORS.
-  app.enableCors({ origin: process.env.WEB_ORIGIN?.replace(/\/+$/, "") ?? true });
+
+  const allowList = (process.env.WEB_ORIGIN ?? "")
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: (
+      requestOrigin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ): void => {
+      // Requetes sans Origin (curl, app mobile, server-to-server) : autorisees.
+      if (!requestOrigin) {
+        callback(null, true);
+        return;
+      }
+      callback(null, isAllowedOrigin(requestOrigin, allowList));
+    },
+    credentials: true,
+  });
+
   app.setGlobalPrefix("api");
   const port = process.env.PORT ? Number(process.env.PORT) : 3001;
   await app.listen(port);
