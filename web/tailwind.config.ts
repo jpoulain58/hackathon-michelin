@@ -107,6 +107,14 @@ const config: Config = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-50%)" },
         },
+        kenburns: {
+          "0%": { transform: "scale(1) translate(0, 0)" },
+          "100%": { transform: "scale(1.08) translate(-1%, -1%)" },
+        },
+        "pop-in": {
+          from: { opacity: "0", transform: "scale(0.7)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -114,9 +122,11 @@ const config: Config = {
         "fade-up": "fade-up 0.5s cubic-bezier(0.23, 1, 0.32, 1) both",
         "fade-in": "fade-in 0.5s ease both",
         "scale-in": "scale-in 0.4s cubic-bezier(0.23, 1, 0.32, 1) both",
+        "pop-in": "pop-in 0.45s cubic-bezier(0.23, 1, 0.32, 1) both",
         float: "float 6s ease-in-out infinite",
         shimmer: "shimmer 1.6s infinite",
         marquee: "marquee 32s linear infinite",
+        kenburns: "kenburns 16s ease-in-out infinite alternate",
       },
     },
   },
