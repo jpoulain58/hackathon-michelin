@@ -41,15 +41,19 @@ export interface Ride {
   proTip: ProTip | null;
   pts: LatLng[];
   source: "strava" | "manual";
+  isAmbassador: boolean;
   createdAt: string;
 }
 
 export const CENTER: LatLng = [45.7772, 3.087]; // Clermont-Ferrand (siège Michelin)
 
-export async function fetchRides(filters: { terrain?: string; difficulty?: string } = {}): Promise<Ride[]> {
+export async function fetchRides(
+  filters: { terrain?: string; difficulty?: string; ambassador?: boolean } = {},
+): Promise<Ride[]> {
   const q = new URLSearchParams();
   if (filters.terrain) q.set("terrain", filters.terrain);
   if (filters.difficulty) q.set("difficulty", filters.difficulty);
+  if (filters.ambassador) q.set("ambassador", "true");
   const url = `${API_BASE}/api/rides${q.toString() ? `?${q.toString()}` : ""}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`API ${res.status}`);

@@ -38,6 +38,7 @@ export default function Balades() {
   const [loadingRides, setLoadingRides] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+  const [ambassadorOnly, setAmbassadorOnly] = useState(false);
   const [ready, setReady] = useState(false);
   const tagDefinitions = useTagDefinitions();
 
@@ -64,8 +65,12 @@ export default function Balades() {
   );
 
   const filteredRides = useMemo(
-    () => rides.filter((r) => matchesFilters(r, activeFilters)),
-    [rides, activeFilters],
+    () =>
+      rides
+        .filter((r) => matchesFilters(r, activeFilters))
+        .filter((r) => !ambassadorOnly || r.isAmbassador)
+        .sort((a, b) => Number(b.isAmbassador) - Number(a.isAmbassador)),
+    [rides, activeFilters, ambassadorOnly],
   );
 
   useEffect(() => {
@@ -169,6 +174,20 @@ export default function Balades() {
               <span className="text-xs font-bold uppercase tracking-widest text-michelin-navy">Filtres</span>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAmbassadorOnly((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-semibold transition-all duration-150",
+                  ambassadorOnly
+                    ? "bg-michelin-yellow text-michelin-navy shadow-sm"
+                    : "border border-michelin-gray-line bg-white text-michelin-ink hover:border-michelin-yellow hover:text-michelin-navy",
+                )}
+              >
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+                  <path d="M12 2.5l2.9 6.16 6.6.74-4.92 4.6 1.31 6.6L12 17.6l-5.89 3 1.31-6.6-4.92-4.6 6.6-.74L12 2.5z" />
+                </svg>
+                Balades ambassadeur
+              </button>
               <AddBaladeGpxButton onCreated={loadRides} />
               {activeFilters.size > 0 && (
                 <button
@@ -266,9 +285,12 @@ export default function Balades() {
                     ? "Aucune balade publiée pour le moment."
                     : "Aucune balade ne correspond à ces filtres."}
                 </p>
-                {activeFilters.size > 0 && (
+                {(activeFilters.size > 0 || ambassadorOnly) && (
                   <button
-                    onClick={() => setActiveFilters(new Set())}
+                    onClick={() => {
+                      setActiveFilters(new Set());
+                      setAmbassadorOnly(false);
+                    }}
                     className="mt-3 text-sm font-semibold text-michelin-blue hover:underline"
                   >
                     Effacer les filtres
@@ -297,9 +319,21 @@ export default function Balades() {
                       <TyreImage kind={kindFromText(r.terrain)} className="h-12 w-12 shrink-0 transition-transform duration-300 ease-out-strong group-hover:rotate-[8deg]" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <span className="font-bold text-michelin-navy">{r.name}</span>
+                          <span className="flex items-center gap-1.5 font-bold text-michelin-navy">
+                            {r.isAmbassador && (
+                              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-michelin-yellow" fill="currentColor">
+                                <path d="M12 2.5l2.9 6.16 6.6.74-4.92 4.6 1.31 6.6L12 17.6l-5.89 3 1.31-6.6-4.92-4.6 6.6-.74L12 2.5z" />
+                              </svg>
+                            )}
+                            {r.name}
+                          </span>
                           <span className="chip shrink-0">{r.terrain}</span>
                         </div>
+                        {r.isAmbassador && (
+                          <span className="mt-1 inline-flex items-center rounded-pill bg-michelin-navy px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-michelin-yellow">
+                            Balade d&apos;ambassadeur
+                          </span>
+                        )}
                         <div className="mt-1 text-sm text-michelin-ink">
                           {r.km} km · {r.dplus} m D+ · {formatDuration(r.durationSeconds)}
                         </div>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Michelin Trust Wheels (demo)" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Boucle du Puy de Dôme</name>
+    <trkseg>
+      <trkpt lat="45.7772" lon="3.0870"><ele>400</ele><time>2026-05-10T07:00:00Z</time></trkpt>
+      <trkpt lat="45.7763" lon="3.0680"><ele>410</ele><time>2026-05-10T07:08:00Z</time></trkpt>
+      <trkpt lat="45.7755" lon="3.0500"><ele>425</ele><time>2026-05-10T07:16:00Z</time></trkpt>
+      <trkpt lat="45.7748" lon="3.0300"><ele>460</ele><time>2026-05-10T07:25:00Z</time></trkpt>
+      <trkpt lat="45.7740" lon="3.0150"><ele>520</ele><time>2026-05-10T07:34:00Z</time></trkpt>
+      <trkpt lat="45.7736" lon="2.9980"><ele>650</ele><time>2026-05-10T07:46:00Z</time></trkpt>
+      <trkpt lat="45.7735" lon="2.9850"><ele>820</ele><time>2026-05-10T08:00:00Z</time></trkpt>
+      <trkpt lat="45.7733" lon="2.9740"><ele>1050</ele><time>2026-05-10T08:18:00Z</time></trkpt>
+      <trkpt lat="45.7732" lon="2.9656"><ele>1465</ele><time>2026-05-10T08:42:00Z</time></trkpt>
+      <trkpt lat="45.7735" lon="2.9740"><ele>1050</ele><time>2026-05-10T08:55:00Z</time></trkpt>
+      <trkpt lat="45.7738" lon="2.9900"><ele>700</ele><time>2026-05-10T09:06:00Z</time></trkpt>
+      <trkpt lat="45.7745" lon="3.0150"><ele>520</ele><time>2026-05-10T09:18:00Z</time></trkpt>
+      <trkpt lat="45.7755" lon="3.0500"><ele>425</ele><time>2026-05-10T09:32:00Z</time></trkpt>
+      <trkpt lat="45.7772" lon="3.0870"><ele>400</ele><time>2026-05-10T09:46:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+</gpx>
