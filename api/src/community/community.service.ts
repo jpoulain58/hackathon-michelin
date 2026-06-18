@@ -12,4 +12,9 @@ export class CommunityService {
   pros(): ProRider[] {
     return PRO_RIDERS;
   }
+
+  /** Fiche d'un pro (photo, palmares, pneus par competition). */
+  proBySlug(slug: string): ProRider | undefined {
+    return PRO_RIDERS.find((p) => p.slug === slug);
+  }
 }
