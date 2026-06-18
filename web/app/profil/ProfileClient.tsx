@@ -21,7 +21,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
 
 const PREFERENCES = [
   "Recevoir les recommandations pneus après une grosse sortie",
-  "Partager mes avis vérifiés avec la communauté",
+  "Partager mes avis avec la communauté",
   "Afficher mon statut Club sur mon profil public",
 ];
 
@@ -202,7 +202,7 @@ export function ProfileClient() {
     return (
       <ProfileShell
         title="Connecte-toi pour accéder à ton profil"
-        subtitle="Retrouve tes sorties synchronisées, tes avis vérifiés et tes avantages Club."
+        subtitle="Retrouve tes sorties synchronisées, tes avis et tes avantages Club."
       >
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">

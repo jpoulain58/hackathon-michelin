@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { TyreDetail } from "@/lib/api";
+import { listReviewsForProduct } from "@/lib/reviews";
 import { ProduitDetail } from "./ProduitDetail";
 
 async function fetchProduct(id: number): Promise<TyreDetail | null> {
@@ -43,5 +44,6 @@ export default async function ProduitPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const product = await fetchProduct(Number(id));
   if (!product) notFound();
-  return <ProduitDetail product={product} />;
+  const reviews = await listReviewsForProduct(product.id);
+  return <ProduitDetail product={product} reviews={reviews} />;
 }

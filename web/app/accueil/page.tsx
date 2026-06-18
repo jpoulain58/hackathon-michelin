@@ -18,7 +18,7 @@ const DISCIPLINE_PHOTO: Record<TyreKind, string> = {
 const STATS = [
   { k: "2,4 M km", v: "roules par le peloton Michelin ce mois" },
   { k: "12 300", v: "riders dans la communaute" },
-  { k: "100 % verifies", v: "avis adosses aux vrais kilometres Strava" },
+  { k: "100 % riders", v: "avis publies par de vrais utilisateurs de la communaute" },
 ];
 
 const CONCEPTS = [
@@ -29,7 +29,7 @@ const CONCEPTS = [
   },
   {
     title: "Communaute & emulation",
-    body: "Compteurs collectifs, pneus des pros, avis verifies par les km, balades de la semaine, statut et parrainage.",
+    body: "Compteurs collectifs, pneus des pros, avis de la communaute, balades de la semaine, statut et parrainage.",
     tag: "La prescription",
   },
   {
