@@ -49,11 +49,6 @@ const MENU_GROUPS = [
         label: "Actualites",
         description: "Conseils, guides et nouveautés",
       },
-      {
-        href: "/club",
-        label: "Club",
-        description: "Statut, avantages et recompenses",
-      },
     ],
   },
   {
@@ -222,6 +217,25 @@ export function SiteHeader() {
               </div>
             );
           })}
+
+          {/* Club — lien direct, après les groupes */}
+          {(() => {
+            const active = isActive("/club");
+            return (
+              <Link
+                href="/club"
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  active
+                    ? "bg-white/70 text-michelin-blue shadow-[inset_0_0_0_1px_rgba(39,80,155,0.14)]"
+                    : "text-michelin-navy/75 hover:bg-white/55 hover:text-michelin-navy",
+                )}
+              >
+                Club
+              </Link>
+            );
+          })()}
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
@@ -354,6 +368,25 @@ export function SiteHeader() {
                 </div>
               </div>
             ))}
+
+            {/* Club — lien direct après les groupes */}
+            {(() => {
+              const active = isActive("/club");
+              return (
+                <Link
+                  href="/club"
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "rounded-2xl px-3.5 py-3 transition-colors duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                    active ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
+                  )}
+                >
+                  <span className="block text-sm font-black">Club</span>
+                </Link>
+              );
+            })()}
+
             <div className="my-1 h-px bg-michelin-navy/10" />
             <Link
               href="/profil"
