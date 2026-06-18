@@ -41,8 +41,8 @@ const MENU_GROUPS = [
     items: [
       {
         href: "/communaute",
-        label: "Avis verifies",
-        description: "Retours relies aux sorties",
+        label: "Avis",
+        description: "Les retours de la communauté",
       },
       {
         href: "/actualites",

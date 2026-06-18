@@ -52,6 +52,7 @@ export interface RideView {
   proTip: ProTip | null;
   pts: LatLng[];
   source: "strava" | "manual";
+  isAmbassador: boolean;
   createdAt: string;
 }
 
@@ -92,6 +93,7 @@ type RideRow = {
   pro_tip: ProTip | null;
   pts: LatLng[] | null;
   source: "strava" | "manual";
+  is_ambassador: boolean;
   created_at: string;
 };
 
@@ -117,7 +119,9 @@ export class RidesService {
         : null;
   }
 
-  async listPublic(filters: { terrain?: string; difficulty?: string } = {}): Promise<RideView[]> {
+  async listPublic(
+    filters: { terrain?: string; difficulty?: string; ambassador?: boolean } = {},
+  ): Promise<RideView[]> {
     const client = this.requireClient();
     let query = client
       .from("rides")
@@ -126,6 +130,7 @@ export class RidesService {
       .order("created_at", { ascending: false });
     if (filters.terrain) query = query.eq("terrain", filters.terrain);
     if (filters.difficulty) query = query.eq("difficulty", filters.difficulty);
+    if (filters.ambassador) query = query.eq("is_ambassador", true);
 
     const { data, error } = await query;
     if (error) throw new InternalServerErrorException(`Impossible de lire les balades: ${error.message}`);
@@ -162,9 +167,11 @@ export class RidesService {
     const pts = decodePolyline(activity.polyline);
     const km = activity.distanceKm;
     const dplus = activity.elevationM;
+    const isAmbassador = await this.isRiderAmbassador(userId);
 
     return this.insertRide({
       riderId: userId,
+      isAmbassador,
       source: "strava",
       stravaActivityId: activityId,
       name: form.name,
@@ -198,8 +205,11 @@ export class RidesService {
       throw new BadRequestException(error instanceof Error ? error.message : "GPX invalide.");
     }
 
+    const isAmbassador = await this.isRiderAmbassador(userId);
+
     return this.insertRide({
       riderId: userId,
+      isAmbassador,
       source: "manual",
       stravaActivityId: null,
       name: form.name,
@@ -234,8 +244,21 @@ export class RidesService {
     }
   }
 
+  /** Statut ambassadeur calcule cote serveur depuis `riders` : jamais fourni par le client. */
+  private async isRiderAmbassador(riderId: string): Promise<boolean> {
+    const client = this.requireClient();
+    const { data, error } = await client
+      .from("riders")
+      .select("is_ambassador")
+      .eq("id", riderId)
+      .maybeSingle();
+    if (error || !data) return false;
+    return Boolean((data as { is_ambassador: boolean }).is_ambassador);
+  }
+
   private async insertRide(input: {
     riderId: string;
+    isAmbassador: boolean;
     source: "strava" | "manual";
     stravaActivityId: string | null;
     name: string;
@@ -282,6 +305,7 @@ export class RidesService {
         used_tyre_rating: input.usedTyreRating,
         pts: input.pts,
         is_public: true,
+        is_ambassador: input.isAmbassador,
       })
       .select(RIDE_SELECT)
       .single();
@@ -337,6 +361,7 @@ function toView(row: RideRow): RideView {
     proTip: row.pro_tip,
     pts: row.pts ?? [],
     source: row.source,
+    isAmbassador: row.is_ambassador,
     createdAt: row.created_at,
   };
 }

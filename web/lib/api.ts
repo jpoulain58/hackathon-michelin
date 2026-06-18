@@ -352,20 +352,22 @@ export interface CommunityStats {
   ridersCount: number;
   monthKm: number;
   totalKm: number;
-  verifiedReviews: number;
 }
 
-export interface VerifiedReview {
-  id: string;
-  rider: string;
-  tyre: string;
-  productId?: number;
+export interface ReviewItem {
+  id: number;
+  productId: number;
   rating: number;
   text: string;
-  verifiedKm: number;
-  verifiedRides: number;
-  terrains: string;
-  avgSpeedKmh: number;
+  createdAt: string;
+  riderName: string;
+  isAmbassador: boolean;
+  tyre?: string;
+}
+
+export interface ProductOption {
+  id: number;
+  name: string;
 }
 
 export interface ProRider {
@@ -380,191 +382,7 @@ export const FALLBACK_STATS: CommunityStats = {
   ridersCount: 12300,
   monthKm: 2_400_000,
   totalKm: 48_200_000,
-  verifiedReviews: 1840,
 };
-
-export const FALLBACK_REVIEWS: VerifiedReview[] = [
-  {
-    id: "rev-001",
-    rider: "Camille D.",
-    tyre: "MICHELIN Power Cup",
-    productId: 524,
-    rating: 5,
-    text: "Rendement bluffant sur les bosses, je gagne clairement en vitesse moyenne. Le grip en virage est rassurant meme a haute vitesse.",
-    verifiedKm: 2847,
-    verifiedRides: 84,
-    terrains: "route",
-    avgSpeedKmh: 31,
-  },
-  {
-    id: "rev-002",
-    rider: "Sofiane B.",
-    tyre: "MICHELIN Power Gravel",
-    productId: 507,
-    rating: 5,
-    text: "Accroche parfaite en gravel sec comme humide, zero crevaison en 1500 km. Le meilleur rapport grip/roulement que j'ai teste.",
-    verifiedKm: 1523,
-    verifiedRides: 41,
-    terrains: "gravel",
-    avgSpeedKmh: 24,
-  },
-  {
-    id: "rev-003",
-    rider: "Lea M.",
-    tyre: "MICHELIN Power Protection TLR",
-    productId: 488,
-    rating: 4,
-    text: "Confort top sur les longues sorties, zero crevaison depuis 4000 km. Un poil lourd compare a la concurrence Racing mais je privilegies la securite.",
-    verifiedKm: 3960,
-    verifiedRides: 102,
-    terrains: "route",
-    avgSpeedKmh: 28,
-  },
-  {
-    id: "rev-004",
-    rider: "Thomas R.",
-    tyre: "MICHELIN Wild Enduro Front",
-    productId: 695,
-    rating: 5,
-    text: "Mordant impressionnant en devers et dans les rochers mouilles. Je ne suis plus limite par le pneu avant, vraiment.",
-    verifiedKm: 890,
-    verifiedRides: 67,
-    terrains: "VTT enduro mixte",
-    avgSpeedKmh: 18,
-  },
-  {
-    id: "rev-005",
-    rider: "Marion G.",
-    tyre: "MICHELIN Power Adventure",
-    productId: 498,
-    rating: 5,
-    text: "Parfait pour mon usage bikepacking : rapide sur route, stable sur sentiers. J'ai traverse les Alpes dessus sans le moindre probleme.",
-    verifiedKm: 2100,
-    verifiedRides: 58,
-    terrains: "route + sentiers",
-    avgSpeedKmh: 22,
-  },
-  {
-    id: "rev-006",
-    rider: "Kevin L.",
-    tyre: "MICHELIN Force AM2",
-    productId: 764,
-    rating: 5,
-    text: "Polyvalent au max, je les roule de mars a novembre sur tout type de terrain. L'accroche en terre seche est excellente et ils encaissent bien les chocs.",
-    verifiedKm: 1240,
-    verifiedRides: 95,
-    terrains: "VTT trail varié",
-    avgSpeedKmh: 21,
-  },
-  {
-    id: "rev-007",
-    rider: "Julie B.",
-    tyre: "MICHELIN City Street",
-    productId: 592,
-    rating: 4,
-    text: "Parfait pour mon quotidien en ville, jamais de crevaison malgre les dechets sur les pistes cyclables parisiennes. Tres silencieux sur l'asphalte.",
-    verifiedKm: 4200,
-    verifiedRides: 312,
-    terrains: "asphalte urbain",
-    avgSpeedKmh: 19,
-  },
-  {
-    id: "rev-008",
-    rider: "Antoine M.",
-    tyre: "MICHELIN PRO5 TLR",
-    productId: 537,
-    rating: 5,
-    text: "5600 km et toujours impeccable. La regularite du roulement est bluffante, et le profil tient parfaitement la route en toutes conditions.",
-    verifiedKm: 5600,
-    verifiedRides: 145,
-    terrains: "route",
-    avgSpeedKmh: 29,
-  },
-  {
-    id: "rev-009",
-    rider: "Chloe V.",
-    tyre: "MICHELIN Stargrip",
-    productId: 583,
-    rating: 4,
-    text: "Indispensable en hiver a Paris. Meme sur les pavés mouilles ou les feuilles mortes, ca ne glisse pas. Je recommande pour les navetteurs hivernaux.",
-    verifiedKm: 1800,
-    verifiedRides: 220,
-    terrains: "asphalte mouillé",
-    avgSpeedKmh: 17,
-  },
-  {
-    id: "rev-010",
-    rider: "Romain P.",
-    tyre: "MICHELIN Wild AM2",
-    productId: 771,
-    rating: 5,
-    text: "Excellent equilibre entre accroche et roulement pour le trail. Ils ne se bouchent pas dans la boue et tiennent bien le carre en courbe sèche.",
-    verifiedKm: 780,
-    verifiedRides: 52,
-    terrains: "VTT trail mixte",
-    avgSpeedKmh: 20,
-  },
-  {
-    id: "rev-011",
-    rider: "Sarah K.",
-    tyre: "MICHELIN Power All Season",
-    productId: 496,
-    rating: 5,
-    text: "Mon pneu toute l'annee depuis 2 saisons. Performant par temps sec, rassurant sous la pluie. Je ne change plus meme l'ete, le roulement est vraiment bon.",
-    verifiedKm: 6200,
-    verifiedRides: 198,
-    terrains: "route toutes conditions",
-    avgSpeedKmh: 27,
-  },
-  {
-    id: "rev-012",
-    rider: "Baptiste F.",
-    tyre: "MICHELIN City Cargo",
-    productId: 584,
-    rating: 4,
-    text: "Robuste et fiable pour mon velo cargo avec les enfants. Aucune crevaison en 3400 km malgre la charge importante. Le confort absorbe bien les vibrations.",
-    verifiedKm: 3400,
-    verifiedRides: 280,
-    terrains: "ville",
-    avgSpeedKmh: 16,
-  },
-  {
-    id: "rev-013",
-    rider: "Emma S.",
-    tyre: "MICHELIN Power Cyclocross Jet",
-    productId: 549,
-    rating: 5,
-    text: "Tres polyvalent en cyclocross, rapide sur les sections dures et accrocheur dans la boue legere. Les relances sont nettes grace au profil centre.",
-    verifiedKm: 420,
-    verifiedRides: 28,
-    terrains: "cyclocross mixte",
-    avgSpeedKmh: 26,
-  },
-  {
-    id: "rev-014",
-    rider: "Lucas T.",
-    tyre: "MICHELIN Force AM",
-    productId: 808,
-    rating: 4,
-    text: "Bon compromis pour le trail quotidien, pas trop lourd et suffisamment accrocheur. Ideal pour qui cherche un pneu versatile sans casser la tirelire.",
-    verifiedKm: 1100,
-    verifiedRides: 76,
-    terrains: "trail sec",
-    avgSpeedKmh: 22,
-  },
-  {
-    id: "rev-015",
-    rider: "Nadia H.",
-    tyre: "MICHELIN City Trekking",
-    productId: 626,
-    rating: 5,
-    text: "Parfait pour mon usage mixte ville et chemin de halage. Tres confortable sur longue distance et la protection contre les crevaisons est reellement efficace.",
-    verifiedKm: 2800,
-    verifiedRides: 190,
-    terrains: "ville + chemins",
-    avgSpeedKmh: 18,
-  },
-];
 
 export const FALLBACK_PROS: ProRider[] = [
   {
@@ -619,12 +437,34 @@ export async function fetchStats(): Promise<CommunityStats> {
   return (await res.json()) as CommunityStats;
 }
 
-export async function fetchReviews(): Promise<VerifiedReview[]> {
-  const res = await fetch(`${API_BASE}/api/community/reviews`, {
-    cache: "no-store",
-  });
+// Avis : servis par les routes Next.js internes (/api/reviews, /api/products),
+// pas par l'API NestJS — elles lisent/ecrivent directement en base via
+// supabaseAdmin (cf. web/lib/reviews.ts).
+export async function fetchRecentReviews(limit = 20): Promise<{ items: ReviewItem[]; count: number }> {
+  const res = await fetch(`/api/reviews?limit=${limit}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`API ${res.status}`);
-  return ((await res.json()) as { items: VerifiedReview[] }).items;
+  return (await res.json()) as { items: ReviewItem[]; count: number };
+}
+
+export async function fetchProductsList(): Promise<ProductOption[]> {
+  const res = await fetch(`/api/products`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ProductOption[] }).items;
+}
+
+export async function submitReview(
+  accessToken: string,
+  input: { productId: number; rating: number; text: string },
+): Promise<void> {
+  const res = await fetch(`/api/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `API ${res.status}`);
+  }
 }
 
 export async function fetchPros(): Promise<ProRider[]> {
