@@ -6,7 +6,31 @@ import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/Reveal";
 import { supabase } from "@/lib/supabase/client";
-import { fetchStravaStats } from "@/lib/api";
+import { fetchStravaStats, fetchTyres } from "@/lib/api";
+
+const FALLBACK_MODELS = [
+  "MICHELIN Power Cup 2",
+  "MICHELIN Power Cup S",
+  "MICHELIN Power Road",
+  "MICHELIN Power Road TLR",
+  "MICHELIN Power All Season",
+  "MICHELIN Power Gravel",
+  "MICHELIN Power Adventure",
+  "MICHELIN Power Protection TLR",
+  "MICHELIN PRO4 Endurance",
+  "MICHELIN PRO5",
+  "MICHELIN PRO5 TLR",
+  "MICHELIN Force AM2",
+  "MICHELIN Force AM2 Competition Line",
+  "MICHELIN Wild Enduro Front",
+  "MICHELIN Wild Enduro Rear",
+  "MICHELIN Wild XC3",
+  "MICHELIN Force XC3",
+  "MICHELIN City Cargo",
+  "MICHELIN City Street",
+  "MICHELIN E-Wild Front",
+  "MICHELIN E-Wild Rear",
+];
 
 type Tyre = {
   id: string;
@@ -56,6 +80,7 @@ export function Garage() {
   const [stravaKm, setStravaKm] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [stravaError, setStravaError] = useState<string | null>(null);
+  const [models, setModels] = useState<string[]>(FALLBACK_MODELS);
 
   const loadTyres = useCallback(async (uid: string) => {
     if (!supabase) return;
@@ -137,6 +162,15 @@ export function Garage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTyres]);
+
+  useEffect(() => {
+    fetchTyres()
+      .then((tyres) => {
+        const names = [...new Set(tyres.map((t) => t.designation).filter(Boolean))].sort() as string[];
+        if (names.length > 0) setModels(names);
+      })
+      .catch(() => {});
+  }, []);
 
   function patchLocal(id: string, patch: Partial<Tyre>) {
     setTyres((list) => list.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -251,6 +285,10 @@ export function Garage() {
 
   return (
     <div className="space-y-6">
+      <datalist id="tyre-models">
+        {models.map((m) => <option key={m} value={m} />)}
+      </datalist>
+
       {/* Synchro Strava */}
       <div className="rounded-3xl border border-michelin-gray-line bg-white p-6 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -310,6 +348,7 @@ export function Garage() {
                     <label className="block text-xs font-semibold text-michelin-ink">
                       Modele
                       <input
+                        list="tyre-models"
                         value={t.model ?? ""}
                         onChange={(e) => patchLocal(t.id, { model: e.target.value })}
                         placeholder="MICHELIN Power Cup"
@@ -389,6 +428,7 @@ export function Garage() {
             <label className="block text-xs font-semibold text-michelin-ink">
               Modele
               <input
+                list="tyre-models"
                 value={draft.model}
                 onChange={(e) => setDraft({ ...draft, model: e.target.value })}
                 placeholder="ex. MICHELIN Power Cup"
