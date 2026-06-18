@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 import type { TyreDetail } from "@/lib/api";
 import { getTyreImage } from "@/lib/tyre-images";
+import { RetailersSheetTrigger } from "@/components/RetailersSheetTrigger";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -265,9 +266,12 @@ export function ProduitDetail({ product: p }: { product: TyreDetail }) {
 
             {/* CTA */}
             <div className="pt-2">
-              <button className="w-full rounded-pill bg-michelin-yellow px-6 py-4 text-base font-black text-michelin-navy transition-[filter] hover:brightness-95">
+              <RetailersSheetTrigger
+                productName={`${p.range} ${p.designation}`}
+                className="h-auto w-full bg-michelin-yellow px-6 py-4 text-base font-black text-michelin-navy transition-[filter] hover:bg-michelin-yellow hover:brightness-95 hover:shadow-soft"
+              >
                 Voir où acheter →
-              </button>
+              </RetailersSheetTrigger>
               <p className="mt-2 text-center text-xs text-michelin-ink/40">
                 Disponible chez vos revendeurs Michelin agréés
               </p>

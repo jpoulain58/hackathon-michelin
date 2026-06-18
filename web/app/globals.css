@@ -146,6 +146,21 @@
   .shine:hover::before {
     @apply animate-shimmer;
   }
+
+  .retailer-sheet-panel {
+    animation: retailer-sheet-up 260ms var(--ease-out) both;
+  }
+
+  @keyframes retailer-sheet-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
 /* Press feedback global : tout element pressable scale legerement (Emil).

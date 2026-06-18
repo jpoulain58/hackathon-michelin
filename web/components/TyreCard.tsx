@@ -1,14 +1,10 @@
 import type { RecoView } from "@/lib/api";
 import { TyreImage, tyreKind } from "./TyreImage";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { RetailersSheetTrigger } from "@/components/RetailersSheetTrigger";
 
 export function TyreCard({ tyre, rank, best = false }: { tyre: RecoView; rank: number; best?: boolean }) {
-  const retailerUrl = `https://www.michelin.fr/velo?utm_source=trustwheels&utm_medium=app&utm_campaign=reco&q=${encodeURIComponent(
-    tyre.range,
-  )}`;
-
   return (
     <Card className="flex h-full flex-col card-interactive">
       <CardHeader className="flex-row items-start gap-3 space-y-0">
@@ -49,11 +45,9 @@ export function TyreCard({ tyre, rank, best = false }: { tyre: RecoView; rank: n
       </CardContent>
 
       <CardFooter className="mt-auto">
-        <Button asChild className="w-full">
-          <a href={retailerUrl} target="_blank" rel="noopener noreferrer">
-            Voir ou acheter
-          </a>
-        </Button>
+        <RetailersSheetTrigger productName={tyre.range} className="w-full">
+          Voir ou acheter
+        </RetailersSheetTrigger>
       </CardFooter>
     </Card>
   );

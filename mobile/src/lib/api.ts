@@ -131,6 +131,23 @@ export async function fetchTyres(params: { ids?: string[]; limit?: number } = {}
   return ((await res.json()) as { items: ApiTyre[] }).items;
 }
 
+export interface Retailer {
+  id: number;
+  region: string | null;
+  country: string | null;
+  website: string;
+}
+
+export async function fetchRetailers(params: { country?: string; limit?: number } = {}): Promise<Retailer[]> {
+  const q = new URLSearchParams();
+  if (params.country) q.set("country", params.country);
+  if (params.limit) q.set("limit", String(params.limit));
+  const suffix = q.toString() ? `?${q}` : "";
+  const res = await fetch(`${API_BASE}/api/retailers${suffix}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: Retailer[] }).items;
+}
+
 export async function syncRider(session: Session | null): Promise<void> {
   if (!session?.access_token) return;
 
