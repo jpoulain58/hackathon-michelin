@@ -1,4 +1,5 @@
 import { Controller, Get, Headers, Post, Query, Res } from "@nestjs/common";
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import type { User } from "@supabase/supabase-js";
 import { AuthService, type SafeProviderConnection } from "./auth.service";
 import { GarminService } from "./garmin.service";
@@ -9,6 +10,7 @@ interface RedirectResponse {
   redirect(url: string): void;
 }
 
+@ApiTags("auth")
 @Controller("auth")
 export class AuthController {
   constructor(
@@ -17,6 +19,8 @@ export class AuthController {
     private readonly stravaService: StravaService,
   ) {}
 
+  @ApiOperation({ summary: "Verifie le JWT Supabase envoye en Authorization: Bearer ..." })
+  @ApiBearerAuth("supabase-jwt")
   @Get("me")
   async me(@Headers("authorization") authorization?: string) {
     const user = await this.authService.getUserFromAuthorization(authorization);
@@ -30,11 +34,16 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: "Cree/met a jour le profil public.riders depuis la session Supabase" })
+  @ApiBearerAuth("supabase-jwt")
   @Post("sync")
   async sync(@Headers("authorization") authorization?: string) {
     return this.authService.syncRiderFromAuthorization(authorization);
   }
 
+  @ApiOperation({ summary: "Profil connecte + comptes lies + donnees Strava reelles" })
+  @ApiBearerAuth("supabase-jwt")
+  @ApiQuery({ name: "refresh", required: false, type: Boolean, description: "Force le rafraichissement du cache Strava" })
   @Get("profile")
   async profile(
     @Headers("authorization") authorization?: string,
@@ -63,6 +72,12 @@ export class AuthController {
 
   // Demarre le flux Garmin OAuth 2.0 (PKCE). Le mobile passe son deep link de
   // retour et recoit l'URL d'autorisation Garmin a ouvrir dans le navigateur.
+  @ApiOperation({
+    summary: "Demarre le flux Garmin OAuth 2.0 (PKCE)",
+    description: "Renvoie l'URL d'autorisation Garmin a ouvrir dans le navigateur. Authorization optionnel pour lier a un compte existant.",
+  })
+  @ApiBearerAuth("supabase-jwt")
+  @ApiQuery({ name: "mobile_redirect_to", description: "Deep link mobile (mtw:// ou exp://) vers lequel revenir apres consentement" })
   @Get("garmin/start")
   async start(
     @Query("mobile_redirect_to") mobileRedirectTo: string,
@@ -74,6 +89,10 @@ export class AuthController {
 
   // Callback appele par Garmin apres consentement. On finalise puis on redirige
   // le navigateur vers le deep link mobile (avec le token de session, ou l'erreur).
+  @ApiOperation({
+    summary: "Callback OAuth Garmin (appele par Garmin, redirige ensuite vers le deep link mobile)",
+    description: "Endpoint de redirection navigateur : ne pas appeler directement depuis Swagger \"Try it out\".",
+  })
   @Get("garmin/callback")
   async callback(
     @Res() res: RedirectResponse,
@@ -115,6 +134,12 @@ export class AuthController {
   // d'id_token/JWKS), on ne peut pas passer par Supabase : flux backend dedie,
   // comme Garmin. Le client passe sa destination de retour (web /auth/callback
   // ou deep link mobile) et recoit l'URL d'autorisation Strava a ouvrir.
+  @ApiOperation({
+    summary: "Demarre le flux Strava OAuth 2.0",
+    description: "Renvoie l'URL d'autorisation Strava a ouvrir. Authorization optionnel pour lier a un compte existant.",
+  })
+  @ApiBearerAuth("supabase-jwt")
+  @ApiQuery({ name: "redirect_to", description: "Destination de retour (web /auth/callback ou deep link mobile)" })
   @Get("strava/start")
   async stravaStart(
     @Query("redirect_to") redirectTo: string,
@@ -126,6 +151,10 @@ export class AuthController {
 
   // Callback appele par Strava apres consentement. On finalise puis on redirige
   // le navigateur vers la destination (avec le token de session, ou l'erreur).
+  @ApiOperation({
+    summary: "Callback OAuth Strava (appele par Strava, redirige ensuite vers la destination)",
+    description: "Endpoint de redirection navigateur : ne pas appeler directement depuis Swagger \"Try it out\".",
+  })
   @Get("strava/callback")
   async stravaCallback(
     @Res() res: RedirectResponse,

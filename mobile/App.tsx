@@ -13,11 +13,17 @@ import { BaladeDetailScreen } from "./src/screens/BaladeDetailScreen";
 import { ClubScreen } from "./src/screens/ClubScreen";
 import { ComparateurScreen } from "./src/screens/ComparateurScreen";
 import { CommunauteScreen } from "./src/screens/CommunauteScreen";
+import { EvenementDetailScreen } from "./src/screens/EvenementDetailScreen";
 import { PneuTestScreen } from "./src/screens/PneuTestScreen";
+import { ProDetailScreen } from "./src/screens/ProDetailScreen";
+import { ProduitDetailScreen } from "./src/screens/ProduitDetailScreen";
+import { ProduitsScreen } from "./src/screens/ProduitsScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { TrouveTonPneuScreen } from "./src/screens/TrouveTonPneuScreen";
 import { WelcomeScreen } from "./src/screens/WelcomeScreen";
 import { colors } from "./src/theme";
+import type { Evenement } from "./src/data/evenements";
+import type { ProRider } from "./src/lib/api";
 import type { Ride, TabKey, Tyre } from "./src/types";
 import {
   sendPasswordResetEmail,
@@ -40,6 +46,10 @@ export default function App() {
   const [compareTyres, setCompareTyres] = useState<Tyre[]>([]);
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
   const [showPneuTest, setShowPneuTest] = useState(false);
+  const [selectedEvenement, setSelectedEvenement] = useState<Evenement | null>(null);
+  const [selectedPro, setSelectedPro] = useState<ProRider | null>(null);
+  const [showCatalogue, setShowCatalogue] = useState(false);
+  const [selectedProduit, setSelectedProduit] = useState<Tyre | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -120,6 +130,10 @@ export default function App() {
       setTab("trouver");
       setSelectedRide(null);
       setShowPneuTest(false);
+      setSelectedEvenement(null);
+      setSelectedPro(null);
+      setShowCatalogue(false);
+      setSelectedProduit(null);
     } catch (error) {
       setProfileMessage(error instanceof Error ? error.message : "Deconnexion impossible.");
     } finally {
@@ -145,6 +159,21 @@ export default function App() {
       <View style={styles.body}>
         {selectedRide ? (
           <BaladeDetailScreen ride={selectedRide} onBack={() => setSelectedRide(null)} />
+        ) : selectedEvenement ? (
+          <EvenementDetailScreen
+            event={selectedEvenement}
+            session={session}
+            onBack={() => setSelectedEvenement(null)}
+          />
+        ) : selectedPro ? (
+          <ProDetailScreen pro={selectedPro} onBack={() => setSelectedPro(null)} />
+        ) : selectedProduit ? (
+          <ProduitDetailScreen tyre={selectedProduit} onBack={() => setSelectedProduit(null)} />
+        ) : showCatalogue ? (
+          <ProduitsScreen
+            onBack={() => setShowCatalogue(false)}
+            onOpenProduit={(tyre) => setSelectedProduit(tyre)}
+          />
         ) : showPneuTest ? (
           <PneuTestScreen session={session} onBack={() => setShowPneuTest(false)} />
         ) : tab === "trouver" ? (
@@ -156,12 +185,13 @@ export default function App() {
             }}
           />
         ) : tab === "comparer" ? (
-          <ComparateurScreen selectedTyres={compareTyres} />
+          <ComparateurScreen selectedTyres={compareTyres} onOpenCatalogue={() => setShowCatalogue(true)} />
         ) : tab === "communaute" ? (
           <CommunauteScreen
             session={session}
             onOpenRide={(ride) => setSelectedRide(ride)}
             onOpenPneuTest={() => setShowPneuTest(true)}
+            onOpenPro={(pro) => setSelectedPro(pro)}
           />
         ) : tab === "profil" ? (
           <ProfileScreen
@@ -171,10 +201,17 @@ export default function App() {
             message={profileMessage}
           />
         ) : (
-          <ClubScreen />
+          <ClubScreen onOpenEvenement={(event) => setSelectedEvenement(event)} />
         )}
       </View>
-      {selectedRide || showPneuTest ? null : <TabBar active={tab} onChange={setTab} />}
+      {selectedRide ||
+      showPneuTest ||
+      selectedEvenement ||
+      selectedPro ||
+      selectedProduit ||
+      showCatalogue ? null : (
+        <TabBar active={tab} onChange={setTab} />
+      )}
     </SafeAreaView>
   );
 }
