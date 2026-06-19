@@ -115,6 +115,11 @@ const config: Config = {
           from: { opacity: "0", transform: "scale(0.7)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "club-shimmer": {
+          "0%":   { transform: "translateX(-100%)" },
+          "35%":  { transform: "translateX(350%)" },
+          "100%": { transform: "translateX(350%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -123,6 +128,7 @@ const config: Config = {
         "fade-in": "fade-in 0.5s ease both",
         "scale-in": "scale-in 0.4s cubic-bezier(0.23, 1, 0.32, 1) both",
         "pop-in": "pop-in 0.45s cubic-bezier(0.23, 1, 0.32, 1) both",
+        "club-shimmer": "club-shimmer 2.8s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
         shimmer: "shimmer 1.6s infinite",
         marquee: "marquee 32s linear infinite",

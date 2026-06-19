@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -10,6 +11,7 @@ import { ClubMembership } from "@/components/ClubMembership";
 import { ClubChallenges } from "@/components/ClubChallenges";
 import { ClubEvents } from "@/components/ClubEvents";
 import { Garage } from "@/components/Garage";
+import { ClubTesterProgram } from "@/components/ClubTesterProgram";
 import { supabase } from "@/lib/supabase/client";
 
 type MemberState = "loading" | "anonymous" | "guest" | "member";
@@ -44,6 +46,30 @@ const INVITE_FEATURES = [
     num: "03",
     title: "Avantages exclusifs",
     desc: "2 pneus offerts par an, 10 % de reduction chez nos revendeurs partenaires, badge Testeur sur ton profil.",
+  },
+];
+
+const MEMBER_EXTRAS = [
+  {
+    href: "/trouve-ton-pneu",
+    label: "Pneus recommandes",
+    desc: "Notre algo analyse ta pratique pour te suggerer le pneu ideal a ta discipline et tes conditions.",
+    cta: "Lancer le quiz →",
+    accent: "bg-michelin-yellow",
+  },
+  {
+    href: "/balades",
+    label: "Sorties Club",
+    desc: "Acces aux balades et rides exclusifs organises chaque mois pour les membres du Club Trust Wheels.",
+    cta: "Voir les sorties →",
+    accent: "bg-michelin-blue text-white",
+  },
+  {
+    href: "/communaute",
+    label: "Espace communaute",
+    desc: "Tes avis sont mis en avant en tant que membre, et tu peux repondre aux autres riders.",
+    cta: "Voir la communaute →",
+    accent: "bg-michelin-navy text-white",
   },
 ];
 
@@ -274,6 +300,50 @@ function MemberBody({ userId }: { userId?: string }) {
 
       {/* Défis & badges */}
       <ClubChallenges userId={userId} />
+
+      {/* Extras membres */}
+      <section className="border-t border-michelin-gray-line bg-michelin-gray-light">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <Reveal as="h2" className="text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
+            Tes autres avantages membres
+          </Reveal>
+          <div className="mt-8 grid gap-5 sm:grid-cols-3">
+            {MEMBER_EXTRAS.map((f, i) => (
+              <Reveal key={f.href} delay={i * 80}>
+                <Link
+                  href={f.href}
+                  className="group flex h-full flex-col rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft transition-[box-shadow,transform] duration-200 hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <h3 className="font-bold text-michelin-navy">{f.label}</h3>
+                  <p className="mt-2 flex-1 text-sm text-michelin-ink">{f.desc}</p>
+                  <span
+                    className={`mt-5 inline-block self-start rounded-pill px-3 py-1.5 text-xs font-bold transition-[filter] group-hover:brightness-95 ${f.accent}`}
+                  >
+                    {f.cta}
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Programme Testeur */}
+      <section className="tread-pattern border-t border-michelin-gray-line">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <Reveal as="span" className="inline-block">
+            <span className="kicker">Exclusif membres</span>
+          </Reveal>
+          <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
+            Le Programme Testeur Michelin
+          </Reveal>
+          <Reveal as="p" delay={120} className="mt-2 max-w-2xl text-michelin-ink">
+            Réserve ta date d&apos;essai pour les prochains pneus Michelin : tu les reçois en
+            avant-première, tu roules, tu donnes ton avis officiel à la R&amp;D.
+          </Reveal>
+          <ClubTesterProgram userId={userId} />
+        </div>
+      </section>
 
       {/* Gestion adhesion (quitter le club) */}
       <section className="mx-auto max-w-3xl px-6 py-12">

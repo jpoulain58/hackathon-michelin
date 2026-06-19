@@ -33,3 +33,4 @@ supabase/*.local.sql
 
 # .md
 CLAUDE.md
+.vercel

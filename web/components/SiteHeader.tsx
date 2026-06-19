@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
 import {
   ChevronDownIcon,
   Cross2Icon,
@@ -80,12 +81,22 @@ export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) =>
+      setLoggedIn(!!session),
+    );
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -226,10 +237,10 @@ export function SiteHeader() {
                 href="/club"
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-[filter,box-shadow] duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-yellow/60",
                   active
-                    ? "bg-white/70 text-michelin-blue shadow-[inset_0_0_0_1px_rgba(39,80,155,0.14)]"
-                    : "text-michelin-navy/75 hover:bg-white/55 hover:text-michelin-navy",
+                    ? "bg-michelin-yellow text-michelin-navy shadow-[inset_0_0_0_2px_rgba(0,12,52,0.15)]"
+                    : "bg-michelin-yellow text-michelin-navy hover:brightness-110 hover:shadow-[0_4px_16px_-4px_rgba(252,229,0,0.7)]",
                 )}
               >
                 Club
@@ -239,50 +250,59 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <div className="relative">
-            <button
-              type="button"
-              aria-label="Ouvrir le menu du compte"
-              aria-expanded={accountOpen}
-              aria-controls="account-menu"
-              onClick={() => {
-                setOpenMenu(null);
-                setAccountOpen((current) => !current);
-              }}
-              className={cn(
-                "inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/65 text-michelin-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_-20px_rgba(0,12,52,0.55)] transition-[background,color,box-shadow] duration-200 ease-out-strong hover:bg-michelin-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
-                accountOpen && "bg-michelin-yellow",
-              )}
-            >
-              <PersonIcon className="h-5 w-5" />
-            </button>
-
-            <div
-              id="account-menu"
-              className={cn(
-                "liquid-glass-menu absolute right-0 top-full mt-3 w-56 overflow-hidden p-2 transition-[opacity,transform,visibility] duration-200 ease-out-strong",
-                accountOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0",
-              )}
-            >
-              <Link
-                href="/profil"
+          {loggedIn ? (
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Ouvrir le menu du compte"
+                aria-expanded={accountOpen}
+                aria-controls="account-menu"
+                onClick={() => {
+                  setOpenMenu(null);
+                  setAccountOpen((current) => !current);
+                }}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
-                  isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy",
+                  "inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/65 text-michelin-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_-20px_rgba(0,12,52,0.55)] transition-[background,color,box-shadow] duration-200 ease-out-strong hover:bg-michelin-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  accountOpen && "bg-michelin-yellow",
                 )}
               >
-                <PersonIcon className="h-4 w-4" />
-                Profil
-              </Link>
-              <SignOutButton
-                label="Se déconnecter"
-                loadingLabel="Déconnexion..."
-                className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
+                <PersonIcon className="h-5 w-5" />
+              </button>
+              <div
+                id="account-menu"
+                className={cn(
+                  "liquid-glass-menu absolute right-0 top-full mt-3 w-56 overflow-hidden p-2 transition-[opacity,transform,visibility] duration-200 ease-out-strong",
+                  accountOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0",
+                )}
               >
-                <ExitIcon className="h-4 w-4" />
-              </SignOutButton>
+                <Link
+                  href="/profil"
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                    isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy",
+                  )}
+                >
+                  <PersonIcon className="h-4 w-4" />
+                  Profil
+                </Link>
+                <SignOutButton
+                  label="Se déconnecter"
+                  loadingLabel="Déconnexion..."
+                  className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
+                >
+                  <ExitIcon className="h-4 w-4" />
+                </SignOutButton>
+              </div>
             </div>
-          </div>
+          ) : (
+            <Link
+              href="/connexion"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/65 text-michelin-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_-20px_rgba(0,12,52,0.55)] transition-[background,color,box-shadow] duration-200 ease-out-strong hover:bg-michelin-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60"
+              aria-label="Se connecter"
+            >
+              <PersonIcon className="h-5 w-5" />
+            </Link>
+          )}
         </div>
 
         <button
@@ -378,8 +398,10 @@ export function SiteHeader() {
                   onClick={() => setMobileOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-2xl px-3.5 py-3 transition-colors duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
-                    active ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
+                    "rounded-2xl px-3.5 py-3 transition-[filter,box-shadow] duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-yellow/60",
+                    active
+                      ? "bg-michelin-yellow text-michelin-navy shadow-[inset_0_0_0_2px_rgba(0,12,52,0.15)]"
+                      : "bg-michelin-yellow text-michelin-navy hover:brightness-110 hover:shadow-[0_4px_16px_-4px_rgba(252,229,0,0.7)]",
                   )}
                 >
                   <span className="block text-sm font-black">Club</span>
@@ -388,25 +410,38 @@ export function SiteHeader() {
             })()}
 
             <div className="my-1 h-px bg-michelin-navy/10" />
-            <Link
-              href="/profil"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
-                isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
-              )}
-            >
-              <PersonIcon className="h-4 w-4" />
-              Profil
-            </Link>
-            <SignOutButton
-              label="Se déconnecter"
-              loadingLabel="Déconnexion..."
-              onClick={() => setMobileOpen(false)}
-              className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left text-sm font-black text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
-            >
-              <ExitIcon className="h-4 w-4" />
-            </SignOutButton>
+            {loggedIn ? (
+              <>
+                <Link
+                  href="/profil"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                    isActive("/profil") ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
+                  )}
+                >
+                  <PersonIcon className="h-4 w-4" />
+                  Profil
+                </Link>
+                <SignOutButton
+                  label="Se déconnecter"
+                  loadingLabel="Déconnexion..."
+                  onClick={() => setMobileOpen(false)}
+                  className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left text-sm font-black text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60 disabled:opacity-60"
+                >
+                  <ExitIcon className="h-4 w-4" />
+                </SignOutButton>
+              </>
+            ) : (
+              <Link
+                href="/connexion"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-black text-michelin-navy transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60"
+              >
+                <PersonIcon className="h-4 w-4" />
+                Se connecter
+              </Link>
+            )}
           </div>
         </div>
       </nav>
