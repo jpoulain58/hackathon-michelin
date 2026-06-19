@@ -11,8 +11,12 @@ import {
 } from "react-native";
 import type { Session, User } from "@supabase/supabase-js";
 import { Badge, PrimaryButton, ScreenTitle, SectionTitle } from "../components/ui";
+import { ClubChallenges } from "../components/ClubChallenges";
+import { DEFAULT_LOCATIONS, LocationAutocomplete } from "../components/LocationAutocomplete";
+import { TyreAutocomplete } from "../components/TyreAutocomplete";
 import { clubPlan } from "../data";
-import { fetchStravaStats } from "../lib/api";
+import { EVENEMENTS, type Evenement } from "../data/evenements";
+import { fetchStravaStats, formatProductLabel, type ProductOption } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { colors, font, radius, spacing } from "../theme";
 
@@ -52,15 +56,22 @@ function toNumber(text: string): number {
   return Number(text.replace(/[^0-9]/g, "")) || 0;
 }
 
-export function ClubScreen() {
+export function ClubScreen({ onOpenEvenement }: { onOpenEvenement: (event: Evenement) => void }) {
   const [gate, setGate] = useState<Gate>("loading");
   const [session, setSession] = useState<Session | null>(null);
   const [tyres, setTyres] = useState<Tyre[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const [draft, setDraft] = useState({ label: "Pneu avant", model: "", km: 0, lifespan_km: 4000 });
+  const [draft, setDraft] = useState<{
+    label: string;
+    model: ProductOption | null;
+    km: number;
+    lifespan_km: number;
+  }>({ label: "Pneu avant", model: null, km: 0, lifespan_km: 4000 });
   const [adding, setAdding] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const [stravaKm, setStravaKm] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -178,6 +189,7 @@ export function ClubScreen() {
   async function saveTyre(t: Tyre) {
     if (!supabase) return;
     setError(null);
+    setSavingId(t.id);
     const { error } = await supabase
       .from("garage_tyres")
       .update({
@@ -188,7 +200,13 @@ export function ClubScreen() {
         updated_at: new Date().toISOString(),
       })
       .eq("id", t.id);
-    if (error) setError(error.message);
+    setSavingId(null);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setSavedId(t.id);
+    setTimeout(() => setSavedId((id) => (id === t.id ? null : id)), 2000);
   }
 
   async function deleteTyre(id: string) {
@@ -211,7 +229,7 @@ export function ClubScreen() {
       .insert({
         rider_id: session.user.id,
         label: draft.label || "Pneu",
-        model: draft.model || null,
+        model: draft.model ? formatProductLabel(draft.model) : null,
         km: draft.km,
         lifespan_km: draft.lifespan_km || 4000,
       })
@@ -223,7 +241,7 @@ export function ClubScreen() {
       return;
     }
     setTyres((list) => [...list, data as Tyre]);
-    setDraft({ label: "Pneu arriere", model: "", km: 0, lifespan_km: 4000 });
+    setDraft({ label: "Pneu arriere", model: null, km: 0, lifespan_km: 4000 });
   }
 
   async function syncStrava() {
@@ -294,6 +312,22 @@ export function ClubScreen() {
         />
       )}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      {/* Évènements en cours */}
+      <View style={styles.eventsHeader}>
+        <SectionTitle>Évènements en cours</SectionTitle>
+      </View>
+      <View style={{ gap: spacing.md }}>
+        {EVENEMENTS.map((event) => (
+          <Pressable key={event.id} style={styles.eventCard} onPress={() => onOpenEvenement(event)}>
+            <Badge label={event.badge} />
+            <Text style={styles.eventTitle}>{event.title}</Text>
+            <Text style={styles.eventSummary}>{event.summary}</Text>
+            <Text style={styles.eventReward}>🏆 {event.reward}</Text>
+            <Text style={styles.eventDate}>{event.dateRange}</Text>
+          </Pressable>
+        ))}
+      </View>
 
       {/* Mon Garage connecte */}
       <View style={styles.garageHeader}>
@@ -390,7 +424,18 @@ export function ClubScreen() {
                       <Text style={styles.barLabel}>{pct}% de vie restante</Text>
 
                       <View style={styles.tyreActions}>
-                        <SmallButton title="Enregistrer" variant="filled" onPress={() => saveTyre(t)} />
+                        <SmallButton
+                          title={
+                            savingId === t.id
+                              ? "Enregistrement..."
+                              : savedId === t.id
+                                ? "Enregistré ✓"
+                                : "Enregistrer"
+                          }
+                          variant="filled"
+                          onPress={() => saveTyre(t)}
+                          disabled={savingId === t.id}
+                        />
                         {stravaKm !== null ? (
                           <SmallButton
                             title="Km Strava"
@@ -408,17 +453,22 @@ export function ClubScreen() {
             {/* Ajout d'un pneu */}
             <View style={styles.addBox}>
               <Text style={styles.addTitle}>Ajouter un pneu</Text>
-              <Field
-                label="Emplacement"
-                value={draft.label}
-                onChangeText={(v) => setDraft({ ...draft, label: v })}
-              />
-              <Field
-                label="Modèle"
-                value={draft.model}
-                placeholder="MICHELIN Power Cup"
-                onChangeText={(v) => setDraft({ ...draft, model: v })}
-              />
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Emplacement</Text>
+                <LocationAutocomplete
+                  value={draft.label}
+                  onChange={(label) => setDraft({ ...draft, label })}
+                  suggestions={[...DEFAULT_LOCATIONS, ...tyres.map((t) => t.label)]}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Modèle</Text>
+                <TyreAutocomplete
+                  value={draft.model}
+                  onSelect={(model) => setDraft({ ...draft, model })}
+                  placeholder="MICHELIN Power Cup"
+                />
+              </View>
               <View style={styles.fieldRow}>
                 <Field
                   label="Km parcourus"
@@ -442,6 +492,9 @@ export function ClubScreen() {
               />
             </View>
           </View>
+
+          {/* Défis & badges */}
+          <ClubChallenges userId={session?.user.id} />
         </View>
       )}
     </ScrollView>
@@ -452,19 +505,22 @@ function SmallButton({
   title,
   onPress,
   variant = "outline",
+  disabled = false,
 }: {
   title: string;
   onPress: () => void;
   variant?: "filled" | "outline" | "danger";
+  disabled?: boolean;
 }) {
   const filled = variant === "filled";
   return (
     <Pressable
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
       style={({ pressed }) => [
         styles.smallBtn,
         filled && { backgroundColor: colors.navy, borderColor: colors.navy },
-        pressed && { opacity: 0.7 },
+        disabled && { opacity: 0.55 },
+        pressed && !disabled && { opacity: 0.7 },
       ]}
     >
       <Text
@@ -531,6 +587,19 @@ const styles = StyleSheet.create({
   },
   advantageText: { color: colors.text, fontSize: font.body, fontWeight: "500", flex: 1 },
   error: { color: "#D64545", fontSize: font.small, fontWeight: "600", marginTop: spacing.xs },
+  eventsHeader: { marginTop: spacing.md },
+  eventCard: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.white,
+    gap: spacing.xs,
+  },
+  eventTitle: { color: colors.text, fontSize: font.h3, fontWeight: "800", marginTop: spacing.xs },
+  eventSummary: { color: colors.textMuted, fontSize: font.small, lineHeight: 18 },
+  eventReward: { color: colors.navy, fontSize: font.small, fontWeight: "800" },
+  eventDate: { color: colors.textFaint, fontSize: font.tiny, fontWeight: "600" },
   garageHeader: { marginTop: spacing.md },
   lockedCard: {
     borderWidth: 1,

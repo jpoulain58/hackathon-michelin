@@ -2,6 +2,11 @@ import type { Session } from "@supabase/supabase-js";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001").replace(/\/+$/, "");
 
+// Avis (`/api/reviews`, `/api/products`) sont servis par les routes Next.js
+// internes du site web (pas par l'API NestJS) — elles lisent/ecrivent
+// directement en base via supabaseAdmin. On les appelle donc sur l'URL web.
+const WEB_BASE = (process.env.EXPO_PUBLIC_WEB_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+
 export type ProviderId = "strava" | "garmin" | "google";
 
 export type ProviderSummary = {
@@ -298,6 +303,126 @@ export async function fetchStravaStats(accessToken: string): Promise<StravaStats
     totalKm: Math.round(totals?.allRideKm ?? 0),
     rideCount: totals?.allRideCount ?? 0,
   };
+}
+
+export interface ProductOption {
+  id: number;
+  brand: string | null;
+  range: string;
+  designation: string;
+  segment: string | null;
+  cycleType: string | null;
+}
+
+export async function searchProducts(query: string): Promise<ProductOption[]> {
+  const res = await fetch(`${API_BASE}/api/products/search?q=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const data = (await res.json()) as { items: ProductOption[] };
+  return data.items;
+}
+
+export function formatProductLabel(p: Pick<ProductOption, "brand" | "range" | "designation">): string {
+  return [p.brand, p.range, p.designation].filter(Boolean).join(" ");
+}
+
+export interface CommunityStats {
+  ridersCount: number;
+  monthKm: number;
+  totalKm: number;
+}
+
+export const FALLBACK_STATS: CommunityStats = {
+  ridersCount: 12300,
+  monthKm: 2_400_000,
+  totalKm: 48_200_000,
+};
+
+export async function fetchStats(): Promise<CommunityStats> {
+  const res = await fetch(`${API_BASE}/api/community/stats`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as CommunityStats;
+}
+
+export interface ReviewItem {
+  id: number;
+  productId: number;
+  rating: number;
+  text: string;
+  createdAt: string;
+  riderName: string;
+  isAmbassador: boolean;
+  tyre?: string;
+}
+
+export async function fetchRecentReviews(limit = 20): Promise<{ items: ReviewItem[]; count: number }> {
+  const res = await fetch(`${WEB_BASE}/api/reviews?limit=${limit}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as { items: ReviewItem[]; count: number };
+}
+
+export interface ReviewProductOption {
+  id: number;
+  name: string;
+}
+
+export async function fetchReviewProducts(): Promise<ReviewProductOption[]> {
+  const res = await fetch(`${WEB_BASE}/api/products`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ReviewProductOption[] }).items;
+}
+
+export async function submitReview(
+  accessToken: string,
+  input: { productId: number; rating: number; text: string },
+): Promise<void> {
+  const res = await fetch(`${WEB_BASE}/api/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `API ${res.status}`);
+  }
+}
+
+export interface ProCompetition {
+  name: string;
+  tyre: string;
+  date?: string;
+  result?: string;
+  productId?: number;
+}
+
+export interface ProRider {
+  slug: string;
+  name: string;
+  discipline: string;
+  team: string;
+  tyre: string;
+  productId?: number;
+  image: string;
+  bio?: string;
+  competitions: ProCompetition[];
+}
+
+export async function fetchPros(): Promise<ProRider[]> {
+  const res = await fetch(`${API_BASE}/api/community/pros`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return ((await res.json()) as { items: ProRider[] }).items;
+}
+
+export async function fetchPro(slug: string): Promise<ProRider | null> {
+  const res = await fetch(`${API_BASE}/api/community/pros/${slug}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()) as ProRider;
+}
+
+export function formatKm(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} M km`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)} k km`;
+  return `${n} km`;
 }
 
 export async function fetchAuthProfile(

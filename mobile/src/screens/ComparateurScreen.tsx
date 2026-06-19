@@ -31,7 +31,13 @@ const rows: Row[] = [
   { key: "tech", label: "Technos", kind: "text" },
 ];
 
-export function ComparateurScreen({ selectedTyres = [] }: { selectedTyres?: Tyre[] }) {
+export function ComparateurScreen({
+  selectedTyres = [],
+  onOpenCatalogue,
+}: {
+  selectedTyres?: Tyre[];
+  onOpenCatalogue: () => void;
+}) {
   const [tyres, setTyres] = useState<Tyre[]>(selectedTyres.slice(0, MAX_COLUMNS));
   const [retailers, setRetailers] = useState<Retailer[]>([]);
   const [loadingRetailers, setLoadingRetailers] = useState(true);
@@ -98,6 +104,11 @@ export function ComparateurScreen({ selectedTyres = [] }: { selectedTyres?: Tyre
           title="Comparateur"
           subtitle={selectedTyres.length >= 2 ? "Ta selection" : "Produits Michelin du catalogue"}
         />
+
+        <Pressable onPress={onOpenCatalogue} style={styles.catalogueLink} hitSlop={6}>
+          <Text style={styles.catalogueLinkText}>Voir tout le catalogue</Text>
+          <Ionicons name="chevron-forward" size={14} color={colors.navy} />
+        </Pressable>
 
         {loading ? (
           <Spinner />
@@ -350,6 +361,13 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.md,
   },
+  catalogueLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    marginBottom: spacing.lg,
+  },
+  catalogueLinkText: { color: colors.navy, fontSize: font.small, fontWeight: "700" },
   sheetRoot: {
     flex: 1,
     justifyContent: "flex-end",

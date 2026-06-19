@@ -2,13 +2,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal } from "@/components/Reveal";
 import { ClubMembership } from "@/components/ClubMembership";
 import { ClubChallenges } from "@/components/ClubChallenges";
+import { ClubEvents } from "@/components/ClubEvents";
 import { Garage } from "@/components/Garage";
 import { supabase } from "@/lib/supabase/client";
 
@@ -44,30 +44,6 @@ const INVITE_FEATURES = [
     num: "03",
     title: "Avantages exclusifs",
     desc: "2 pneus offerts par an, 10 % de reduction chez nos revendeurs partenaires, badge Testeur sur ton profil.",
-  },
-];
-
-const MEMBER_EXTRAS = [
-  {
-    href: "/trouve-ton-pneu",
-    label: "Pneus recommandes",
-    desc: "Notre algo analyse ta pratique pour te suggerer le pneu ideal a ta discipline et tes conditions.",
-    cta: "Lancer le quiz →",
-    accent: "bg-michelin-yellow",
-  },
-  {
-    href: "/balades",
-    label: "Sorties Club",
-    desc: "Acces aux balades et rides exclusifs organises chaque mois pour les membres du Club Trust Wheels.",
-    cta: "Voir les sorties →",
-    accent: "bg-michelin-blue text-white",
-  },
-  {
-    href: "/communaute",
-    label: "Espace communaute",
-    desc: "Tes avis sont mis en avant en tant que membre, et tu peux repondre aux autres riders.",
-    cta: "Voir la communaute →",
-    accent: "bg-michelin-navy text-white",
   },
 ];
 
@@ -128,11 +104,12 @@ export default function Club() {
     <main className="min-h-screen">
       <SiteHeader />
 
-      {isMember ? (
-        <MemberView displayName={displayName} userId={user?.id} />
-      ) : (
-        <InviteView loading={memberState === "loading"} />
-      )}
+      {isMember ? <MemberBanner displayName={displayName} /> : <InviteHero loading={memberState === "loading"} />}
+
+      <ProgrammeTesteurSection />
+      <ClubEvents />
+
+      {isMember ? <MemberBody userId={user?.id} /> : <InviteBody />}
 
       <SiteFooter />
     </main>
@@ -140,43 +117,85 @@ export default function Club() {
 }
 
 /* ────────────────────────────────────────────────────────── */
+/* Section commune : Programme Testeur (visible par tous)    */
+/* ────────────────────────────────────────────────────────── */
+
+function ProgrammeTesteurSection() {
+  return (
+    <section className="tread-pattern border-t border-michelin-gray-line bg-michelin-gray-light">
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        <Reveal as="span" className="inline-block">
+          <span className="kicker">Exclusif membres</span>
+        </Reveal>
+        <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
+          Le Programme Testeur Michelin
+        </Reveal>
+        <Reveal as="p" delay={120} className="mt-2 max-w-2xl text-michelin-ink">
+          Les membres du Club deviennent les testeurs officiels des nouveaux pneus. Tu roules,
+          tu partages, Michelin ecoute.
+        </Reveal>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {PROGRAMME.map((p, i) => (
+            <Reveal
+              as="article"
+              key={p.titre}
+              delay={i * 80}
+              className="rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft card-interactive"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-michelin-blue text-sm font-black text-white">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 font-bold text-michelin-navy">{p.titre}</h3>
+              <p className="mt-2 text-sm text-michelin-ink">{p.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
 /* Page invitation (non-membre)                              */
 /* ────────────────────────────────────────────────────────── */
 
-function InviteView({ loading }: { loading: boolean }) {
+function InviteHero({ loading }: { loading: boolean }) {
+  return (
+    <section className="relative overflow-hidden text-white">
+      <div className="absolute inset-0 -z-10">
+        <img src="/photos/city-rider.jpg" alt="" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 hero-veil" />
+      </div>
+      <div className="pointer-events-none absolute right-0 top-0 -z-10 h-64 w-64 rounded-full bg-michelin-yellow/20 blur-3xl animate-float" />
+      <div className="mx-auto max-w-3xl px-6 pb-24 pt-32">
+        <Reveal as="span" className="inline-block">
+          <span className="kicker">Le Club</span>
+        </Reveal>
+        <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+          Club Trust Wheels
+        </Reveal>
+        <Reveal as="p" delay={120} className="mt-3 max-w-xl text-lg text-white/85">
+          La fidelite vient apres la preuve. Roule, teste, et fais partie de ceux qui font
+          avancer Michelin.
+        </Reveal>
+        {!loading && (
+          <Reveal delay={180}>
+            <a
+              href="#rejoindre"
+              className="mt-8 inline-flex items-center gap-2 rounded-pill bg-michelin-yellow px-6 py-3 text-sm font-black text-michelin-navy transition-[filter] hover:brightness-95"
+            >
+              Rejoindre le Club
+            </a>
+          </Reveal>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function InviteBody() {
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden text-white">
-        <div className="absolute inset-0 -z-10">
-          <img src="/photos/city-rider.jpg" alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 hero-veil" />
-        </div>
-        <div className="pointer-events-none absolute right-0 top-0 -z-10 h-64 w-64 rounded-full bg-michelin-yellow/20 blur-3xl animate-float" />
-        <div className="mx-auto max-w-3xl px-6 pb-24 pt-32">
-          <Reveal as="span" className="inline-block">
-            <span className="kicker">Le Club</span>
-          </Reveal>
-          <Reveal as="h1" delay={60} className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-            Club Trust Wheels
-          </Reveal>
-          <Reveal as="p" delay={120} className="mt-3 max-w-xl text-lg text-white/85">
-            La fidelite vient apres la preuve. Roule, teste, et fais partie de ceux qui font
-            avancer Michelin.
-          </Reveal>
-          {!loading && (
-            <Reveal delay={180}>
-              <a
-                href="#rejoindre"
-                className="mt-8 inline-flex items-center gap-2 rounded-pill bg-michelin-yellow px-6 py-3 text-sm font-black text-michelin-navy transition-[filter] hover:brightness-95"
-              >
-                Rejoindre le Club
-              </a>
-            </Reveal>
-          )}
-        </div>
-      </section>
-
       {/* 3 avantages phares */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <Reveal as="h2" className="text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
@@ -202,38 +221,6 @@ function InviteView({ loading }: { loading: boolean }) {
       <section id="rejoindre" className="mx-auto max-w-3xl px-6 pb-16">
         <ClubMembership />
       </section>
-
-      {/* Programme Testeur */}
-      <section className="tread-pattern border-t border-michelin-gray-line bg-michelin-gray-light">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <Reveal as="span" className="inline-block">
-            <span className="kicker">Exclusif membres</span>
-          </Reveal>
-          <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
-            Le Programme Testeur Michelin
-          </Reveal>
-          <Reveal as="p" delay={120} className="mt-2 max-w-2xl text-michelin-ink">
-            Les membres du Club deviennent les testeurs officiels des nouveaux pneus. Tu roules,
-            tu partages, Michelin ecoute.
-          </Reveal>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {PROGRAMME.map((p, i) => (
-              <Reveal
-                as="article"
-                key={p.titre}
-                delay={i * 80}
-                className="rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft card-interactive"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-michelin-blue text-sm font-black text-white">
-                  {i + 1}
-                </span>
-                <h3 className="mt-4 font-bold text-michelin-navy">{p.titre}</h3>
-                <p className="mt-2 text-sm text-michelin-ink">{p.desc}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }
@@ -242,29 +229,32 @@ function InviteView({ loading }: { loading: boolean }) {
 /* Page membre                                               */
 /* ────────────────────────────────────────────────────────── */
 
-function MemberView({ displayName, userId }: { displayName: string; userId?: string }) {
+function MemberBanner({ displayName }: { displayName: string }) {
+  return (
+    <section className="relative overflow-hidden bg-michelin-navy text-white">
+      <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-michelin-blue/30 blur-3xl" />
+      <div className="pointer-events-none absolute -right-10 bottom-0 h-48 w-48 rounded-full bg-michelin-yellow/10 blur-3xl" />
+      <div className="mx-auto max-w-5xl px-6 pb-12 pt-32">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="rounded-pill bg-michelin-green/20 px-3 py-1 text-xs font-bold text-michelin-green ring-1 ring-michelin-green/40">
+            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-michelin-green" />
+            Membre actif
+          </span>
+        </div>
+        <Reveal as="h1" delay={60} className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+          Bonjour, {displayName}
+        </Reveal>
+        <Reveal as="p" delay={120} className="mt-2 text-white/70">
+          Bienvenue dans ton espace Club Trust Wheels.
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function MemberBody({ userId }: { userId?: string }) {
   return (
     <>
-      {/* Bandeau membre */}
-      <section className="relative overflow-hidden bg-michelin-navy text-white">
-        <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-michelin-blue/30 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 bottom-0 h-48 w-48 rounded-full bg-michelin-yellow/10 blur-3xl" />
-        <div className="mx-auto max-w-5xl px-6 pb-12 pt-32">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-pill bg-michelin-green/20 px-3 py-1 text-xs font-bold text-michelin-green ring-1 ring-michelin-green/40">
-              <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-michelin-green" />
-              Membre actif
-            </span>
-          </div>
-          <Reveal as="h1" delay={60} className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-            Bonjour, {displayName}
-          </Reveal>
-          <Reveal as="p" delay={120} className="mt-2 text-white/70">
-            Bienvenue dans ton espace Club Trust Wheels.
-          </Reveal>
-        </div>
-      </section>
-
       {/* Mon Garage */}
       <section className="mx-auto max-w-3xl px-6 py-16">
         <Reveal as="span" className="inline-block">
@@ -284,64 +274,6 @@ function MemberView({ displayName, userId }: { displayName: string; userId?: str
 
       {/* Défis & badges */}
       <ClubChallenges userId={userId} />
-
-      {/* Extras membres */}
-      <section className="border-t border-michelin-gray-line bg-michelin-gray-light">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <Reveal as="h2" className="text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
-            Tes autres avantages membres
-          </Reveal>
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
-            {MEMBER_EXTRAS.map((f, i) => (
-              <Reveal key={f.href} delay={i * 80}>
-                <Link
-                  href={f.href}
-                  className="group flex h-full flex-col rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft transition-[box-shadow,transform] duration-200 hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <h3 className="font-bold text-michelin-navy">{f.label}</h3>
-                  <p className="mt-2 flex-1 text-sm text-michelin-ink">{f.desc}</p>
-                  <span
-                    className={`mt-5 inline-block self-start rounded-pill px-3 py-1.5 text-xs font-bold transition-[filter] group-hover:brightness-95 ${f.accent}`}
-                  >
-                    {f.cta}
-                  </span>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Programme Testeur */}
-      <section className="tread-pattern border-t border-michelin-gray-line">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <Reveal as="span" className="inline-block">
-            <span className="kicker">Exclusif membres</span>
-          </Reveal>
-          <Reveal as="h2" delay={60} className="mt-4 text-2xl font-bold tracking-tight text-michelin-navy sm:text-3xl">
-            Le Programme Testeur Michelin
-          </Reveal>
-          <Reveal as="p" delay={120} className="mt-2 max-w-2xl text-michelin-ink">
-            En tant que membre, tu peux etre selectionne pour tester les nouveaux pneus en avant-premiere.
-          </Reveal>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {PROGRAMME.map((p, i) => (
-              <Reveal
-                as="article"
-                key={p.titre}
-                delay={i * 80}
-                className="rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft card-interactive"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-michelin-blue text-sm font-black text-white">
-                  {i + 1}
-                </span>
-                <h3 className="mt-4 font-bold text-michelin-navy">{p.titre}</h3>
-                <p className="mt-2 text-sm text-michelin-ink">{p.desc}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Gestion adhesion (quitter le club) */}
       <section className="mx-auto max-w-3xl px-6 py-12">
