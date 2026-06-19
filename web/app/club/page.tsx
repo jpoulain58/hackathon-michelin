@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -45,6 +46,30 @@ const INVITE_FEATURES = [
     num: "03",
     title: "Avantages exclusifs",
     desc: "2 pneus offerts par an, 10 % de reduction chez nos revendeurs partenaires, badge Testeur sur ton profil.",
+  },
+];
+
+const MEMBER_EXTRAS = [
+  {
+    href: "/trouve-ton-pneu",
+    label: "Pneus recommandes",
+    desc: "Notre algo analyse ta pratique pour te suggerer le pneu ideal a ta discipline et tes conditions.",
+    cta: "Lancer le quiz →",
+    accent: "bg-michelin-yellow",
+  },
+  {
+    href: "/balades",
+    label: "Sorties Club",
+    desc: "Acces aux balades et rides exclusifs organises chaque mois pour les membres du Club Trust Wheels.",
+    cta: "Voir les sorties →",
+    accent: "bg-michelin-blue text-white",
+  },
+  {
+    href: "/communaute",
+    label: "Espace communaute",
+    desc: "Tes avis sont mis en avant en tant que membre, et tu peux repondre aux autres riders.",
+    cta: "Voir la communaute →",
+    accent: "bg-michelin-navy text-white",
   },
 ];
 
