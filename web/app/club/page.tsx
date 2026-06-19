@@ -10,6 +10,7 @@ import { Reveal } from "@/components/Reveal";
 import { ClubMembership } from "@/components/ClubMembership";
 import { ClubChallenges } from "@/components/ClubChallenges";
 import { Garage } from "@/components/Garage";
+import { ClubTesterProgram } from "@/components/ClubTesterProgram";
 import { supabase } from "@/lib/supabase/client";
 
 type MemberState = "loading" | "anonymous" | "guest" | "member";
@@ -322,24 +323,10 @@ function MemberView({ displayName, userId }: { displayName: string; userId?: str
             Le Programme Testeur Michelin
           </Reveal>
           <Reveal as="p" delay={120} className="mt-2 max-w-2xl text-michelin-ink">
-            En tant que membre, tu peux etre selectionne pour tester les nouveaux pneus en avant-premiere.
+            Réserve ta date d&apos;essai pour les prochains pneus Michelin : tu les reçois en
+            avant-première, tu roules, tu donnes ton avis officiel à la R&amp;D.
           </Reveal>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {PROGRAMME.map((p, i) => (
-              <Reveal
-                as="article"
-                key={p.titre}
-                delay={i * 80}
-                className="rounded-2xl border border-michelin-gray-line bg-white p-6 shadow-soft card-interactive"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-michelin-blue text-sm font-black text-white">
-                  {i + 1}
-                </span>
-                <h3 className="mt-4 font-bold text-michelin-navy">{p.titre}</h3>
-                <p className="mt-2 text-sm text-michelin-ink">{p.desc}</p>
-              </Reveal>
-            ))}
-          </div>
+          <ClubTesterProgram userId={userId} />
         </div>
       </section>
 
