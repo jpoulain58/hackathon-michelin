@@ -181,21 +181,10 @@ export function AuthPanel() {
               provider.id,
             )}`}
           >
-            {provider.id === "garmin" ? (
-              // Garmin = logotype (wordmark), affiché en blanc et centré.
-              <img
-                src="https://cdn.simpleicons.org/garmin/ffffff"
-                alt="Garmin"
-                className="h-[18px] w-auto"
-              />
-            ) : (
-              <>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                  <BrandMark id={provider.id} />
-                </span>
-                <span>{provider.label}</span>
-              </>
-            )}
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+              <BrandMark id={provider.id} />
+            </span>
+            <span>{provider.label}</span>
             {loading === provider.id ? (
               <span className="absolute right-5">
                 <Spinner id={provider.id} />
