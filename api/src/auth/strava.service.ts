@@ -183,7 +183,9 @@ export class StravaService {
     authorizeUrl.searchParams.set("client_id", clientId);
     authorizeUrl.searchParams.set("redirect_uri", this.getRedirectUri());
     authorizeUrl.searchParams.set("response_type", "code");
-    authorizeUrl.searchParams.set("approval_prompt", "auto");
+    // Force Strava to show the authorization screen instead of silently reusing
+    // the previous consent, which feels like a cached login to users.
+    authorizeUrl.searchParams.set("approval_prompt", "force");
     authorizeUrl.searchParams.set("scope", process.env.STRAVA_SCOPES ?? DEFAULT_SCOPES);
     authorizeUrl.searchParams.set("state", state);
 
