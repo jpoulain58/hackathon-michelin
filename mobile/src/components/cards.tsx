@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, font, radius, shadow, spacing } from "../theme";
 import type { Review, Ride, Tyre } from "../types";
-import { Badge, RemoteImage, Stars, TyreDonut } from "./ui";
+import { RideMapPreview } from "./RideMapPreview";
+import { Badge, Stars, TyreDonut } from "./ui";
 
 /* ------------------------------------------------- Carte pneu mise en avant */
 
@@ -97,9 +98,9 @@ export function TyreMiniCard({ tyre }: { tyre: Tyre }) {
 
 /* ---------------------------------------------------------- Carte avis */
 
-export function ReviewCard({ review }: { review: Review }) {
+export function ReviewCard({ review, onPress }: { review: Review; onPress?: () => void }) {
   return (
-    <View style={styles.review}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.review, pressed && styles.reviewPressed]}>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{review.author}</Text>
       </View>
@@ -124,7 +125,8 @@ export function ReviewCard({ review }: { review: Review }) {
           {" »"}
         </Text>
       </View>
-    </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.navy} />
+    </Pressable>
   );
 }
 
@@ -139,7 +141,7 @@ export function RideCard({
 }) {
   return (
     <Pressable onPress={onPress} style={styles.ride}>
-      <RemoteImage uri={ride.mapUrl} style={styles.rideMap} fallback="#DCE6D8" />
+      <RideMapPreview points={ride.pts} style={styles.rideMap} />
       <View style={styles.rideBody}>
         <Text style={styles.rideTitle}>{ride.title}</Text>
         <View style={styles.statsRow}>
@@ -227,12 +229,17 @@ const styles = StyleSheet.create({
   },
   review: {
     flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
     padding: spacing.md,
     backgroundColor: colors.white,
+  },
+  reviewPressed: {
+    borderColor: colors.navy,
+    backgroundColor: "#F4F7FC",
   },
   avatar: {
     width: 38,

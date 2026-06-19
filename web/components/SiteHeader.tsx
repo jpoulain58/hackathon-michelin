@@ -111,7 +111,7 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-3 z-50 px-3 transition-transform duration-300 ease-out-strong sm:px-6",
+        "fixed inset-x-0 top-3 z-[1200] px-3 transition-transform duration-300 ease-out-strong sm:px-6",
         scrolled ? "translate-y-0" : "translate-y-0",
       )}
     >

@@ -1,8 +1,7 @@
 /**
  * Donnees seed de la communaute Michelin Trust Wheels (compteurs collectifs,
  * pneus des pros). Les avis riders sont stockes en base (table `reviews`,
- * cf. supabase/reviews.sql) et servis par les routes web/app/api/reviews,
- * pas par ce module.
+ * cf. supabase/reviews.sql) et servis par les routes API, pas par ce module.
  */
 
 export interface CommunityStats {

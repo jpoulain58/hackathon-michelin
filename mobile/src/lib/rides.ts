@@ -23,10 +23,10 @@ export function formatRideDuration(seconds: number): string {
 /** Carte statique centree sur la balade : pas de trace dessine (pas de lib carto interactive sur mobile). */
 export function apiRideToMobileRide(api: ApiRide): Ride {
   const [lat, lng] = centroid(api.pts);
-  const recommendedTyres: Tyre[] = api.tyreDetail
+  const recommendedTyres: Tyre[] = api.tyreDetail?.productId
     ? [
         {
-          id: `${api.id}-tyre`,
+          id: String(api.tyreDetail.productId),
           name: `${api.tyreDetail.name} ${api.tyreDetail.designation}`.trim(),
           weight: `${api.tyreDetail.weightG} g`,
           dimensions: `${api.tyreDetail.dimensions} dimensions disponibles`,
@@ -44,6 +44,7 @@ export function apiRideToMobileRide(api: ApiRide): Ride {
     duration: formatRideDuration(api.durationSeconds),
     tags: api.tags,
     mapUrl: mapImageUrl(lat, lng),
+    pts: api.pts,
     summary: api.description,
     startInstructions: api.instructions,
     proTip: api.proTip ?? { author: "", text: "" },

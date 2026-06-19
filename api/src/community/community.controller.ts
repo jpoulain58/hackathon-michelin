@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, NotFoundException, Param } from "@nestjs/common";
+import { Controller, Get, Inject, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CommunityService } from "./community.service";
 
@@ -11,6 +11,12 @@ export class CommunityController {
   @Get("stats")
   stats() {
     return this.community.stats();
+  }
+
+  @ApiOperation({ summary: "Avis riders recents lies aux produits BDD" })
+  @Get("reviews")
+  reviews(@Query("limit") limit?: string) {
+    return this.community.reviews(limit ? Number.parseInt(limit, 10) : undefined);
   }
 
   @ApiOperation({ summary: "Pneus des pros (benchmark communautaire)" })

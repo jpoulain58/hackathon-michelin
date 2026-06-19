@@ -14,6 +14,7 @@ import { decodePolyline, type LatLng } from "./polyline";
 const realtimeTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 export interface TyreDetail {
+  productId?: number | null;
   name: string;
   designation: string;
   weightG: number;
@@ -97,6 +98,14 @@ type RideRow = {
   created_at: string;
 };
 
+type ProductLookupRow = {
+  id: number;
+  brand: string | null;
+  range: string | null;
+  designation: string | null;
+  weight_g: number | null;
+};
+
 /** Estimation grossiere : ~40 kcal/km a velo, suffisant pour l'affichage demo. */
 const KCAL_PER_KM = 40;
 
@@ -134,7 +143,8 @@ export class RidesService {
 
     const { data, error } = await query;
     if (error) throw new InternalServerErrorException(`Impossible de lire les balades: ${error.message}`);
-    return ((data ?? []) as RideRow[]).map(toView);
+    const rows = await this.withRecommendedTyreProducts((data ?? []) as RideRow[]);
+    return rows.map(toView);
   }
 
   async getById(id: string): Promise<RideView> {
@@ -147,7 +157,8 @@ export class RidesService {
       .maybeSingle();
     if (error) throw new InternalServerErrorException(`Impossible de lire la balade: ${error.message}`);
     if (!data) throw new NotFoundException("Balade introuvable.");
-    return toView(data as RideRow);
+    const [row] = await this.withRecommendedTyreProducts([data as RideRow]);
+    return toView(row);
   }
 
   async createFromStrava(userId: string, activityId: string, form: CreateRideForm): Promise<RideView> {
@@ -320,7 +331,36 @@ export class RidesService {
       throw new InternalServerErrorException(`Impossible de créer la balade: ${error.message}`);
     }
 
-    return toView(data as RideRow);
+    const [row] = await this.withRecommendedTyreProducts([data as RideRow]);
+    return toView(row);
+  }
+
+  private async withRecommendedTyreProducts(rows: RideRow[]): Promise<RideRow[]> {
+    const rowsWithTyre = rows.filter((row) => row.tyre_detail);
+    if (rowsWithTyre.length === 0) return rows;
+
+    const products = await this.listProductLookupRows();
+    if (products.length === 0) return rows.map((row) => (row.tyre_detail ? { ...row, tyre_detail: null } : row));
+    const dimensionsByRange = countDimensionsByRange(products);
+
+    return rows.map((row) => {
+      if (!row.tyre_detail) return row;
+
+      const product = findRecommendedTyreProduct(row.tyre_detail, products);
+      if (!product) return { ...row, tyre_detail: null };
+
+      return {
+        ...row,
+        tyre_detail: toCatalogTyreDetail(product, dimensionsByRange),
+      };
+    });
+  }
+
+  private async listProductLookupRows(): Promise<ProductLookupRow[]> {
+    const client = this.requireClient();
+    const { data, error } = await client.from("products").select("id, brand, range, designation, weight_g").limit(500);
+    if (error) return [];
+    return (data ?? []) as ProductLookupRow[];
   }
 
   private requireClient(): SupabaseClient {
@@ -331,6 +371,69 @@ export class RidesService {
     }
     return this.supabase;
   }
+}
+
+function normalizeSearchText(value: string | null | undefined): string {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function searchableTokens(value: string | null | undefined): string[] {
+  return normalizeSearchText(value)
+    .split(" ")
+    .filter((token) => token.length >= 3 && token !== "michelin");
+}
+
+function findRecommendedTyreProduct(detail: TyreDetail, products: ProductLookupRow[]): ProductLookupRow | null {
+  if (detail.productId != null) {
+    return products.find((product) => product.id === Number(detail.productId)) ?? null;
+  }
+
+  const nameTokens = searchableTokens(detail.name);
+  const designationTokens = searchableTokens(detail.designation);
+  const allTokens = [...nameTokens, ...designationTokens];
+
+  const scored = products
+    .map((product) => {
+      const text = normalizeSearchText(`${product.brand ?? ""} ${product.range ?? ""} ${product.designation ?? ""}`);
+      const score = allTokens.reduce((sum, token) => sum + (text.includes(token) ? 1 : 0), 0);
+      const hasNameMatch = nameTokens.length === 0 || nameTokens.some((token) => text.includes(token));
+      const hasDesignationMatch =
+        designationTokens.length === 0 || designationTokens.some((token) => text.includes(token));
+      return { product, score, hasNameMatch, hasDesignationMatch };
+    })
+    .filter(({ score, hasNameMatch, hasDesignationMatch }) => score > 0 && hasNameMatch && hasDesignationMatch)
+    .sort((a, b) => b.score - a.score);
+
+  return scored[0]?.product ?? null;
+}
+
+function toCatalogTyreDetail(product: ProductLookupRow, dimensionsByRange: Map<string, number>): TyreDetail {
+  const range = product.range?.trim() || "Pneu Michelin";
+  const brand = product.brand?.trim();
+  const name = brand && !range.toLowerCase().includes(brand.toLowerCase()) ? `${brand} ${range}` : range;
+
+  return {
+    productId: product.id,
+    name,
+    designation: product.designation?.trim() || "",
+    weightG: Number(product.weight_g ?? 0),
+    dimensions: dimensionsByRange.get(normalizeSearchText(range)) ?? 1,
+  };
+}
+
+function countDimensionsByRange(products: ProductLookupRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    const key = normalizeSearchText(product.range);
+    if (!key) continue;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
 }
 
 function toView(row: RideRow): RideView {

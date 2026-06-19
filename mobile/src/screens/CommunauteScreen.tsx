@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import {
   Dimensions,
+  Linking,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Pressable,
@@ -15,7 +16,7 @@ import {
 } from "react-native";
 import { BaladeFormModal } from "../components/BaladeFormModal";
 import { CommunityReviewForm } from "../components/CommunityReviewForm";
-import { RideCard } from "../components/cards";
+import { ReviewCard, RideCard } from "../components/cards";
 import { PrimaryButton, Pips, RemoteImage, ScreenTitle, SectionTitle } from "../components/ui";
 import { news } from "../data";
 import {
@@ -25,6 +26,7 @@ import {
   fetchRides,
   fetchStats,
   formatKm,
+  productWebUrl,
   FALLBACK_STATS,
   type CommunityStats,
   type CreateRideForm,
@@ -33,14 +35,10 @@ import {
 } from "../lib/api";
 import { apiRideToMobileRide } from "../lib/rides";
 import { colors, font, radius, spacing } from "../theme";
-import type { Ride } from "../types";
+import type { Review, Ride } from "../types";
 
 const GAP = spacing.md;
 const CARD_W = Dimensions.get("window").width - spacing.lg * 2;
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-}
 
 export function CommunauteScreen({
   session,
@@ -54,14 +52,15 @@ export function CommunauteScreen({
   onOpenPro: (pro: ProRider) => void;
 }) {
   const [newsIndex, setNewsIndex] = useState(0);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [rides, setRides] = useState<Ride[]>([]);
   const [loadingRides, setLoadingRides] = useState(true);
   const [gpxModalOpen, setGpxModalOpen] = useState(false);
   const [pickedGpx, setPickedGpx] = useState<{ name: string; xml: string } | null>(null);
-
   const [stats, setStats] = useState<CommunityStats>(FALLBACK_STATS);
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [reviewCount, setReviewCount] = useState(0);
   const [pros, setPros] = useState<ProRider[]>([]);
 
   const loadRides = useCallback(() => {
@@ -73,20 +72,25 @@ export function CommunauteScreen({
   }, []);
 
   const loadReviews = useCallback(() => {
+    setLoadingReviews(true);
     fetchRecentReviews(10)
       .then(({ items, count }) => {
-        setReviews(items);
+        setReviews(items.map(apiReviewToMobileReview));
         setReviewCount(count);
       })
-      .catch(() => {});
+      .catch(() => {
+        setReviews([]);
+        setReviewCount(0);
+      })
+      .finally(() => setLoadingReviews(false));
   }, []);
 
   useEffect(() => {
-    loadRides();
     loadReviews();
+    loadRides();
     fetchStats().then(setStats).catch(() => {});
     fetchPros().then(setPros).catch(() => {});
-  }, [loadRides, loadReviews]);
+  }, [loadReviews, loadRides]);
 
   const onScroll =
     (setter: (i: number) => void) =>
@@ -110,30 +114,19 @@ export function CommunauteScreen({
   }
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <ScreenTitle title="Communauté" />
 
-      {/* Actualités */}
       <SectionTitle>Actualités</SectionTitle>
 
-      {/* A la une : teaser nouveau pneu (ouvre l'ecran de reservation) */}
       <Pressable onPress={onOpenPneuTest} style={{ marginBottom: spacing.md }}>
         <RemoteImage uri="https://picsum.photos/seed/powerpulse/1000/500" style={styles.teaser}>
-          <LinearGradient
-            colors={["rgba(11,18,32,0.1)", "rgba(11,18,32,0.9)"]}
-            style={StyleSheet.absoluteFill}
-          />
+          <LinearGradient colors={["rgba(11,18,32,0.1)", "rgba(11,18,32,0.9)"]} style={StyleSheet.absoluteFill} />
           <View style={styles.teaserBadge}>
             <Text style={styles.teaserBadgeText}>BIENTÔT · JUILLET 2026</Text>
           </View>
           <Text style={styles.newsTitle}>MICHELIN Power Pulse arrive</Text>
-          <Text style={styles.teaserSub}>
-            Membres du Club : réservez votre essai en avant-première →
-          </Text>
+          <Text style={styles.teaserSub}>Membres du Club : réservez votre essai en avant-première →</Text>
         </RemoteImage>
       </Pressable>
 
@@ -147,22 +140,14 @@ export function CommunauteScreen({
         onMomentumScrollEnd={onScroll(setNewsIndex)}
       >
         {news.map((item) => (
-          <RemoteImage
-            key={item.id}
-            uri={item.image}
-            style={{ ...styles.newsCard, width: CARD_W }}
-          >
-            <LinearGradient
-              colors={["rgba(11,18,32,0.05)", "rgba(11,18,32,0.85)"]}
-              style={StyleSheet.absoluteFill}
-            />
+          <RemoteImage key={item.id} uri={item.image} style={{ ...styles.newsCard, width: CARD_W }}>
+            <LinearGradient colors={["rgba(11,18,32,0.05)", "rgba(11,18,32,0.85)"]} style={StyleSheet.absoluteFill} />
             <Text style={styles.newsTitle}>{item.title}</Text>
           </RemoteImage>
         ))}
       </ScrollView>
       <Pips count={news.length} active={newsIndex} />
 
-      {/* Compteurs collectifs */}
       <View style={styles.statsRow}>
         <Stat value={formatKm(stats.monthKm)} label="roulés ce mois" />
         <Stat value={stats.ridersCount.toLocaleString("fr-FR")} label="riders" />
@@ -170,35 +155,35 @@ export function CommunauteScreen({
         <Stat value={formatKm(stats.totalKm)} label="cumul communauté" />
       </View>
 
-      {/* Derniers avis */}
       <View style={styles.sectionSpacer}>
         <SectionTitle>Les derniers avis</SectionTitle>
       </View>
       <CommunityReviewForm session={session} onSubmitted={loadReviews} />
-      <View style={{ gap: spacing.md, marginTop: spacing.md }}>
-        {reviews.map((r) => (
-          <View key={r.id} style={styles.reviewCard}>
-            <View style={styles.reviewHeader}>
-              <Text style={styles.reviewAuthor}>{r.riderName}</Text>
-              {r.isAmbassador ? (
-                <View style={styles.ambassadorBadge}>
-                  <Text style={styles.ambassadorBadgeText}>Ambassadeur</Text>
-                </View>
-              ) : null}
-            </View>
-            {r.tyre ? <Text style={styles.reviewTyre}>{r.tyre}</Text> : null}
-            <View style={styles.ratingRow}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <View key={n} style={[styles.ratingDot, n <= r.rating && styles.ratingDotActive]} />
-              ))}
-            </View>
-            <Text style={styles.reviewText}>« {r.text} »</Text>
-            <Text style={styles.reviewDate}>{formatDate(r.createdAt)}</Text>
-          </View>
-        ))}
-      </View>
+      {loadingReviews ? (
+        <Text style={styles.emptyText}>Chargement des avis…</Text>
+      ) : reviews.length === 0 ? (
+        <Text style={styles.emptyText}>Aucun avis publié pour le moment.</Text>
+      ) : (
+        <>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_W + GAP}
+            decelerationRate="fast"
+            contentContainerStyle={styles.carousel}
+            onMomentumScrollEnd={onScroll(setReviewIndex)}
+          >
+            {reviews.map((review) => (
+              <View key={review.id} style={{ width: CARD_W }}>
+                <ReviewCard review={review} onPress={() => Linking.openURL(productWebUrl(review.productId))} />
+              </View>
+            ))}
+          </ScrollView>
+          <Pips count={reviews.length} active={reviewIndex} />
+        </>
+      )}
 
-      {/* Pneus des pros */}
       <View style={styles.sectionSpacer}>
         <SectionTitle>Les pneus des pros</SectionTitle>
       </View>
@@ -206,10 +191,7 @@ export function CommunauteScreen({
         {pros.map((p) => (
           <Pressable key={p.slug} onPress={() => onOpenPro(p)} style={styles.proCard}>
             <RemoteImage uri={p.image} style={StyleSheet.absoluteFill} fallback={colors.navyDark} />
-            <LinearGradient
-              colors={["rgba(11,18,32,0.1)", "rgba(11,18,32,0.92)"]}
-              style={StyleSheet.absoluteFill}
-            />
+            <LinearGradient colors={["rgba(11,18,32,0.1)", "rgba(11,18,32,0.92)"]} style={StyleSheet.absoluteFill} />
             <Text style={styles.proDiscipline}>{p.discipline}</Text>
             <Text style={styles.proName}>{p.name}</Text>
             <Text style={styles.proTyre}>{p.tyre}</Text>
@@ -217,7 +199,6 @@ export function CommunauteScreen({
         ))}
       </ScrollView>
 
-      {/* Balades */}
       <View style={styles.sectionSpacer}>
         <SectionTitle>Les balades de la semaine</SectionTitle>
       </View>
@@ -256,6 +237,28 @@ function Stat({ value, label }: { value: string; label: string }) {
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
+}
+
+function apiReviewToMobileReview(review: ReviewItem): Review {
+  return {
+    id: String(review.id),
+    productId: review.productId,
+    author: initials(review.riderName),
+    product: review.tyre ?? "Pneu Michelin",
+    rating: review.rating,
+    verified: true,
+    text: review.text,
+  };
+}
+
+function initials(name: string): string {
+  const value = name.trim() || "Rider Michelin";
+  return value
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 const styles = StyleSheet.create({
@@ -303,34 +306,6 @@ const styles = StyleSheet.create({
   },
   statValue: { color: colors.yellow, fontSize: font.h2, fontWeight: "900" },
   statLabel: { color: "rgba(255,255,255,0.7)", fontSize: font.tiny, marginTop: 2 },
-  reviewCard: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    gap: 4,
-  },
-  reviewHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  reviewAuthor: { color: colors.text, fontSize: font.body, fontWeight: "800" },
-  ambassadorBadge: {
-    backgroundColor: colors.chipBg,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  ambassadorBadgeText: {
-    color: colors.navy,
-    fontSize: font.tiny,
-    fontWeight: "800",
-    textTransform: "uppercase",
-  },
-  reviewTyre: { color: colors.navy, fontSize: font.small, fontWeight: "700" },
-  ratingRow: { flexDirection: "row", gap: 4, marginTop: 2 },
-  ratingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dotEmpty },
-  ratingDotActive: { backgroundColor: colors.navy },
-  reviewText: { color: colors.textBody, fontSize: font.small, marginTop: 4 },
-  reviewDate: { color: colors.textFaint, fontSize: font.tiny, marginTop: 4 },
   proCard: {
     width: 170,
     height: 210,

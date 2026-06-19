@@ -273,31 +273,36 @@ export default async function Accueil() {
           />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {reviews.map((r, i) => (
-              <Reveal as="article" key={r.id} delay={(i % 3) * 70} className="rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft card-interactive">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-michelin-navy">{r.riderName}</span>
-                  {r.isAmbassador && (
-                    <span className="rounded-pill bg-michelin-yellow/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-michelin-navy">
-                      Ambassadeur
-                    </span>
-                  )}
-                </div>
-                {r.tyre && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <TyreImage kind={kindFromText(r.tyre)} className="h-7 w-7 shrink-0" />
-                    <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
+              <Reveal key={r.id} delay={(i % 3) * 70}>
+                <Link
+                  href={`/produits/${r.productId}`}
+                  className="block rounded-2xl border border-michelin-gray-line bg-white p-5 shadow-soft card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-michelin-navy">{r.riderName}</span>
+                    {r.isAmbassador && (
+                      <span className="rounded-pill bg-michelin-yellow/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-michelin-navy">
+                        Ambassadeur
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="mt-2 flex items-center gap-1" aria-label={`Avis, ${r.rating} sur 5`}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <span
-                      key={n}
-                      className={`h-2 w-2 rounded-full ${n <= r.rating ? "bg-michelin-blue" : "bg-michelin-gray-line"}`}
-                    />
-                  ))}
-                </div>
-                <p className="mt-2 text-sm text-michelin-navy">&laquo; {r.text} &raquo;</p>
-                <p className="mt-3 text-xs text-michelin-ink/50">{formatDate(r.createdAt)}</p>
+                  {r.tyre && (
+                    <div className="mt-1 flex items-center gap-2">
+                      <TyreImage kind={kindFromText(r.tyre)} className="h-7 w-7 shrink-0" />
+                      <span className="text-sm font-semibold text-michelin-blue">{r.tyre}</span>
+                    </div>
+                  )}
+                  <div className="mt-2 flex items-center gap-1" aria-label={`Avis, ${r.rating} sur 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span
+                        key={n}
+                        className={`h-2 w-2 rounded-full ${n <= r.rating ? "bg-michelin-blue" : "bg-michelin-gray-line"}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-2 text-sm text-michelin-navy">&laquo; {r.text} &raquo;</p>
+                  <p className="mt-3 text-xs text-michelin-ink/50">{formatDate(r.createdAt)}</p>
+                </Link>
               </Reveal>
             ))}
           </div>

@@ -1,11 +1,9 @@
 import type { Session } from "@supabase/supabase-js";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001").replace(/\/+$/, "");
-
-// Avis (`/api/reviews`, `/api/products`) sont servis par les routes Next.js
-// internes du site web (pas par l'API NestJS) — elles lisent/ecrivent
-// directement en base via supabaseAdmin. On les appelle donc sur l'URL web.
-const WEB_BASE = (process.env.EXPO_PUBLIC_WEB_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+export const WEB_BASE = (
+  process.env.EXPO_PUBLIC_WEB_URL ?? API_BASE.replace(/:3001$/, ":3000")
+).replace(/\/+$/, "");
 
 export type ProviderId = "strava" | "garmin" | "google";
 
@@ -153,6 +151,10 @@ export async function fetchRetailers(params: { country?: string; limit?: number 
   return ((await res.json()) as { items: Retailer[] }).items;
 }
 
+export function productWebUrl(productId: number): string {
+  return `${WEB_BASE}/produits/${productId}`;
+}
+
 export async function syncRider(session: Session | null): Promise<void> {
   if (!session?.access_token) return;
 
@@ -191,6 +193,7 @@ export async function fetchStravaTyreProfile(
 }
 
 export interface RideTyreDetail {
+  productId?: number | null;
   name: string;
   designation: string;
   weightG: number;
@@ -231,9 +234,9 @@ export interface CreateRideForm {
   landscape: string;
   difficulty?: string;
   tags?: string[];
-  tyre: string;
-  tyreDetail: RideTyreDetail;
-  proTip: RideProTip;
+  tyre?: string;
+  tyreDetail?: RideTyreDetail;
+  proTip?: RideProTip;
 }
 
 export async function fetchRides(): Promise<ApiRide[]> {
@@ -355,7 +358,7 @@ export interface ReviewItem {
 }
 
 export async function fetchRecentReviews(limit = 20): Promise<{ items: ReviewItem[]; count: number }> {
-  const res = await fetch(`${WEB_BASE}/api/reviews?limit=${limit}`);
+  const res = await fetch(`${API_BASE}/api/community/reviews?limit=${limit}`);
   if (!res.ok) throw new Error(`API ${res.status}`);
   return (await res.json()) as { items: ReviewItem[]; count: number };
 }

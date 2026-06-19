@@ -118,32 +118,7 @@ export const compareRows: {
   { key: "avis", label: "Avis vérifiés", kind: "text" },
 ];
 
-export const reviews: Review[] = [
-  {
-    id: "rev-1",
-    author: "MR",
-    product: "MICHELIN Power Cup · 700×25C",
-    rating: 5,
-    verified: true,
-    text: "Rendement bluffant, usure minime après 3 000 km, je suis conquis.",
-  },
-  {
-    id: "rev-2",
-    author: "JL",
-    product: "MICHELIN Power Gravel · 700×40C",
-    rating: 4,
-    verified: true,
-    text: "Accroche impressionnante sur chemins humides, un poil bruyant sur route.",
-  },
-  {
-    id: "rev-3",
-    author: "SC",
-    product: "MICHELIN Lithion 4 · 700×28C",
-    rating: 4,
-    verified: true,
-    text: "Excellent rapport qualité/prix pour l'entraînement quotidien.",
-  },
-];
+export const reviews: Review[] = [];
 
 export const news: NewsItem[] = [
   {
@@ -173,6 +148,14 @@ export const rides: Ride[] = [
     duration: "3h30",
     tags: ["Loisir", "Montagne", "Débutant"],
     mapUrl: mapImage(45.955, 6.07),
+    pts: [
+      [45.944, 6.047],
+      [45.952, 6.059],
+      [45.966, 6.071],
+      [45.959, 6.092],
+      [45.947, 6.081],
+      [45.944, 6.047],
+    ],
     summary:
       "Une boucle vallonnée au-dessus du bassin annécien, alternant petites routes tranquilles et chemins roulants. Idéale pour une sortie matinale avec de beaux points de vue sur le lac.",
     startInstructions:
@@ -181,7 +164,7 @@ export const rides: Ride[] = [
       author: "Pierrot",
       text: "La descente après le col est rapide et caillouteuse : garde une pression modérée pour le grip et anticipe les freinages.",
     },
-    recommendedTyres: [tyres[0], tyres[2]],
+    recommendedTyres: [],
   },
   {
     id: "semnoz",
@@ -191,6 +174,13 @@ export const rides: Ride[] = [
     duration: "4h15",
     tags: ["Sportif", "Montagne"],
     mapUrl: mapImage(45.82, 6.095),
+    pts: [
+      [45.899, 6.129],
+      [45.858, 6.141],
+      [45.812, 6.109],
+      [45.789, 6.087],
+      [45.775, 6.061],
+    ],
     summary:
       "Le grand classique des cyclistes annéciens : une montée régulière et exigeante jusqu'au sommet, récompensée par un panorama à 360 degrés.",
     startInstructions:
@@ -199,7 +189,7 @@ export const rides: Ride[] = [
       author: "Pierrot",
       text: "Sur cette longue ascension, le rendement prime : un pneu léger te fera gagner de précieux watts.",
     },
-    recommendedTyres: [tyres[0], tyres[1]],
+    recommendedTyres: [],
   },
 ];
 

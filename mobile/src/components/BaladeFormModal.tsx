@@ -15,10 +15,6 @@ type FormState = {
   landscape: string;
   difficulty: string;
   tags: string;
-  tyre: string;
-  tyreDesignation: string;
-  tyreWeightG: string;
-  tyreDimensions: string;
   proTipAuthor: string;
   proTipText: string;
 };
@@ -32,10 +28,6 @@ function emptyForm(name: string): FormState {
     landscape: "",
     difficulty: "Intermédiaire",
     tags: "",
-    tyre: "",
-    tyreDesignation: "",
-    tyreWeightG: "",
-    tyreDimensions: "",
     proTipAuthor: "",
     proTipText: "",
   };
@@ -53,13 +45,6 @@ function toCreateRideForm(form: FormState): CreateRideForm {
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean),
-    tyre: form.tyre.trim(),
-    tyreDetail: {
-      name: form.tyre.trim(),
-      designation: form.tyreDesignation.trim(),
-      weightG: Number.parseInt(form.tyreWeightG, 10) || 0,
-      dimensions: Number.parseInt(form.tyreDimensions, 10) || 0,
-    },
     proTip: { author: form.proTipAuthor.trim(), text: form.proTipText.trim() },
   };
 }
@@ -163,36 +148,6 @@ export function BaladeFormModal({
               multiline
             />
 
-            <Text style={styles.sectionLabel}>Pneu conseillé</Text>
-            <TextInput
-              style={styles.input}
-              value={form.tyre}
-              onChangeText={(v) => set("tyre", v)}
-              placeholder="MICHELIN Power Cup"
-            />
-            <TextInput
-              style={styles.input}
-              value={form.tyreDesignation}
-              onChangeText={(v) => set("tyreDesignation", v)}
-              placeholder="Competition Line"
-            />
-            <View style={styles.row}>
-              <TextInput
-                style={[styles.input, styles.flex1]}
-                value={form.tyreWeightG}
-                onChangeText={(v) => set("tyreWeightG", v)}
-                placeholder="Poids (g)"
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={[styles.input, styles.flex1]}
-                value={form.tyreDimensions}
-                onChangeText={(v) => set("tyreDimensions", v)}
-                placeholder="Dimensions dispo."
-                keyboardType="numeric"
-              />
-            </View>
-
             <Text style={styles.sectionLabel}>Conseil du pro</Text>
             <TextInput
               style={styles.input}
@@ -255,7 +210,5 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 60, textAlignVertical: "top" },
   chipsRow: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
-  row: { flexDirection: "row", gap: spacing.sm },
-  flex1: { flex: 1 },
   error: { color: "#CC2200", fontSize: font.small, fontWeight: "600" },
 });

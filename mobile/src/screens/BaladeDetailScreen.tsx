@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stat, TyreMiniCard } from "../components/cards";
-import { Pips, RemoteImage, SectionTitle } from "../components/ui";
+import { RideMapPreview } from "../components/RideMapPreview";
+import { Pips, SectionTitle } from "../components/ui";
 import { colors, font, radius, spacing } from "../theme";
 import type { Ride } from "../types";
 
@@ -26,7 +27,7 @@ export function BaladeDetailScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <RemoteImage uri={ride.mapUrl} style={styles.map} fallback="#DCE6D8" />
+        <RideMapPreview points={ride.pts} style={styles.map} />
 
         <View style={styles.tags}>
           {ride.tags.map((t) => (

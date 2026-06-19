@@ -3,6 +3,7 @@ import { API_BASE } from "@/lib/api";
 export type LatLng = [number, number];
 
 export interface TyreDetail {
+  productId?: number | null;
   name: string;
   designation: string;
   weightG: number;

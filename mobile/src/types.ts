@@ -50,6 +50,7 @@ export interface CompareColumn {
 
 export interface Review {
   id: string;
+  productId: number;
   author: string; // initiales ex. "MR"
   product: string; // ex. "MICHELIN Power Cup - 700x25C"
   rating: number; // 0-5
@@ -71,6 +72,7 @@ export interface Ride {
   duration: string; // "3h30"
   tags: string[];
   mapUrl: string;
+  pts?: [number, number][];
   summary: string;
   startInstructions: string;
   proTip: { author: string; text: string };

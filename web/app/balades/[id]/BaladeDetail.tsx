@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { formatDuration, type Ride } from "@/lib/balades";
 import { loadLeaflet } from "@/lib/leaflet";
@@ -18,6 +19,13 @@ const DIFFICULTY_STYLE: Record<string, string> = {
   Intermédiaire: "bg-michelin-blue/10 text-michelin-blue",
   Expert: "bg-michelin-navy text-michelin-yellow",
 };
+
+function tyreDisplayName(brand: string | null | undefined, range: string) {
+  const cleanBrand = brand?.trim();
+  const cleanRange = range.trim();
+  if (!cleanBrand) return cleanRange;
+  return cleanRange.toLowerCase().includes(cleanBrand.toLowerCase()) ? cleanRange : `${cleanBrand} ${cleanRange}`;
+}
 
 const LANDSCAPE_ICON: Record<string, React.ReactNode> = {
   Montagne: (
@@ -77,6 +85,8 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
   const mapRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const tagDefinitions = useTagDefinitions();
+  const recommendedTyre = ride.tyreDetail?.productId ? ride.tyreDetail : null;
+  const usedTyreName = ride.usedTyre ? tyreDisplayName(ride.usedTyre.brand, ride.usedTyre.range) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -141,7 +151,7 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
       ]} />
 
       {/* Carte */}
-      <div className="relative">
+      <div className="relative z-0">
         <div ref={mapEl} className="h-56 w-full bg-michelin-gray-light md:h-72 lg:h-80" />
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center bg-michelin-gray-light">
@@ -255,7 +265,7 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
               <TyreImage kind={kindFromText(ride.terrain)} className="h-14 w-14 shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="font-bold leading-tight text-michelin-navy">
-                  {[ride.usedTyre.brand, ride.usedTyre.range].filter(Boolean).join(" ")}
+                  {usedTyreName}
                 </p>
                 <p className="text-sm text-michelin-ink">{ride.usedTyre.designation}</p>
                 {ride.usedTyre.rating != null && (
@@ -271,26 +281,45 @@ export function BaladeDetail({ ride }: { ride: Ride }) {
                 )}
               </div>
             </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <Link
+                href={`/produits/${ride.usedTyre.productId}`}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-michelin-navy px-5 text-sm font-bold text-white shadow-sm transition hover:bg-michelin-blue"
+              >
+                Voir la fiche produit
+              </Link>
+              <RetailersSheetTrigger productName={usedTyreName ?? ride.usedTyre.range} className="w-full">
+                Voir où acheter
+              </RetailersSheetTrigger>
+            </div>
           </section>
         )}
 
         {/* Pneu recommandé */}
-        {ride.tyreDetail && (
+        {recommendedTyre && (
           <section className="mt-6">
             <h2 className="text-base font-bold text-michelin-navy">Nos conseils de pneus</h2>
             <div className="mt-3 flex items-center gap-4 rounded-2xl border border-michelin-gray-line bg-white p-4 shadow-sm">
               <TyreImage kind={kindFromText(ride.terrain)} className="h-14 w-14 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="font-bold leading-tight text-michelin-navy">{ride.tyreDetail.name}</p>
-                <p className="text-sm text-michelin-ink">{ride.tyreDetail.designation}</p>
+                <p className="font-bold leading-tight text-michelin-navy">{recommendedTyre.name}</p>
+                <p className="text-sm text-michelin-ink">{recommendedTyre.designation}</p>
                 <p className="mt-0.5 text-xs text-michelin-ink">
-                  {ride.tyreDetail.weightG} g · {ride.tyreDetail.dimensions} dimensions disponibles
+                  {recommendedTyre.weightG} g · {recommendedTyre.dimensions} dimensions disponibles
                 </p>
               </div>
             </div>
-            <RetailersSheetTrigger productName={ride.tyreDetail.name} className="mt-3 w-full">
-              Voir où acheter
-            </RetailersSheetTrigger>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <Link
+                href={`/produits/${recommendedTyre.productId}`}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-michelin-navy px-5 text-sm font-bold text-white shadow-sm transition hover:bg-michelin-blue"
+              >
+                Voir la fiche produit
+              </Link>
+              <RetailersSheetTrigger productName={recommendedTyre.name} className="w-full">
+                Voir où acheter
+              </RetailersSheetTrigger>
+            </div>
           </section>
         )}
       </div>
