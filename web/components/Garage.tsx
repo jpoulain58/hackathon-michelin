@@ -5,8 +5,35 @@ import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/Reveal";
+import { TyreAutocomplete } from "@/components/TyreAutocomplete";
+import { LocationAutocomplete, DEFAULT_LOCATIONS } from "@/components/LocationAutocomplete";
 import { supabase } from "@/lib/supabase/client";
-import { fetchStravaStats } from "@/lib/api";
+import { fetchStravaStats, fetchTyres } from "@/lib/api";
+import { formatProductLabel, type ProductOption } from "@/lib/products";
+
+const FALLBACK_MODELS = [
+  "MICHELIN Power Cup 2",
+  "MICHELIN Power Cup S",
+  "MICHELIN Power Road",
+  "MICHELIN Power Road TLR",
+  "MICHELIN Power All Season",
+  "MICHELIN Power Gravel",
+  "MICHELIN Power Adventure",
+  "MICHELIN Power Protection TLR",
+  "MICHELIN PRO4 Endurance",
+  "MICHELIN PRO5",
+  "MICHELIN PRO5 TLR",
+  "MICHELIN Force AM2",
+  "MICHELIN Force AM2 Competition Line",
+  "MICHELIN Wild Enduro Front",
+  "MICHELIN Wild Enduro Rear",
+  "MICHELIN Wild XC3",
+  "MICHELIN Force XC3",
+  "MICHELIN City Cargo",
+  "MICHELIN City Street",
+  "MICHELIN E-Wild Front",
+  "MICHELIN E-Wild Rear",
+];
 
 type Tyre = {
   id: string;
@@ -49,13 +76,21 @@ export function Garage() {
   const [error, setError] = useState<string | null>(null);
 
   // Saisie d'un nouveau pneu.
-  const [draft, setDraft] = useState({ label: "Pneu avant", model: "", km: 0, lifespan_km: 4000 });
+  const [draft, setDraft] = useState<{
+    label: string;
+    model: ProductOption | null;
+    km: number;
+    lifespan_km: number;
+  }>({ label: "Pneu avant", model: null, km: 0, lifespan_km: 4000 });
   const [adding, setAdding] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   // Synchro Strava.
   const [stravaKm, setStravaKm] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [stravaError, setStravaError] = useState<string | null>(null);
+  const [models, setModels] = useState<string[]>(FALLBACK_MODELS);
 
   const loadTyres = useCallback(async (uid: string) => {
     if (!supabase) return;
@@ -138,6 +173,15 @@ export function Garage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTyres]);
 
+  useEffect(() => {
+    fetchTyres()
+      .then((tyres) => {
+        const names = [...new Set(tyres.map((t) => t.designation).filter(Boolean))].sort() as string[];
+        if (names.length > 0) setModels(names);
+      })
+      .catch(() => {});
+  }, []);
+
   function patchLocal(id: string, patch: Partial<Tyre>) {
     setTyres((list) => list.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }
@@ -145,6 +189,7 @@ export function Garage() {
   async function saveTyre(t: Tyre) {
     if (!supabase) return;
     setError(null);
+    setSavingId(t.id);
     const { error } = await supabase
       .from("garage_tyres")
       .update({
@@ -155,7 +200,13 @@ export function Garage() {
         updated_at: new Date().toISOString(),
       })
       .eq("id", t.id);
-    if (error) setError(error.message);
+    setSavingId(null);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setSavedId(t.id);
+    setTimeout(() => setSavedId((id) => (id === t.id ? null : id)), 2000);
   }
 
   async function deleteTyre(id: string) {
@@ -178,7 +229,7 @@ export function Garage() {
       .insert({
         rider_id: session.user.id,
         label: draft.label || "Pneu",
-        model: draft.model || null,
+        model: draft.model ? formatProductLabel(draft.model) : null,
         km: Number(draft.km) || 0,
         lifespan_km: Number(draft.lifespan_km) || 4000,
       })
@@ -190,7 +241,7 @@ export function Garage() {
       return;
     }
     setTyres((list) => [...list, data as Tyre]);
-    setDraft({ label: "Pneu arriere", model: "", km: 0, lifespan_km: 4000 });
+    setDraft({ label: "Pneu arriere", model: null, km: 0, lifespan_km: 4000 });
   }
 
   async function syncStrava() {
@@ -251,6 +302,10 @@ export function Garage() {
 
   return (
     <div className="space-y-6">
+      <datalist id="tyre-models">
+        {models.map((m) => <option key={m} value={m} />)}
+      </datalist>
+
       {/* Synchro Strava */}
       <div className="rounded-3xl border border-michelin-gray-line bg-white p-6 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -310,6 +365,7 @@ export function Garage() {
                     <label className="block text-xs font-semibold text-michelin-ink">
                       Modele
                       <input
+                        list="tyre-models"
                         value={t.model ?? ""}
                         onChange={(e) => patchLocal(t.id, { model: e.target.value })}
                         placeholder="MICHELIN Power Cup"
@@ -351,8 +407,12 @@ export function Garage() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button size="sm" onClick={() => saveTyre(t)}>
-                      Enregistrer
+                    <Button size="sm" onClick={() => saveTyre(t)} disabled={savingId === t.id}>
+                      {savingId === t.id
+                        ? "Enregistrement..."
+                        : savedId === t.id
+                          ? "Enregistré ✓"
+                          : "Enregistrer"}
                     </Button>
                     {stravaKm !== null ? (
                       <Button
@@ -379,21 +439,23 @@ export function Garage() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-xs font-semibold text-michelin-ink">
               Emplacement
-              <input
-                value={draft.label}
-                onChange={(e) => setDraft({ ...draft, label: e.target.value })}
-                placeholder="ex. Pneu avant"
-                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-              />
+              <div className="mt-1">
+                <LocationAutocomplete
+                  value={draft.label}
+                  onChange={(label) => setDraft({ ...draft, label })}
+                  suggestions={[...DEFAULT_LOCATIONS, ...tyres.map((t) => t.label)]}
+                />
+              </div>
             </label>
             <label className="block text-xs font-semibold text-michelin-ink">
               Modele
-              <input
-                value={draft.model}
-                onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-                placeholder="ex. MICHELIN Power Cup"
-                className="mt-1 w-full rounded-lg border border-michelin-gray-line px-3 py-2 text-sm text-michelin-navy outline-none focus:border-michelin-blue"
-              />
+              <div className="mt-1">
+                <TyreAutocomplete
+                  value={draft.model}
+                  onSelect={(model) => setDraft({ ...draft, model })}
+                  placeholder="ex. MICHELIN Power Cup"
+                />
+              </div>
             </label>
             <label className="block text-xs font-semibold text-michelin-ink">
               Km parcourus

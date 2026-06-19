@@ -1,8 +1,10 @@
 import { Controller, Get, Headers, Inject, NotFoundException, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../auth/auth.service";
 import { StravaService } from "../auth/strava.service";
 import { inferProfileFromStrava, TyresService } from "./tyres.service";
 
+@ApiTags("tyres")
 @Controller("tyres")
 export class TyresController {
   // @Inject explicite : l'injection fonctionne meme sans metadata de type
@@ -13,7 +15,10 @@ export class TyresController {
     @Inject(StravaService) private readonly stravaService: StravaService,
   ) {}
 
-  /** GET /api/tyres?discipline=road&limit=12 ou /api/tyres?ids=id-a,id-b */
+  @ApiOperation({ summary: "Catalogue de pneus, filtrable par discipline ou par liste d'ids" })
+  @ApiQuery({ name: "discipline", required: false, example: "road" })
+  @ApiQuery({ name: "limit", required: false, type: Number, example: 12 })
+  @ApiQuery({ name: "ids", required: false, description: "Liste d'ids separes par des virgules", example: "id-a,id-b" })
   @Get()
   list(
     @Query("discipline") discipline?: string,
@@ -24,13 +29,17 @@ export class TyresController {
     return { count: items.length, total: this.tyres.count(), items };
   }
 
-  /** GET /api/tyres/options — disciplines & priorites pour le wizard. */
+  @ApiOperation({ summary: "Disciplines & priorites disponibles (alimente le wizard \"Trouve ton pneu\")" })
   @Get("options")
   options() {
     return this.tyres.options();
   }
 
-  /** GET /api/tyres/recommend?discipline=road&priority=speed&ebike=true&limit=5 */
+  @ApiOperation({ summary: "Recommandation de pneus scoree selon un profil discipline/priorite" })
+  @ApiQuery({ name: "discipline", required: true, example: "gravel" })
+  @ApiQuery({ name: "priority", required: true, example: "puncture" })
+  @ApiQuery({ name: "ebike", required: false, type: Boolean, example: true })
+  @ApiQuery({ name: "limit", required: false, type: Number, example: 5 })
   @Get("recommend")
   recommend(
     @Query("discipline") discipline: string,
@@ -47,7 +56,9 @@ export class TyresController {
     return { profile: { discipline, priority, ebike: ebike === "true" || ebike === "1" }, items };
   }
 
-  /** GET /api/tyres/recommend/from-strava — profil deduit des sorties velo Strava. */
+  @ApiOperation({ summary: "Recommandation deduite des sorties velo Strava recentes" })
+  @ApiBearerAuth("supabase-jwt")
+  @ApiResponse({ status: 404, description: "Aucune sortie velo Strava recente a analyser" })
   @Get("recommend/from-strava")
   async recommendFromStrava(@Headers("authorization") authorization?: string) {
     const user = await this.authService.getUserFromAuthorization(authorization);
