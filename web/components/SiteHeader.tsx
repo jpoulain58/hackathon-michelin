@@ -226,10 +226,10 @@ export function SiteHeader() {
                 href="/club"
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-colors duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
+                  "rounded-pill px-3.5 py-2 text-sm font-bold transition-[filter,box-shadow] duration-200 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-yellow/60",
                   active
-                    ? "bg-white/70 text-michelin-blue shadow-[inset_0_0_0_1px_rgba(39,80,155,0.14)]"
-                    : "text-michelin-navy/75 hover:bg-white/55 hover:text-michelin-navy",
+                    ? "bg-michelin-yellow text-michelin-navy shadow-[inset_0_0_0_2px_rgba(0,12,52,0.15)]"
+                    : "bg-michelin-yellow text-michelin-navy hover:brightness-110 hover:shadow-[0_4px_16px_-4px_rgba(252,229,0,0.7)]",
                 )}
               >
                 Club
@@ -378,8 +378,10 @@ export function SiteHeader() {
                   onClick={() => setMobileOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-2xl px-3.5 py-3 transition-colors duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-blue/60",
-                    active ? "bg-michelin-blue text-white" : "text-michelin-navy hover:bg-white/70",
+                    "rounded-2xl px-3.5 py-3 transition-[filter,box-shadow] duration-300 ease-out-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-michelin-yellow/60",
+                    active
+                      ? "bg-michelin-yellow text-michelin-navy shadow-[inset_0_0_0_2px_rgba(0,12,52,0.15)]"
+                      : "bg-michelin-yellow text-michelin-navy hover:brightness-110 hover:shadow-[0_4px_16px_-4px_rgba(252,229,0,0.7)]",
                   )}
                 >
                   <span className="block text-sm font-black">Club</span>
