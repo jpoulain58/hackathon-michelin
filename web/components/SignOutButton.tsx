@@ -16,7 +16,7 @@ export function SignOutButton({
   className,
   label = "Se deconnecter",
   loadingLabel = "Deconnexion...",
-  redirectTo = "/",
+  redirectTo = "/connexion",
   disabled,
   onClick,
   ...props
